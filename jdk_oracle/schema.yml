@@ -1,0 +1,9 @@
+
+
+type: map
+mapping:
+  "jdk_oracle":
+    type: map
+    required: true
+    mapping:
+      "version": { type: str, required: true }    

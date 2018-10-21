@@ -1,4 +1,4 @@
-# HDP module
+# HDP plugin
 
 - Roles are copied from [`https://github.com/hortonworks/ansible-hortonworks`](https://github.com/hortonworks/ansible-hortonworks), without modification
 

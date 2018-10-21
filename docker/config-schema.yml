@@ -1,0 +1,30 @@
+
+type: map
+mapping:
+  "repositories":
+    type: map
+    required: true
+    mapping:
+      "docker": 
+        type: seq
+        required: true
+        sequence:
+        - type: map
+          mapping:
+            "version": { type: str, required: True }
+            "dependencies": 
+              type: seq
+              required: true
+              sequence:
+              - type: str
+            "urls": 
+              type: seq
+              required: true
+              sequence:
+              - type: str
+            
+                                  
+    
+    
+    
+  

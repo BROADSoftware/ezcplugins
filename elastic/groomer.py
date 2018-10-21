@@ -22,9 +22,9 @@ _ELASTICSEARCH_="_elasticsearch_"
 NODES="nodes"
 GROUP_BY_NAME="groupByName"
 
-def groom(module, model):
+def groom(plugin, model):
     
-    f = os.path.join(module.path, "default.yml")
+    f = os.path.join(plugin.path, "default.yml")
     if os.path.exists(f):
         base = yaml.load(open(f))
     else:
@@ -33,7 +33,7 @@ def groom(module, model):
     model[DATA][ESNODES] = []        
     """ 
     For each es_node, will merge elasticsearch vars from:
-    - Module default configuration file
+    - Plugin default configuration file
     - global from cluster definition file
     - parent role
     - es_node """

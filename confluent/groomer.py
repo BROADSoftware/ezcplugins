@@ -2,7 +2,7 @@
 
 
 
-def groom(module, model):
+def groom(plugin, model):
     for node in model['cluster']['nodes']:
         if "kafka_log_dirs" in node:
             if len(node["kafka_log_dirs"]) == 0:

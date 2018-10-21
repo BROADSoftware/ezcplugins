@@ -1,0 +1,11 @@
+
+type: map
+mapping:
+  "repositories":
+    type: map
+    mapping:
+      "repo_yum_base_url": { type: str, required: false }          
+    
+    
+    
+  

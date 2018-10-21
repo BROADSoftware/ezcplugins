@@ -1,0 +1,22 @@
+
+type: map
+mapping:
+  "repositories":
+    type: map
+    required: true
+    mapping:
+      "jdk_oracle": 
+        type: seq
+        required: true
+        sequence:
+        - type: map
+          mapping:
+            "version": { type: str, required: True }
+            "rpm_url": { type: str, required: True }
+            "jce_archive": { type: str, required: True }
+            "jce_url": { type: str, required: True }
+                      
+    
+    
+    
+  

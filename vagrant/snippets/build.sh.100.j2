@@ -9,7 +9,7 @@ chmod +x ./ssh/*
 if [ "$1" != "{{m.cluster.id}}" ]
 then
     echo 
-    echo "To really build the cluster, As a security, please provide cluster_id as parameter"
+    echo "To really build the cluster, As a security, please provide cluster_id ({{m.cluster.id}}) as parameter"
     exit 1
 fi
 
@@ -20,3 +20,5 @@ shift
 #ansible --version
 
 ansible-playbook ./main.yml "$@"
+
+

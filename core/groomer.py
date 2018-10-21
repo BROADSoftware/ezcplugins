@@ -27,7 +27,7 @@ FQDN="fqdn"
 IP="ip"
 DOMAIN="domain"
 
-def groom(module, model):
+def groom(plugin, model):
     if NODES not in model[CLUSTER]:
         model[CLUSTER][NODES] = []
     
