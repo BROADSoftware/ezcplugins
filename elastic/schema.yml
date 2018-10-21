@@ -1,0 +1,20 @@
+
+
+type: map
+mapping:
+  "elasticsearch":
+    type: any
+  "roles":
+    type: seq
+    required: true
+    sequence:
+    - type: map
+      mapping:
+        "elasticsearch":
+          type: any
+        "es_nodes":
+          type: seq
+          required: false
+          sequence:
+          - type: any
+    
