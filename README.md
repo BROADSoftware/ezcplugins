@@ -6,10 +6,10 @@ Tested plugins with vagrant
 - vagrant
 - jdk_oracle
 - docker
-- kubespray
+- kubespray (Does not work with ansible 2.7. See release 2.7.0)
+- hortonworks
 
-Still to test:
+Still to adapt and test:
 - cerebro
 - confluent
 - elastic
-- hdp

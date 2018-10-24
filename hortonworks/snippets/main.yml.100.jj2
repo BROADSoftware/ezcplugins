@@ -1,0 +1,17 @@
+
+- import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/prepare_nodes.yml"
+  tags: [ 'hortonworks', 'hortonworks_prep' ]
+
+- import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/install_ambari.yml"
+  tags: [ 'hortonworks', 'hortonworks' ]  
+
+- import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/configure_ambari.yml"
+  tags: [ 'hortonworks', 'hortonworks' ]  
+  
+- import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/apply_blueprint.yml"
+  tags: [ 'hortonworks', 'hortonworks_blueprint' ]    
+
+- import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/post_install.yml"
+  tags: [ 'hortonworks', 'hortonworks_post' ]    
+  
+  

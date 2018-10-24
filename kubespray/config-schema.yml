@@ -7,5 +7,5 @@ mapping:
     required: true
     type: map
     mapping:
-      "repo_folder": { type: str, required: yes }
+      "ansible_repo_folder": { type: str, required: yes }
      

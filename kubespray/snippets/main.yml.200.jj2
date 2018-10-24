@@ -1,2 +1,2 @@
         
-- include: {{{ m.config.kubespray.repo_folder }}}/cluster.yml
+- include: {{{ m.config.kubespray.ansible_repo_folder }}}/cluster.yml
