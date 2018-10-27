@@ -16,8 +16,9 @@ def groom(plugin, model):
     if 'core' not in model["cluster"]["plugins"]:
         ERROR("Plugin 'core' is mandatory before plugin 'vagrant'")
 
-    setDefaultInMap(model["cluster"]["vagrant"], "local_yum_repo", True)
-    if model["cluster"]["vagrant"]["local_yum_repo"] and ("repositories" not in model["config"] or "repo_yum_base_url" not in model["config"]["repositories"]):
+    repoInConfig = "repositories" in model["config"] and "repo_yum_base_url" in model["config"]["repositories"]
+    setDefaultInMap(model["cluster"]["vagrant"], "local_yum_repo", repoInConfig)
+    if model["cluster"]["vagrant"]["local_yum_repo"] and not repoInConfig:
         ERROR("'repositories.repo_yum_base_url' is not defined in config file while 'vagrant.local_yum_repo' is set to True")
         
     for node in model['cluster']['nodes']:
