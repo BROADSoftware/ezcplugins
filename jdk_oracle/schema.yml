@@ -7,3 +7,5 @@ mapping:
     required: true
     mapping:
       "version": { type: str, required: true }    
+      "disabled": { type: bool, required: false }    
+      

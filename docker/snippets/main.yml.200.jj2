@@ -1,4 +1,6 @@
 
+{%% if not m.cluster.docker.disabled %%}
+
 - hosts: docker
   tags: [ "docker" ]
   tasks:
@@ -24,4 +26,6 @@
 {%% for user in m.cluster.docker.users %%}
      - {{{ user }}}
 {%% endfor %%}  
+{%% endif %%}
+
 {%% endif %%}

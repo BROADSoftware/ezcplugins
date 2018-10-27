@@ -1,3 +1,4 @@
+{%% if not m.cluster.hortonworks.disabled %%}
 
 - import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/prepare_nodes.yml"
   tags: [ 'hortonworks', 'hortonworks_prep' ]
@@ -13,5 +14,5 @@
 
 - import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/post_install.yml"
   tags: [ 'hortonworks', 'hortonworks_post' ]    
-  
+{%% endif %%} 
   

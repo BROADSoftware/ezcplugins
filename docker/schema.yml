@@ -12,4 +12,5 @@ mapping:
         sequence:
         - type: str
       "version": { type: str, required: yes }
+      "disabled": { type: bool, required: false }    
      

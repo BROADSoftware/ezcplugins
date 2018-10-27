@@ -2,10 +2,8 @@
 
 type: map
 mapping:
-  "ansible":
+  "kubespray":
     type: map
     required: false
     mapping:
       "disabled": { type: bool, required: false }    
-      "playbooks":
-        type: any

@@ -3,6 +3,7 @@ import os
 from misc import ERROR, setDefaultInMap, appendPath
 
 def groom(plugin, model):
+    setDefaultInMap(model["cluster"]["hortonworks"], "disabled", False)
     version = model["cluster"]["hortonworks"]["version"]
     l = filter(lambda x: x["version"] == version, model["config"]["repositories"]["hortonworks"])
     if len(l) > 1:

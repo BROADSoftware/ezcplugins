@@ -7,6 +7,7 @@ mapping:
     required: true
     mapping:
       "version": { type: str, required: true }      
+      "disabled": { type: bool, required: false }    
       "security": { type: str, required: true,  enum: [ 'none', 'mit-kdc', 'active-directory' ]  }
       "clients":
         type: seq

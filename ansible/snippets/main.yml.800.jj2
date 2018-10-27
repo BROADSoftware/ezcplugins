@@ -1,3 +1,5 @@
 
+{%% if m.cluster.ansible is defined and m.cluster.ansible.playbooks is defined  and (m.cluster.ansible.disabled is not defined or not m.cluster.ansible.disabled) %%}
+{{{ m.cluster.ansible.playbooks | to_yaml(width=10240,  indent=2, allow_unicode=True, default_flow_style=False) }}}
+{%% endif %%}
 
-{{{ m.cluster.ansible_playbooks | to_yaml(width=10240,  indent=2, allow_unicode=True, default_flow_style=False) }}}

@@ -1,2 +1,4 @@
-        
+
+{%% if not m.cluster.kubespray.disabled %%}        
 - include: {{{ m.config.kubespray.ansible_repo_folder }}}/cluster.yml
+{%% endif %%}
