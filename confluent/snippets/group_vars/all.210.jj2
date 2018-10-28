@@ -5,19 +5,25 @@ confluent:
   edition: {{{ m.cluster.confluent.edition }}}
 {%% if m.cluster.confluent.edition == "ee" %%}
   package_name: confluent-platform-2.11
+  support:
+    customer_id: anonymous
+    metrics_enabled: true
 {%% elif m.cluster.confluent.edition == "oss" %%}
   package_name: confluent-platform-oss-2.11
+  support:
+    customer_id: anonymous
+    metrics_enabled: false
 {%% endif %%}
   repository:
     debian:
     redhat:
       main:
-        baseurl: https://packages.confluent.io/rpm/{{{ m.cluster.confluent.version }}}
+        baseurl: "{{{ m.data.repositories.confluent.main.baseurl }}}"
         gpgcheck: 1
-        gpgkey: https://packages.confluent.io/rpm/{{{ m.cluster.confluent.version }}}/archive.key
+        gpgkey: "{{{ m.data.repositories.confluent.main.gpgkey }}}"
         enabled: 1
       dist:
-        baseurl: https://packages.confluent.io/rpm/{{{ m.cluster.confluent.version }}}/7
+        baseurl: "{{{ m.data.repositories.confluent.dist.baseurl }}}"
         gpgcheck: 1
-        gpgkey:  https://packages.confluent.io/rpm/{{{ m.cluster.confluent.version }}}/archive.key
+        gpgkey:  "{{{ m.data.repositories.confluent.dist.gpgkey }}}"
         enabled: 1

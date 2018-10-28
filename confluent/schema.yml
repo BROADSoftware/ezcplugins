@@ -20,8 +20,9 @@ mapping:
     required: true
     mapping:
       "security": { type: str, required: true,  enum: [ 'plaintext', 'ssl', 'sasl_ssl' ]  }
-      "version": { type: str, required: true }
-      "edition": { type: str, required: true,  enum: [ 'oss', 'ee' ]  }
+      "disabled": { type: bool, required: no }
+      "repo_id": { type: str, required: true }
+      "edition": { type: str, required: true,  enum: [ 'oss', 'ee' ]  }      
   "roles":
     type: seq
     required: true

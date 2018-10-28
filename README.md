@@ -10,6 +10,15 @@ Tested plugins with vagrant
 - hortonworks
 - cerebro
 - elastic
-
-Still to adapt and test:
 - confluent
+
+New repo layout
+- jdk_oracle
+- cerebro
+- elastic
+- confluent
+
+To adjust
+- hortonworks
+- docker
+- kubespray 

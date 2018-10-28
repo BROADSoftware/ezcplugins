@@ -1,0 +1,41 @@
+
+
+
+
+type: map
+mapping:
+  "confluent":
+    required: true
+    type: map
+    mapping:
+      "ansible_repo_folder": { type: str, required: yes }
+    
+    
+  "repositories":
+    type: map
+    required: true
+    mapping:
+      "confluent": 
+        type: seq
+        required: true
+        sequence:
+        - type: map
+          mapping:
+            "repo_id": { type: str, required: True }
+            "version": { type: str, required: True }
+            "main":
+              type: map
+              required: true
+              mapping:
+               "baseurl": { type: str, required: True }
+               "gpgkey": { type: str, required: True }
+            "dist":
+              type: map
+              required: true
+              mapping:
+               "baseurl": { type: str, required: True }
+               "gpgkey": { type: str, required: True }
+              
+    
+    
+  
