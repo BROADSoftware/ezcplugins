@@ -1,0 +1,30 @@
+
+
+
+
+type: map
+mapping:
+  "elasticsearch":
+    required: true
+    type: map
+    mapping:
+      "ansible_repo_folder": { type: str, required: yes }
+  "repositories":
+    type: map
+    required: true
+    mapping:
+      "elasticsearch": 
+        type: seq
+        required: true
+        sequence:
+        - type: map
+          mapping:
+            "repo_id": { type: str, required: True }
+            "version": { type: str, required: True }
+            "elasticsearch_package_url": { type: str, required: True }
+            
+                                  
+    
+    
+    
+  

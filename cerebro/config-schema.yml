@@ -1,21 +1,24 @@
 
+
+
+
 type: map
 mapping:
   "repositories":
     type: map
     required: true
     mapping:
-      "jdk_oracle": 
+      "cerebro": 
         type: seq
-        required: true
+        required: false
         sequence:
         - type: map
           mapping:
             "repo_id": { type: str, required: True }
-            "rpm_url": { type: str, required: True }
-            "jce_archive": { type: str, required: True }
-            "jce_url": { type: str, required: True }
-                      
+            "version": { type: str, required: True }
+            "cerebro_rpm_url": { type: str, required: True }
+            
+                                  
     
     
     

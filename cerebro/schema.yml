@@ -6,5 +6,6 @@ mapping:
     type: map
     required: true
     mapping:
+      repo_id: { type: str, required: true }
       validate_certs: { type: bool, required: true }
     

@@ -6,6 +6,6 @@ mapping:
     type: map
     required: true
     mapping:
-      "version": { type: str, required: true }    
+      "repo_id": { type: str, required: true }    
       "disabled": { type: bool, required: false }    
       

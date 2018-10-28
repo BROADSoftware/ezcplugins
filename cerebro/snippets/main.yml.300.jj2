@@ -1,7 +1,8 @@
+{%% if not m.cluster.cerebro.disabled %%}
 
 - hosts: cerebro
   tags: [ 'cerebro' ]
   roles:
-  - { role: cerebro, cerebro_validate_certs: {{{ m.cluster.cerebro.validate_certs}}}, cerebro_version: "{{{m.repositories.cerebro_version}}}", cerebro_rpm_url: "{{{ m.repositories.repo_misc_base_url }}}/cerebro-{{cerebro_version}}.tgz", tags: [ "cerebro" ] }
-  
+  - { role: cerebro, cerebro_validate_certs: {{{ m.cluster.cerebro.validate_certs}}}, cerebro_version: "{{{m.data.repositories.cerebro.version}}}", cerebro_rpm_url: "{{{ m.data.repositories.cerebro.cerebro_rpm_url }}}", tags: [ "cerebro" ] }
+{%% endif %%}  
  

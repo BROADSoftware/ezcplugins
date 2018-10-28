@@ -9,7 +9,7 @@ def groom(plugin, model):
     if len(l) > 1:
         ERROR("Hortonworks version '{}' is defined twice in configuration file!".format(version))
     if len(l) != 1:
-        ERROR("Hortonworks '{}' is not defined in configuration file!".format(version))
+        ERROR("Hortonworks version '{}' is not defined in configuration file!".format(version))
     model["data"]["hortonworks"] = l[0]
     
     ansible_repo_folder = appendPath(os.path.dirname(model["data"]["configFile"]),  model["config"]["hortonworks"]["ansible_repo_folder"]) 
