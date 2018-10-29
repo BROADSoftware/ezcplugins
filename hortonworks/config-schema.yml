@@ -5,7 +5,7 @@
 type: map
 mapping:
   "hortonworks":
-    required: true
+    required: false
     type: map
     mapping:
       "ansible_repo_folder": { type: str, required: yes }
@@ -15,7 +15,7 @@ mapping:
     mapping:
       "hortonworks": 
         type: seq
-        required: true
+        required: false
         sequence:
         - type: map
           mapping:

@@ -1,5 +1,4 @@
 
-{%% if not m.cluster.docker.disabled %%}
 
 - hosts: docker
   tags: [ "docker" ]
@@ -28,4 +27,3 @@
 {%% endfor %%}  
 {%% endif %%}
 
-{%% endif %%}

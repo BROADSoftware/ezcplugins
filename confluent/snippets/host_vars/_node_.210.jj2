@@ -1,3 +1,4 @@
+
 {%% if m.node.name in m.data.groupByName.broker %%}
 kafka:
   broker:
@@ -15,4 +16,5 @@ kafka:
       metric.reporters: null
       confluent.metrics.reporter.bootstrap.servers: null
 {%% endif %%}
-        
+       
+       

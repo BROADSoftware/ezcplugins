@@ -6,9 +6,11 @@ from misc import ERROR,lookupRepository,setDefaultInMap,appendPath
 def groom(plugin, model):
     setDefaultInMap(model["cluster"]["confluent"], "disabled", False)
     if model["cluster"]["confluent"]["disabled"]:
-        return
+        return False
     
     lookupRepository(model, "confluent")
+    if "confluent" not in model["config"] or "ansible_repo_folder" not in model["config"]["confluent"]:
+        ERROR("Missing 'confluent.ansible_repo_folder' in configuration file")
     
     for node in model['cluster']['nodes']:
         if "kafka_log_dirs" in node:
@@ -27,5 +29,5 @@ def groom(plugin, model):
     for node in model["cluster"]["nodes"]:
         preflight.append(node["name"])
     model["data"]["groupByName"]["preflight"] = preflight
-
+    return True
 

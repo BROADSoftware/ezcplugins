@@ -7,7 +7,7 @@ mapping:
     mapping:
       "jdk_oracle": 
         type: seq
-        required: true
+        required: false
         sequence:
         - type: map
           mapping:

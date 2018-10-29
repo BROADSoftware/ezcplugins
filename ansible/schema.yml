@@ -8,4 +8,7 @@ mapping:
     mapping:
       "disabled": { type: bool, required: false }    
       "playbooks":
-        type: any
+        type: seq
+        required: true
+        sequence:
+        - type: any

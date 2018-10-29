@@ -31,5 +31,5 @@ def groom(plugin, model):
             node[SYNCED_FOLDERS] += model["cluster"]["vagrant"][SYNCED_FOLDERS]
     
     model["data"]["buildScript"] = appendPath(model["data"]["targetFolder"], "build.sh")
-    
+    return True # Always enabled
         

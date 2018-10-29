@@ -89,6 +89,6 @@ def groom(plugin, model):
             for nodeName in role[NODES]:
                 model[DATA][GROUP_BY_NAME][grp].append(nodeName)
     
-
+    return True # Always enabled
 
 

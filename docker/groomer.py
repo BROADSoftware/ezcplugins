@@ -4,6 +4,9 @@ from misc import ERROR,setDefaultInMap,lookupRepository
 
 def groom(plugin, model):
     setDefaultInMap(model["cluster"]["docker"], "disabled", False)
-    if not model["cluster"]["docker"]["disabled"]:
+    if model["cluster"]["docker"]["disabled"]:
+        return False
+    else:
         lookupRepository(model, "docker")
+        return True
     

@@ -1,4 +1,5 @@
 
+
 security_mode: '{{{ m.cluster.confluent.security }}}'           
 
 confluent:
@@ -27,3 +28,4 @@ confluent:
         gpgcheck: 1
         gpgkey:  "{{{ m.data.repositories.confluent.dist.gpgkey }}}"
         enabled: 1
+

@@ -38,13 +38,13 @@ def groom(plugin, model):
     
     setDefaultInMap(model[CLUSTER][ELASTICSEARCH], DISABLED, False)
     if model[CLUSTER][ELASTICSEARCH][DISABLED]:
-        return
+        return False
     lookupRepository(model, ELASTICSEARCH)
-        
+    if ELASTICSEARCH not in model[CONFIG] or ANSIBLE_REPO_FOLDER not in model[CONFIG][ELASTICSEARCH]:
+        ERROR("Missing 'elasticsearch.ansible_repo_folder' in configuration file")
     ansible_repo_folder = appendPath(os.path.dirname(model[DATA]["configFile"]),  model[CONFIG][ELASTICSEARCH][ANSIBLE_REPO_FOLDER]) 
     model[CONFIG][ELASTICSEARCH][ANSIBLE_REPO_FOLDER] = ansible_repo_folder
     model[DATA]["rolePaths"].add(ansible_repo_folder)
-    
     
     f = os.path.join(plugin.path, "default.yml")
     if os.path.exists(f):
@@ -110,7 +110,7 @@ def groom(plugin, model):
             for node in role[NODES]:
                 elasticGroup.append(node[NAME])
     model[DATA][GROUP_BY_NAME][_ELASTICSEARCH_] = elasticGroup
-    
+    return True
 
 
 def keyFromEsNode(esNode):

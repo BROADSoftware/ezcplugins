@@ -4,7 +4,7 @@
 type: map
 mapping:
   "kubespray":
-    required: true
+    required: false
     type: map
     mapping:
       "ansible_repo_folder": { type: str, required: yes }

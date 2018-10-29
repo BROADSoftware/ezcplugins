@@ -7,7 +7,7 @@ mapping:
     mapping:
       "docker": 
         type: seq
-        required: true
+        required: false
         sequence:
         - type: map
           mapping:

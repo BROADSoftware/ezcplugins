@@ -1,8 +1,6 @@
 
-{%% if not m.cluster.jdk_oracle.disabled %%}
 - hosts: all
   roles:
   - { role: jdk_oracle, jdk_rpm_url: "{{{ m.data.repositories.jdk_oracle.rpm_url }}}", tags: [ "java" ] }
   - { role: jce, jce_archive: "{{{ m.data.repositories.jdk_oracle.jce_archive }}}", jce_url: "{{{ m.data.repositories.jdk_oracle.jce_url }}}", tags: [ "java" ] }
-{%% endif %%}  
  

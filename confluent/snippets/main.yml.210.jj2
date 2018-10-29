@@ -1,6 +1,4 @@
 
-{%% if not m.cluster.confluent.disabled %%}        
-
 - hosts: ssl_CA
   tasks:
   - name: "Install rsync"
@@ -10,4 +8,4 @@
     tags: [ "pre-install" ]
 
 - import_playbook: {{{ m.config.confluent.ansible_repo_folder }}}/all.yml
-{%% endif %%}
+
