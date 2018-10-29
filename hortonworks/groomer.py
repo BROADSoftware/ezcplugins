@@ -1,16 +1,13 @@
 
 import os
-from misc import ERROR, setDefaultInMap, appendPath
+from misc import ERROR, setDefaultInMap, appendPath,lookupRepository
 
 def groom(plugin, model):
     setDefaultInMap(model["cluster"]["hortonworks"], "disabled", False)
-    version = model["cluster"]["hortonworks"]["version"]
-    l = filter(lambda x: x["version"] == version, model["config"]["repositories"]["hortonworks"])
-    if len(l) > 1:
-        ERROR("Hortonworks version '{}' is defined twice in configuration file!".format(version))
-    if len(l) != 1:
-        ERROR("Hortonworks version '{}' is not defined in configuration file!".format(version))
-    model["data"]["hortonworks"] = l[0]
+    if model["cluster"]["hortonworks"]["disabled"]:
+        return
+    
+    lookupRepository(model, "hortonworks") 
     
     ansible_repo_folder = appendPath(os.path.dirname(model["data"]["configFile"]),  model["config"]["hortonworks"]["ansible_repo_folder"]) 
     model["config"]["hortonworks"]["ansible_repo_folder"] = ansible_repo_folder

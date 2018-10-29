@@ -19,7 +19,7 @@ mapping:
         sequence:
         - type: map
           mapping:
-            "version": { type: str, required: True }
+            "repo_id": { type: str, required: True }
             "ambari_version": { type: str, required: True }
             "hdp_version": { type: str, required: True }
             "hdf_version": { type: str, required: True }

@@ -7,18 +7,18 @@ cloud_name: static                                         # EZCLUSTER
 
 cluster_name: '{{{ m.cluster.id }}}'
 
-ambari_version: '{{{ m.data.hortonworks.ambari_version }}}'  # must be the 4-part full version number EZCLUSTER
+ambari_version: '{{{ m.data.repositories.hortonworks.ambari_version }}}'  # must be the 4-part full version number EZCLUSTER
 
-hdp_version: '{{{ m.data.hortonworks.hdp_version }}}'     # must be the 4-part full version number
+hdp_version: '{{{ m.data.repositories.hortonworks.hdp_version }}}'     # must be the 4-part full version number
 hdp_build_number: 'auto'                                  # the HDP build number from docs.hortonworks.com (if set to 'auto', Ansible will try to get it from the repository) EZCLUSTER
 
-hdf_version: '{{{ m.data.hortonworks.hdf_version }}}'     # must be the 4-part full version number EZCLUSTER
+hdf_version: '{{{ m.data.repositories.hortonworks.hdf_version }}}'     # must be the 4-part full version number EZCLUSTER
 hdf_build_number: 'auto'                                  # the HDF build number from docs.hortonworks.com (if set to 'auto', Ansible will try to get it from the repository)
 
 hdpsearch_version: '3.0.0'                                # must be the full version number
 hdpsearch_build_number: '100'                             # the HDP Search build number from docs.hortonworks.com (hardcoded to 100 for the moment)
 
-repo_base_url: '{{{ m.data.hortonworks.repo_base_url }}}'     # change this if using a Local Repository EZCLUSTER
+repo_base_url: '{{{ m.data.repositories.hortonworks.repo_base_url }}}'     # change this if using a Local Repository EZCLUSTER
 
 
 ###########################

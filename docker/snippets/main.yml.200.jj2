@@ -5,10 +5,10 @@
   tags: [ "docker" ]
   tasks:
   - name: Add docker dependencies
-    yum: pkg={%% for pkg in m.data.docker.dependencies %%}{%% if not loop.first %%},{%% endif %%}{{{pkg}}}{%% endfor %%}
+    yum: pkg={%% for pkg in m.data.repositories.docker.dependencies %%}{%% if not loop.first %%},{%% endif %%}{{{pkg}}}{%% endfor %%}
   
   - name: Install docker
-    yum: pkg={%% for url in m.data.docker.urls %%}{%% if not loop.first %%},{%% endif %%}{{{url}}}{%% endfor %%}
+    yum: pkg={%% for url in m.data.repositories.docker.urls %%}{%% if not loop.first %%},{%% endif %%}{{{url}}}{%% endfor %%}
  
   - name: Start and enable docker services
     service:

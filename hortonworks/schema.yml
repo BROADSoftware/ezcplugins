@@ -6,7 +6,7 @@ mapping:
     type: map
     required: true
     mapping:
-      "version": { type: str, required: true }      
+      "repo_id": { type: str, required: true }      
       "disabled": { type: bool, required: false }    
       "security": { type: str, required: true,  enum: [ 'none', 'mit-kdc', 'active-directory' ]  }
       "clients":

@@ -11,6 +11,7 @@ mapping:
         sequence:
         - type: map
           mapping:
+            "repo_id": { type: str, required: True }
             "version": { type: str, required: True }
             "dependencies": 
               type: seq

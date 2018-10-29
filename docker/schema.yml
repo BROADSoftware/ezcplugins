@@ -11,6 +11,6 @@ mapping:
         type: seq
         sequence:
         - type: str
-      "version": { type: str, required: yes }
+      "repo_id": { type: str, required: yes }
       "disabled": { type: bool, required: false }    
      
