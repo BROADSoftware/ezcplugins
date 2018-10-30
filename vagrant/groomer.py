@@ -29,9 +29,6 @@ loggerConfig = logging.getLogger("ezcluster.config")
 SYNCED_FOLDERS="synced_folders"
 
 def groom(plugin, model):
-    if 'core' not in model["cluster"]["plugins"]:
-        ERROR("Plugin 'core' is mandatory before plugin 'vagrant'")
-
     repoInConfig = "repositories" in model["config"] and "vagrant" in model["config"]["repositories"]  and "yum_repo_base_url" in model["config"]["repositories"]["vagrant"]
     setDefaultInMap(model["cluster"]["vagrant"], "local_yum_repo", repoInConfig)
     if model["cluster"]["vagrant"]["local_yum_repo"] and not repoInConfig:
