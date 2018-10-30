@@ -10,11 +10,11 @@ kafka:
 {%% if m.node.kafka_log_dirs is defined %%}
     datadir: {{{ m.node.kafka_log_dirs }}}
 {%% endif %%}
-{%% endif %%}
 {%% if m.cluster.confluent.edition == "oss" %%}
     config:
       metric.reporters: null
       confluent.metrics.reporter.bootstrap.servers: null
+{%% endif %%}
 {%% endif %%}
        
        
