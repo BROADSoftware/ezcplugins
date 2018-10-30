@@ -19,7 +19,7 @@ type: map
 mapping:
   "repositories":
     type: map
-    required: true
+    required: false
     mapping:
       "docker": 
         type: seq

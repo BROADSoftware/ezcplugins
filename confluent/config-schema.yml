@@ -29,7 +29,7 @@ mapping:
     
   "repositories":
     type: map
-    required: true
+    required: false
     mapping:
       "confluent": 
         type: seq

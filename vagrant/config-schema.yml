@@ -19,6 +19,7 @@ type: map
 mapping:
   "repositories":
     type: map
+    required: false
     mapping:
       "vagrant":
         type: map

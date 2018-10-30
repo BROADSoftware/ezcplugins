@@ -27,7 +27,7 @@ mapping:
       "ansible_repo_folder": { type: str, required: yes }
   "repositories":
     type: map
-    required: true
+    required: false
     mapping:
       "hortonworks": 
         type: seq

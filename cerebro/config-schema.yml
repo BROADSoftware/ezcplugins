@@ -22,7 +22,7 @@ type: map
 mapping:
   "repositories":
     type: map
-    required: true
+    required: false
     mapping:
       "cerebro": 
         type: seq
