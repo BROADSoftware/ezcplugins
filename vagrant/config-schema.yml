@@ -20,7 +20,11 @@ mapping:
   "repositories":
     type: map
     mapping:
-      "repo_yum_base_url": { type: str, required: false }          
+      "vagrant":
+        type: map
+        required: false
+        mapping:
+          "yum_repo_base_url": { type: str, required: false }          
     
     
     

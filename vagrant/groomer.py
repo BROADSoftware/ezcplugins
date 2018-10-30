@@ -32,10 +32,15 @@ def groom(plugin, model):
     if 'core' not in model["cluster"]["plugins"]:
         ERROR("Plugin 'core' is mandatory before plugin 'vagrant'")
 
-    repoInConfig = "repositories" in model["config"] and "repo_yum_base_url" in model["config"]["repositories"]
+    repoInConfig = "repositories" in model["config"] and "vagrant" in model["config"]["repositories"]  and "yum_repo_base_url" in model["config"]["repositories"]["vagrant"]
     setDefaultInMap(model["cluster"]["vagrant"], "local_yum_repo", repoInConfig)
     if model["cluster"]["vagrant"]["local_yum_repo"] and not repoInConfig:
-        ERROR("'repositories.repo_yum_base_url' is not defined in config file while 'vagrant.local_yum_repo' is set to True")
+        ERROR("'repositories.vagrant.repo_yum_base_url' is not defined in config file while 'vagrant.local_yum_repo' is set to True in '{}'".format(model["data"]["sourceFileDir"]))
+    if repoInConfig:
+        # All plugins are lookinhg up their repositories in model["data"]. So does the vagrant one.
+        setDefaultInMap(model["data"], "repositories", {})
+        setDefaultInMap(model["data"]["repositories"], "vagrant", {})
+        model["data"]["repositories"]["vagrant"]["yum_repo_base_url"] = model["config"]["repositories"]["vagrant"]["yum_repo_base_url"]
         
     for node in model['cluster']['nodes']:
         if not SYNCED_FOLDERS in node:
