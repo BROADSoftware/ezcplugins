@@ -25,6 +25,9 @@ es_config:
   http.port: 9200
   transport.tcp.port: 9300
   bootstrap.memory_lock: false
+  cluster.name: "{{ cluster_id }}"
+  discovery.zen.ping.unicast.hosts: '{% for host in groups["masters"] %}{% if not loop.first %},{% endif %}{{  hostvars[host]["ansible_fqdn"] }}:9300{% endfor %}'
+  node.name: "{{ansible_fqdn}}-{{es_instance_name}}"
 es_scripts: false
 es_templates: false
 es_version_lock: false
