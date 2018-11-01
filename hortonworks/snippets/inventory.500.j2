@@ -1,0 +1,11 @@
+
+{% if m.data.extraGroupByName is defined and m.data.extraGroupByName|length > 0 %}
+{% for name, hosts in m.data.extraGroupByName.iteritems() %}
+
+[{{ name }}]
+{% for h in hosts %}
+{{ h }}
+{% endfor %}
+{% endfor %}
+
+{% endif %}

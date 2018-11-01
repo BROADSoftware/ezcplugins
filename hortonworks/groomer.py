@@ -29,4 +29,18 @@ def groom(plugin, model):
         ansible_repo_folder = appendPath(os.path.dirname(model["data"]["configFile"]),  model["config"]["hortonworks"]["ansible_repo_folder"]) 
         model["config"]["hortonworks"]["ansible_repo_folder"] = ansible_repo_folder
         model["data"]["rolePaths"].add(appendPath(ansible_repo_folder, "roles"))
+        # We need to define some groups for the intention of external tools.
+        zookeepers = [] 
+        kafka_brokers = []
+        model["data"]["extraGroupByName"] = {}
+        for role in model["cluster"]["roles"]:
+            if "hw_services" in role:
+                if "ZOOKEEPER_SERVER" in role["hw_services"]:
+                    zookeepers.extend(map(lambda x : x["name"], role["nodes"]))
+                if "KAFKA_BROKER" in role["hw_services"]:
+                    kafka_brokers.extend(map(lambda x : x["name"], role["nodes"]))
+        if "zookeepers" not in model["data"]["groupByName"]:
+            model["data"]["extraGroupByName"]["zookeepers"] = zookeepers
+        if "kafka_brokers" not in model["data"]["groupByName"]:
+            model["data"]["extraGroupByName"]["kafka_brokers"] = kafka_brokers
         return True

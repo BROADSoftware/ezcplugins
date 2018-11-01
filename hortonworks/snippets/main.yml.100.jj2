@@ -3,10 +3,10 @@
   tags: [ 'hortonworks', 'hortonworks_prep' ]
 
 - import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/install_ambari.yml"
-  tags: [ 'hortonworks', 'hortonworks' ]  
+  tags: [ 'hortonworks', 'hortonworks_ambari', 'hortonworks_ambari_install' ]  
 
 - import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/configure_ambari.yml"
-  tags: [ 'hortonworks', 'hortonworks' ]  
+  tags: [ 'hortonworks', 'hortonworks_ambari', 'hortonworks_ambari_configure' ]  
   
 - import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/apply_blueprint.yml"
   tags: [ 'hortonworks', 'hortonworks_blueprint' ]    

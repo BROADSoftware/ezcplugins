@@ -82,17 +82,18 @@ database_options:
 ## kerberos security configuration ##                     # useful if blueprint is dynamic, but can also be used to deploy the MIT KDC
 #####################################
 
-security: '{{{ m.cluster.hortonworks.security }}}'        # EZCLUSTER can be set to 'none', 'mit-kdc' or 'active-directory'
+security: '{{{ m.cluster.hortonworks.security }}}'      # EZCLUSTER can be set to 'none', 'mit-kdc' or 'active-directory'
+{%% if m.cluster.hortonworks.security != 'none' %%}
 security_options:
-  external_hostname: ''                                   # if this is empty, Ansible will install and prepare the MIT KDC on the Ambari node EZCLUSTER: {X{ m.infra.zoneByName[m.cluster.zone].kerberos.admin_server }}}
-  realm: 'EXAMPLE.COM'                                    # EZCLUSTER: {X{ m.infra.zoneByName[m.cluster.zone].kerberos.realm }}}
-  admin_principal: 'admin'                                # the Kerberos principal that has the permissions to create new users (don't append the realm)  EZCLUSTER: {X{ m.infra.zoneByName[m.cluster.zone].kerberos.admin_user }}}
-  admin_password: "{{ default_password }}"                # EZCLUSTER: {X{ m.infra.zoneByName[m.cluster.zone].kerberos.admin_password }}}	
+  external_hostname: '{{{ m.data.kvm.zoneByName[m.cluster.kvm.zone].kerberos.admin_server }}}'  # EZCLUSTER if this is empty, Ansible will install and prepare the MIT KDC on the Ambari node
+  realm: '{{{ m.data.kvm.zoneByName[m.cluster.kvm.zone].kerberos.realm }}}'                     # EZCLUSTER:
+  admin_principal: '{{{ m.data.kvm.zoneByName[m.cluster.kvm.zone].kerberos.admin_user }}}'      # EZCLUSTER: the Kerberos principal that has the permissions to create new users (don't append the realm)  
+  admin_password: "{{{ m.data.kvm.zoneByName[m.cluster.kvm.zone].kerberos.admin_password }}}"   # EZCLUSTER: 
   kdc_master_key: "{{ default_password }}"                # only used when security is set to 'mit-kdc'
   ldap_url: 'ldaps://ad.example.com:636'                  # only used when security is set to 'active-directory'
   container_dn: 'OU=hadoop,DC=example,DC=com'             # only used when security is set to 'active-directory'
-  http_authentication: yes                                # set to yes to enable HTTP authentication (SPNEGO)
-
+  http_authentication: no                                # set to yes to enable HTTP authentication (SPNEGO)
+{%% endif %%}
 
 ##########################
 ## ranger configuration ##                                # only useful if blueprint is dynamic
@@ -102,7 +103,7 @@ ranger_options:                                           # only used if RANGER_
   enable_plugins: yes                                     # set to 'yes' if the plugins should be enabled for all of the installed services
 
 ranger_security_options:                                  # only used if RANGER_ADMIN is part of the blueprint stack
-  ranger_admin_password: "{{ default_password }}"         # the password for the Ranger admin users (both admin and amb_ranger_admin)
+  ranger_admin_password: "admin"                          # EZCLUSTER: the password for the Ranger admin users (both admin and amb_ranger_admin)
   ranger_keyadmin_password: "{{ default_password }}"      # the password for the Ranger keyadmin user (will only be set in HDP3, in HDP2 it will remain the default keyadmin)
   kms_master_key_password: "{{ default_password }}"       # password used for encrypting the Master Key
 
