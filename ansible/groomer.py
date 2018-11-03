@@ -15,12 +15,45 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import setDefaultInMap
+import os
+from misc import setDefaultInMap,appendPath,ERROR
+from plugin import lookupPlugin
 
+ANSIBLE="ansible"
+CLUSTER="cluster"
+PLAYBOOKS = "playbooks"
+DISABLED = "disabled"
+ROLES_PATHS="roles_paths"
+DATA="data"
+SOURCE_FILE_DIR = "sourceFileDir"
+CONFIG="config"
+ROLES_FROM_PLUGINS="roles_from_plugins"
 
 def groom(plugin, model):
-    if "ansible" in model["cluster"]:
-        setDefaultInMap(model["cluster"]["ansible"], "disabled", False)
-        return not model["cluster"]["ansible"]["disabled"]
-    else:
-        return False
+    if ANSIBLE in model[CLUSTER]:
+        setDefaultInMap(model[CLUSTER][ANSIBLE], DISABLED, False)
+        if  model[CLUSTER][ANSIBLE][DISABLED]:
+            return False
+        if PLAYBOOKS in model[CLUSTER][ANSIBLE]:
+            for idx in range(0, len(model[CLUSTER][ANSIBLE][PLAYBOOKS])):
+                model[CLUSTER][ANSIBLE][PLAYBOOKS][idx] = appendPath(model[DATA][SOURCE_FILE_DIR], model[CLUSTER][ANSIBLE][PLAYBOOKS][idx])
+                
+        if ROLES_PATHS in model[CLUSTER][ANSIBLE]:
+            for rp in model[CLUSTER][ANSIBLE][ROLES_PATHS]:
+                model[DATA]["rolePaths"].add(appendPath(model[DATA][SOURCE_FILE_DIR], rp))
+        if ROLES_FROM_PLUGINS in model[CLUSTER][ANSIBLE]:
+            for pluginName in model[CLUSTER][ANSIBLE][ROLES_FROM_PLUGINS]:
+                plugin = lookupPlugin(pluginName, model[CONFIG]["plugins_paths"])
+                if plugin != None:
+                    rolesPath = appendPath(plugin.path, "roles")
+                    if os.path.exists(rolesPath):
+                        model['data']["rolePaths"].add(rolesPath)
+                    else:
+                        ERROR("ansible.{}: There is no 'roles' folder in plugin '{}'".format(ROLES_FROM_PLUGINS, pluginName))
+                else:
+                    ERROR("ansible.{}: plugin '{}' not found".format(ROLES_FROM_PLUGINS, pluginName))
+    if ANSIBLE in model[CONFIG] and ROLES_PATHS in model[CONFIG][ANSIBLE]:
+        for rp in  model[CONFIG][ANSIBLE][ROLES_PATHS]:
+            model[DATA]["rolePaths"].add(appendPath(os.path.dirname(model[DATA]["configFile"]), rp))
+    return True
+    

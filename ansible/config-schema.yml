@@ -16,34 +16,17 @@
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
 
+
 type: map
 mapping:
   "ansible":
-    type: map
     required: false
+    type: map
     mapping:
-      "disabled": { type: bool, required: false }    
-      "playbooks":
-        type: seq
-        required: false
-        sequence:
-        - type: str
       "roles_paths":
         type: seq
         required: false
         sequence:
         - type: str 
-      "roles_from_plugins":
-        type: seq
-        required: false
-        sequence:
-        - type: str 
-      "roles":
-        type: seq
-        required: false
-        sequence:
-        - type: map
-          mapping:
-            "name": { type: str, required: true } 
-            "scope": { type: str, required: true } 
-        
+                              
+    

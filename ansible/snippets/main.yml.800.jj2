@@ -1,3 +1,18 @@
 
-{{{ m.cluster.ansible.playbooks | to_yaml(width=10240,  indent=2, allow_unicode=True, default_flow_style=False) }}}
+{%% if m.cluster.ansible is defined and m.cluster.ansible.playbooks is defined and m.cluster.ansible.playbooks|length > 0 %%}
 
+{%% for pb in m.cluster.ansible.playbooks %%}
+- import_playbook: {{{ pb }}}
+{%% endfor %%}
+
+{%% endif %%}
+
+{%% if m.cluster.ansible is defined and m.cluster.ansible.roles is defined and m.cluster.ansible.roles|length > 0 %%}
+
+{%% for role in m.cluster.ansible.roles %%}
+- hosts: {{{ role.scope }}}
+  roles:
+  - {{{ role.name }}}
+{%% endfor %%}
+
+{%% endif %%}
