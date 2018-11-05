@@ -1,0 +1,47 @@
+
+{%% if m.cluster.hdfs_users is defined and m.cluster.hdfs_users.users is defined and m.cluster.hdfs_users.users|length > 0 %%}
+
+- hosts: all
+  vars:
+    hdfs_users:
+{{{ m.cluster.hdfs_users.users | to_yaml(width=10240,  indent=2, allow_unicode=True, default_flow_style=False) | indent(width=4, first=True) }}}
+  tags: [ 'hdfs_users' ] 
+  roles:
+  - { role: hdfs_modules }  
+  tasks:
+
+  - name: Ensure users exist as Unix account on all hosts
+    user: name={{item.login}} state=present
+    with_items: "{{ hdfs_users }}"
+    loop_control:
+      label: "{{ item.login }}"
+
+  - name: Install python-requests and python-requests-kerberos for hdfs_xxxxx ansibles modules (RedHat)
+    yum: name=python-requests,python-requests-kerberos state=present
+    run_once: true
+  
+{%% set kerberos = m.cluster.hortonworks is defined and m.cluster.hortonworks.security is defined and m.cluster.hortonworks.security != 'none' %%}
+{%% if kerberos %%}
+  - name: Perform kinit for HDFS access
+    shell: kinit -kt /etc/security/keytabs/hdfs.headless.keytab  hdfs-{{{ m.cluster.id }}}
+    changed_when: false
+    run_once: true
+{%% endif %%}
+
+  - name: Ensure users home in HDFS
+    hdfs_file: hdfs_path=/user/{{item.login}} owner={{item.login}} group={{item.login}} mode=0755{%% if kerberos %%} hdfs_user=KERBEROS{%% endif %%} state=directory
+    run_once: true
+    with_items: "{{ hdfs_users }}"
+    loop_control:
+      label: "{{ item.login }}"
+
+{%% if kerberos %%}
+  - name: Perform kdestroy
+    shell: kdestroy
+    changed_when: false
+    run_once: true
+{%% endif %%}
+    
+{%% endif %%}
+ 
+ 
