@@ -27,13 +27,16 @@ mapping:
         type: seq
         required: false
         sequence:
-        - type: str
+        - type: map
+          mapping:
+            file: { type: str, required: true }
+            "tags": { type: seq, required: false, sequence: [ { type: str } ] }
       "roles_paths":
         type: seq
         required: false
         sequence:
         - type: str 
-      "roles_from_plugins":
+      "roles_paths_from_plugins":
         type: seq
         required: false
         sequence:
@@ -46,4 +49,7 @@ mapping:
           mapping:
             "name": { type: str, required: true } 
             "scope": { type: str, required: true } 
+            "tags": { type: seq, required: false, sequence: [ { type: str } ] }
+            "vars":
+              type: any
         

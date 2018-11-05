@@ -27,7 +27,10 @@ ROLES_PATHS="roles_paths"
 DATA="data"
 SOURCE_FILE_DIR = "sourceFileDir"
 CONFIG="config"
-ROLES_FROM_PLUGINS="roles_from_plugins"
+ROLES_PATHS_FROM_PLUGINS="roles_paths_from_plugins"
+ROLES="roles"
+TAGS="tags"
+FILE="file"
 
 def groom(plugin, model):
     if ANSIBLE in model[CLUSTER]:
@@ -36,22 +39,22 @@ def groom(plugin, model):
             return False
         if PLAYBOOKS in model[CLUSTER][ANSIBLE]:
             for idx in range(0, len(model[CLUSTER][ANSIBLE][PLAYBOOKS])):
-                model[CLUSTER][ANSIBLE][PLAYBOOKS][idx] = appendPath(model[DATA][SOURCE_FILE_DIR], model[CLUSTER][ANSIBLE][PLAYBOOKS][idx])
+                model[CLUSTER][ANSIBLE][PLAYBOOKS][idx][FILE] = appendPath(model[DATA][SOURCE_FILE_DIR], model[CLUSTER][ANSIBLE][PLAYBOOKS][idx][FILE])
                 
         if ROLES_PATHS in model[CLUSTER][ANSIBLE]:
             for rp in model[CLUSTER][ANSIBLE][ROLES_PATHS]:
                 model[DATA]["rolePaths"].add(appendPath(model[DATA][SOURCE_FILE_DIR], rp))
-        if ROLES_FROM_PLUGINS in model[CLUSTER][ANSIBLE]:
-            for pluginName in model[CLUSTER][ANSIBLE][ROLES_FROM_PLUGINS]:
+        if ROLES_PATHS_FROM_PLUGINS in model[CLUSTER][ANSIBLE]:
+            for pluginName in model[CLUSTER][ANSIBLE][ROLES_PATHS_FROM_PLUGINS]:
                 plugin = lookupPlugin(pluginName, model[CONFIG]["plugins_paths"])
                 if plugin != None:
                     rolesPath = appendPath(plugin.path, "roles")
                     if os.path.exists(rolesPath):
                         model['data']["rolePaths"].add(rolesPath)
                     else:
-                        ERROR("ansible.{}: There is no 'roles' folder in plugin '{}'".format(ROLES_FROM_PLUGINS, pluginName))
+                        ERROR("ansible.{}: There is no 'roles' folder in plugin '{}'".format(ROLES_PATHS_FROM_PLUGINS, pluginName))
                 else:
-                    ERROR("ansible.{}: plugin '{}' not found".format(ROLES_FROM_PLUGINS, pluginName))
+                    ERROR("ansible.{}: plugin '{}' not found".format(ROLES_PATHS_FROM_PLUGINS, pluginName))
     if ANSIBLE in model[CONFIG] and ROLES_PATHS in model[CONFIG][ANSIBLE]:
         for rp in  model[CONFIG][ANSIBLE][ROLES_PATHS]:
             model[DATA]["rolePaths"].add(appendPath(os.path.dirname(model[DATA]["configFile"]), rp))

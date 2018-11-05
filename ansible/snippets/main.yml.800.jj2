@@ -1,18 +1,27 @@
 
-{%% if m.cluster.ansible is defined and m.cluster.ansible.playbooks is defined and m.cluster.ansible.playbooks|length > 0 %%}
-
-{%% for pb in m.cluster.ansible.playbooks %%}
-- import_playbook: {{{ pb }}}
-{%% endfor %%}
-
-{%% endif %%}
 
 {%% if m.cluster.ansible is defined and m.cluster.ansible.roles is defined and m.cluster.ansible.roles|length > 0 %%}
 
 {%% for role in m.cluster.ansible.roles %%}
 - hosts: {{{ role.scope }}}
+{%% if role.vars is defined %%}
+  vars:
+{{{ role.vars | to_yaml(width=10240,  indent=2, allow_unicode=True, default_flow_style=False) | indent(width=4, first=True) }}}
+{%%endif%%}
   roles:
-  - {{{ role.name }}}
+  - { role: {{{ role.name }}}{%% if role.tags is defined %%} , tags: {{{ role.tags }}} {%% endif %%} }
+{%% endfor %%}
+
+{%% endif %%}
+
+
+{%% if m.cluster.ansible is defined and m.cluster.ansible.playbooks is defined and m.cluster.ansible.playbooks|length > 0 %%}
+
+{%% for pb in m.cluster.ansible.playbooks %%}
+- import_playbook: {{{ pb.file }}}
+{%% if pb.tags is defined %%}
+  tags: {{{ pb.tags }}}
+{%% endif %%}
 {%% endfor %%}
 
 {%% endif %%}
