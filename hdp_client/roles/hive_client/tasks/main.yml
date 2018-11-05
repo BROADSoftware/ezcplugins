@@ -1,0 +1,86 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+#----------------------------------------------------------------------- HIVE  
+  - name: Install hive
+    yum: pkg=hive,hive-hcatalog,hive-webhcat state=present
+
+  - name: Check existing HIVE config
+    command: grep {{cluster_id}} /etc/hive/conf/hive-site.xml
+    failed_when: false
+    changed_when: false
+    register: ret_hive
+  
+  - name: Fetch HIVE config
+    get_url:
+      url: "{{ambari_server_url}}/api/v1/clusters/{{cluster_id}}/services/HIVE/components/HIVE_CLIENT?format=client_config_tar"
+      dest: "/tmp/HIVE_CLIENT_CONFIG-{{cluster_id}}.tar"
+      force_basic_auth: yes
+      url_username: admin
+      url_password: admin
+      headers: 
+        "X-Requested-By" : "ambari"
+    when: ret_hive.rc != 0 
+
+  - name: Deploy HIVE client config in /etc/hive/conf          
+    unarchive:
+      src: "/tmp/HIVE_CLIENT_CONFIG-{{cluster_id}}.tar"
+      dest: /etc/hive/conf
+      remote_src: True
+    when: ret_hive.rc != 0 
+
+
+  - name: Fix permissions (Due to archive bug) 
+    file: path=/etc/hive/conf state=directory mode=0755  
+
+ 
+#----------------------------------------------------------------------- TEZ  
+  - name: Check existing TEZ config
+    stat: path=/etc/tez/conf/tez-site.xml
+    register: st_tez
+  
+#  - debug: var=ret
+
+  - name: Fetch TEZ config
+    get_url:
+      url: "{{ambari_server_url}}/api/v1/clusters/{{cluster_id}}/services/TEZ/components/TEZ_CLIENT?format=client_config_tar"
+      dest: "/tmp/TEZ_CLIENT_CONFIG-{{cluster_id}}.tar"
+      force_basic_auth: yes
+      url_username: admin
+      url_password: admin
+      headers: 
+        "X-Requested-By" : "ambari"
+    when: not st_tez.stat.exists 
+  
+ 
+  - name: Deploy TEZ client config in /etc/tez/conf       
+    unarchive:
+      src: "/tmp/TEZ_CLIENT_CONFIG-{{cluster_id}}.tar"
+      dest: /etc/tez/conf
+      remote_src: True
+    when: not st_tez.stat.exists 
+ 
+  - name: Fix permissions (Due to archive bug) 
+    file: path=/etc/tez/conf state=directory mode=0755  
+  
+  - name: Remove JAVA_HOME from tez-env.sh
+    lineinfile:
+      dest: /etc/tez/conf/tez-env.sh
+      regexp: "export\\s+JAVA_HOME"
+      state: absent
+ 

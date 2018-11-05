@@ -31,6 +31,7 @@ ROLES_PATHS_FROM_PLUGINS="roles_paths_from_plugins"
 ROLES="roles"
 TAGS="tags"
 FILE="file"
+SCOPE="scope"
 
 def groom(plugin, model):
     if ANSIBLE in model[CLUSTER]:
@@ -55,6 +56,9 @@ def groom(plugin, model):
                         ERROR("ansible.{}: There is no 'roles' folder in plugin '{}'".format(ROLES_PATHS_FROM_PLUGINS, pluginName))
                 else:
                     ERROR("ansible.{}: plugin '{}' not found".format(ROLES_PATHS_FROM_PLUGINS, pluginName))
+        if ROLES in model[CLUSTER][ANSIBLE]:
+            for role in model[CLUSTER][ANSIBLE][ROLES]:
+                setDefaultInMap(role, SCOPE, "all")
     if ANSIBLE in model[CONFIG] and ROLES_PATHS in model[CONFIG][ANSIBLE]:
         for rp in  model[CONFIG][ANSIBLE][ROLES_PATHS]:
             model[DATA]["rolePaths"].add(appendPath(os.path.dirname(model[DATA]["configFile"]), rp))

@@ -1,0 +1,32 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+# Copied from ansible-hortonworks/playbooks/group_vars/all.yml
+hdp_minor_version: "{{ hdp_version | regex_replace('.[0-9]+.[0-9]+[0-9_-]*$','') }}"
+utils_version: "{{ '1.1.0.20' if hdp_minor_version is version_compare('2.5', '<') else ('1.1.0.21' if hdp_version is version_compare('2.6.4', '<') else '1.1.0.22' ) }}"
+
+yum_repo_hdp_hdp_url: "{{ repo_base_url }}/HDP/centos7/2.x/updates/{{ hdp_version }}/"
+yum_repo_hdp_hdp_key_url: "{{ repo_base_url }}/HDP/centos7/2.x/updates/{{ hdp_version }}/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins"
+
+yum_repo_hdp_hdp_utils_url: "{{ repo_base_url }}/HDP-UTILS-{{ utils_version }}/repos/centos7"
+yum_repo_hdp_hdp_utils_key_url: "{{ repo_base_url }}/HDP-UTILS-{{ utils_version }}/repos/centos7/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins"
+
+yum_repo_hdp_hdp_gpl_url: "{{ repo_base_url }}/HDP-GPL/centos7/2.x/updates/{{ hdp_version }}/"
+yum_repo_hdp_hdp_gpl_key_url: "{{ repo_base_url }}/HDP-GPL/centos7/2.x/updates/{{ hdp_version }}/RPM-GPG-KEY/RPM-GPG-KEY-Jenkins"
+
+

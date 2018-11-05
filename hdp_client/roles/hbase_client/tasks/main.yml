@@ -1,0 +1,59 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+#----------------------------------------------------------------------- HBASE  
+
+  - name: Install hbase
+    yum: pkg=hbase state=present
+
+  - name: Check existing HBASE config
+    command: grep {{cluster_id}} /etc/hbase/conf/hbase-site.xml
+    failed_when: false
+    changed_when: false
+    register: ret_hbase
+  
+
+      
+  - name: Fetch HBASE config
+    get_url:
+      url: "{{ambari_server_url}}/api/v1/clusters/{{cluster_id}}/services/HBASE/components/HBASE_CLIENT?format=client_config_tar"
+      dest: "/tmp/HBASE_CLIENT_CONFIG-{{cluster_id}}.tar"
+      force_basic_auth: yes
+      url_username: admin
+      url_password: admin
+      headers: 
+        "X-Requested-By" : "ambari"
+    when: ret_hbase.rc != 0 
+
+  - name: Deploy HBASE client config in /etc/hbase/conf          
+    unarchive:
+      src: "/tmp/HBASE_CLIENT_CONFIG-{{cluster_id}}.tar"
+      dest: /etc/hbase/conf
+      remote_src: True
+    when: ret_hbase.rc != 0 
+    
+  - name: Fix permissions (Due to archive bug)
+    file: path=/etc/hbase/conf state=directory mode=0755  
+  
+  - name: Remove JAVA_HOME from hbase-env.sh
+    lineinfile:
+      dest: /etc/hbase/conf/hbase-env.sh
+      regexp: "export\\s+JAVA_HOME"
+      state: absent
+  
+

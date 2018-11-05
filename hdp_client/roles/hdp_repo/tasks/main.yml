@@ -1,0 +1,35 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+  
+- name: Configure hdp repositories
+  template:
+    src: hdp.repo.j2
+    dest: /etc/yum.repos.d/hdp.repo
+    owner: root
+    group: root
+    mode: 644
+    
+
+- name: Cleanup yum cache
+  shell: rm -rf /var/cache/yum/x86_64; yum clean all
+  args:
+    warn: no
+  changed_when: false
+  
+

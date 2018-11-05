@@ -1,0 +1,21 @@
+
+
+- hosts: all
+  vars: 
+    hdp_version: {{{ m.data.repositories.hortonworks.hdp_version }}}
+    repo_base_url: {{{ m.data.repositories.hortonworks.repo_base_url }}}
+    cluster_id: {{{ m.cluster.hdp_client.cluster_id }}}
+    ambari_server_url: {{{ m.cluster.hdp_client.ambari_server_url }}}
+    hive_metastore_uris: {{{ m.cluster.hdp_client.hive_metastore_uris }}}
+  roles:
+  - { role: hdp_repo, tags: [ 'hortonworks', 'hdp_repo' ] }      
+  - { role: hdfs_client, tags: [ 'hortonworks', 'hdfs' ] }      
+  - { role: hbase_client, tags: [ 'hortonworks', 'hbase' ] }    
+  - { role: yarn_client, tags: [ 'hortonworks', 'yarn' ] }    
+  - { role: hive_client, tags: [ 'hortonworks', 'hive' ] }    
+  - { role: spark_client, tags: [ 'hortonworks', 'spark' ] }    
+  tasks:
+  - name: Install kafka (From HDP repo) to have client libs.
+    yum: pkg=kafka state=present
+    tags: [ 'hortonworks', 'kafka' ]
+  
