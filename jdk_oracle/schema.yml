@@ -24,4 +24,5 @@ mapping:
     mapping:
       "repo_id": { type: str, required: true }    
       "disabled": { type: bool, required: false }    
+      "set_java_home": { type: bool, required: false }
       

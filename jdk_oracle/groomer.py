@@ -24,4 +24,5 @@ def groom(plugin, model):
         return False
     else:
         lookupRepository(model, "jdk_oracle")
+        setDefaultInMap(model["cluster"]["jdk_oracle"], "set_java_home", False)
         return True
