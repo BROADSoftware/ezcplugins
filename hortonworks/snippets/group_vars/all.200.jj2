@@ -33,13 +33,20 @@ disable_firewall: no                                      # set to yes to disabl
 ## java configuration ##
 ########################
 
-java: 'embedded'                                          # can be set to 'embedded', 'openjdk' or 'oraclejdk'
+java: '{{{m.cluster.hortonworks.java}}}'                  # can be set to 'embedded', 'openjdk' or 'oraclejdk'
 oraclejdk_options:                                        # only used when java is set to 'oraclejdk'
+{%% if m.cluster.hortonworks.java == 'oraclejdk' %%}
+  base_folder: '/usr/java'                                # the folder where the Java package should be unpacked to
+  tarball_location: '{{{m.data.repositories.hortonworks.oraclejdk_tarball_location}}}'  # the location of the tarball on the remote system or on the Ansible controller
+  jce_location: '{{{m.data.repositories.hortonworks.oraclejdk_jce_location}}}'          # the location of the JCE package on the remote system or on the Ansible controller
+  remote_files: yes                                        # set to yes to indicate the files are already on the remote systems, otherwise they will be copied by Ansible from the Ansible controller
+{%% else %%}
+  # Dummy values
   base_folder: '/usr/java'                                # the folder where the Java package should be unpacked to
   tarball_location: '/tmp/jdk-8u181-linux-x64.tar.gz'     # the location of the tarball on the remote system or on the Ansible controller
   jce_location: '/tmp/jce_policy-8.zip'                   # the location of the JCE package on the remote system or on the Ansible controller
   remote_files: no                                        # set to yes to indicate the files are already on the remote systems, otherwise they will be copied by Ansible from the Ansible controller
-
+{%% endif %%}
 
 ############################
 ## database configuration ##

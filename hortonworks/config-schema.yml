@@ -40,7 +40,8 @@ mapping:
             "hdp_version": { type: str, required: True }
             "hdf_version": { type: str, required: True }
             "repo_base_url": { type: str, required: True }
-            
+            "oraclejdk_tarball_location": { type: str,  required: false }
+            "oraclejdk_jce_location": { type: str,  required: false }
                                   
     
     
