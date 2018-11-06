@@ -17,12 +17,15 @@
 
 from misc import ERROR,lookupRepository,setDefaultInMap
 
+ORACLEJDK = "oraclejdk"
+CLUSTER = "cluster"
+DISABLED = "disabled"
 
 def groom(plugin, model):
-    setDefaultInMap(model["cluster"]["jdk_oracle"], "disabled", False)
-    if model["cluster"]["jdk_oracle"]["disabled"]:
+    setDefaultInMap(model[CLUSTER][ORACLEJDK], DISABLED, False)
+    if model[CLUSTER][ORACLEJDK][DISABLED]:
         return False
     else:
-        lookupRepository(model, "jdk_oracle")
-        setDefaultInMap(model["cluster"]["jdk_oracle"], "set_java_home", False)
+        lookupRepository(model, ORACLEJDK)
+        setDefaultInMap(model[CLUSTER][ORACLEJDK], "set_java_home", False)
         return True

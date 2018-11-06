@@ -21,7 +21,7 @@ mapping:
     type: map
     required: false
     mapping:
-      "jdk_oracle": 
+      "oraclejdk": 
         type: seq
         required: false
         sequence:
