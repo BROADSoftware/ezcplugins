@@ -1,6 +1,6 @@
 
 - hosts: all
   roles:
-oraclejdk- { role: oraclejdk, jdk_rpm_url: "{{{ m.data.repositories.oraclejdk.rpm_url }}}", set_java_home: {{{ m.cluster.oraclejdk.set_java_home }}}, tags: [ "java" ] }
-  - { role: jce, oraclejdk: "{{{ m.data.repositories.oraclejdk.jce_archive }}}", jce_url: "{{{ m.data.repositories.oraclejdk.jce_url }}}", tags: [ "java" ] }
+  - { role: oraclejdk, jdk_rpm_url: "{{{ m.data.repositories.oraclejdk.rpm_url }}}", set_java_home: {{{ m.cluster.oraclejdk.set_java_home }}}, tags: [ "java" ] }
+  - { role: jce, jce_archive: "{{{ m.data.repositories.oraclejdk.jce_archive }}}", jce_url: "{{{ m.data.repositories.oraclejdk.jce_url }}}", tags: [ "java" ] }
  
