@@ -1,0 +1,101 @@
+---
+# Copyright (C) 2015 BROADSoftware
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#limitations under the License.
+#
+
+- name: Install python-psycopg2 for ansible management
+  yum: pkg=python-psycopg2 state=present
+
+- name: Install postgresql server
+  yum: pkg=postgresql-server state=present
+  
+- name: Initialize postgresql (RHEL7)
+  command: creates=/var/lib/pgsql/data/PG_VERSION postgresql-setup initdb
+  notify:
+  - restart postgresql
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+
+
+- name: Initialize postgresql (RHEL6)
+  command: creates=/var/lib/pgsql/data/PG_VERSION service postgresql initdb
+  notify:
+  - restart postgresql
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 6
+
+
+- name: Setup postgresql.conf (pg V9.X)
+  template:
+    src: "postgresql.conf.v9.j2"
+    dest: "/var/lib/pgsql/data/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: 0600
+    backup: yes
+  notify:
+  - restart postgresql
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+
+- name: Setup pg_hba.conf (pg V9.X)
+  template:
+    src: "pg_hba.conf.v9.j2"
+    dest: "/var/lib/pgsql/data/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: 0600
+    backup: yes
+  notify:
+  - restart postgresql
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int >= 7
+
+
+- name: Setup postgresql.conf (pg V8.X)
+  template:
+    src: "postgresql.conf.v8.j2"
+    dest: "/var/lib/pgsql/data/postgresql.conf"
+    owner: postgres
+    group: postgres
+    mode: 0600
+    backup: yes
+  notify:
+  - restart postgresql
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 6
+
+- name: Setup pg_hba.conf (pg V8.X)
+  template:
+    src: "pg_hba.conf.v8.j2"
+    dest: "/var/lib/pgsql/data/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: 0600
+    backup: yes
+  notify:
+  - restart postgresql
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int <= 6
+
+- meta: flush_handlers
+
+- name: Enable postgresql services and ensure it is started
+  service:
+    name: postgresql
+    state: started
+    enabled: yes 
+   
+- name: Set password for postgres main account
+  shell: psql --command  "ALTER USER postgres WITH PASSWORD '{{pg_postgres_password}}'";
+  become: yes
+  become_user: postgres
+  changed_when: false
+  #when: pg_postgres_password is defined
+  
+  

@@ -1,0 +1,13 @@
+
+- hosts: postgresql_server
+  vars:
+{%% if m.cluster.postgresql.access_rules is defined %%}
+    postgresql_access_rules: 
+    {{{ m.cluster.postgresql.access_rules | to_nice_yaml() }}}
+{%% else %%}
+    postgresql_access_rules: [] 
+{%% endif %%}
+  roles:
+  - { role: postgresql_server, pg_access_rules: "{{ postgresql_access_rules }}", pg_postgres_password: "{{{ m.cluster.postgresql.password }}}" }
+ 
+ 
