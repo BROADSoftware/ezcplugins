@@ -50,6 +50,17 @@ in the `kafka-broker` section, following must be added:
 
 ```
 
+## JDK - Embeded mode:
+
+This mode does not set -j option of Ambari. Then:
+
+By default when you do not specify this option, Setup automatically downloads the JDK binary to /var/lib/ambari-server/resources and installs the JDK to /usr/jdk64.
+
+Ref:
+https://ambari.apache.org/1.2.1/installing-hadoop-using-ambari/content/ambari-chap2-2-1.html
+
+
+
 ## TODO:
 
 Seems postgres is installed by setting postgresql repo. Will fail without internet access

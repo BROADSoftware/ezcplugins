@@ -69,7 +69,7 @@ def groom(plugin, model):
         if KAFKA_BROKERS not in model[DATA][GROUP_BY_NAME]:
             model[DATA][EXTRA_GROUP_BY_NAME][KAFKA_BROKERS] = kafka_brokers
         # ---------------------------- Handle java
-        setDefaultInMap(model[CLUSTER][HORTONWORKS], JAVA, EMBEDDED)
+        #setDefaultInMap(model[CLUSTER][HORTONWORKS], JAVA, EMBEDDED)
         if model[CLUSTER][HORTONWORKS][JAVA] == ORACLEJDK:
             if ORACLEJDK_TARBALL_LOCATION not in model[DATA][REPOSITORIES][HORTONWORKS]:
                 ERROR("'hortonworks.java' is set to 'oraclejdk' while there is no 'repositories.hortonworks.oraclejdk_tarball_location' defined in configuration file!")

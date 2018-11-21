@@ -25,7 +25,7 @@ mapping:
       "repo_id": { type: str, required: true }      
       "disabled": { type: bool, required: false }    
       "security": { type: str, required: true,  enum: [ 'none', 'mit-kdc', 'active-directory' ]  }
-      "java": { type: str, required: false,  enum: [ 'embedded', 'openjdk', 'oraclejdk' ]  }
+      "java": { type: str, required: true,  enum: [ 'embedded', 'openjdk', 'oraclejdk' ]  }
       "clients":
         type: seq
         required: true
