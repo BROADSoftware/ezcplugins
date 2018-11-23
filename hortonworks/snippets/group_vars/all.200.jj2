@@ -52,10 +52,14 @@ oraclejdk_options:                                        # only used when java 
 ## database configuration ##
 ############################
 
-database: 'postgres'                                      # EZCLUSTER can be set to 'embedded', 'postgres', 'mysql' or 'mariadb' 
+database: '{{{m.cluster.hortonworks.database.type}}}'               # EZCLUSTER can be set to 'embedded', 'postgres', 'mysql' or 'mariadb' 
 database_options:
-  add_repo: yes                                           # if set to 'no', Ansible will not add a repo file (containing the public URL)
-  external_hostname: ''                                   # if this is empty, Ansible will install and prepare the databases on the ambari-server node
+  add_repo: {{{m.cluster.hortonworks.database.add_repo}}}           # EZCLUSTER if set to 'no', Ansible will not add a repo file (containing the public URL)
+{%% if m.cluster.hortonworks.database.server is defined %%}  
+  external_hostname: '{{{m.cluster.hortonworks.database.server}}}'  # EZCLUSTER if this is empty, Ansible will install and prepare the databases on the ambari-server node
+{%% else %%}
+  external_hostname: ''                                             # EZCLUSTER if this is empty, Ansible will install and prepare the databases on the ambari-server node
+{%% endif %%}
   ambari_db_name: 'ambari'
   ambari_db_username: 'ambari'
   ambari_db_password: 'bigdata'

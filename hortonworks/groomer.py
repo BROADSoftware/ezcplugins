@@ -40,8 +40,12 @@ ORACLEJDK="oraclejdk"
 ORACLEJDK_TARBALL_LOCATION="oraclejdk_tarball_location"
 ORACLEJDK_JCE_LOCATION="oraclejdk_jce_location"
 REPOSITORIES="repositories"
-
-
+DATABASE="database"
+TYPE="type"
+MODE="mode"
+SERVER="server"
+ADD_REPO="add_repo"
+POSTGRESQL_SERVER="postgresql_server"   # The group hosting postgresql server (Should contains only one host).
 
 def groom(plugin, model):
     setDefaultInMap(model[CLUSTER][HORTONWORKS], DISABLED, False)
@@ -75,4 +79,19 @@ def groom(plugin, model):
                 ERROR("'hortonworks.java' is set to 'oraclejdk' while there is no 'repositories.hortonworks.oraclejdk_tarball_location' defined in configuration file!")
             if ORACLEJDK_JCE_LOCATION not in model[DATA][REPOSITORIES][HORTONWORKS]:
                 ERROR("'hortonworks.java' is set to 'oraclejdk' while there is no 'repositories.hortonworks.oraclejdk_jce_location' defined in configuration file!")
+        # ---------------------------- Handle database
+        if model[CLUSTER][HORTONWORKS][DATABASE][TYPE] != "embedded":
+            if MODE not in model[CLUSTER][HORTONWORKS][DATABASE]:
+                ERROR("hostonworks.database.mode must be defined if type != 'embedded'!")
+            if model[CLUSTER][HORTONWORKS][DATABASE][MODE] != "included" and model[CLUSTER][HORTONWORKS][DATABASE][TYPE] != 'postgres':
+                ERROR("hostonworks.database: Only 'postgres' type is supported in 'internal' or 'external' mode ")
+            if model[CLUSTER][HORTONWORKS][DATABASE][MODE] == 'external' and SERVER not in  model[CLUSTER][HORTONWORKS][DATABASE]:
+                ERROR("hostonworks.database.server must be defined in 'external' mode ")
+            if model[CLUSTER][HORTONWORKS][DATABASE][MODE] == 'internal' and SERVER in  model[CLUSTER][HORTONWORKS][DATABASE]:
+                ERROR("hostonworks.database.server must NOT be defined in 'internal' mode ")
+            setDefaultInMap(model[CLUSTER][HORTONWORKS][DATABASE], ADD_REPO, True)
+            if model[CLUSTER][HORTONWORKS][DATABASE][MODE] == 'internal':
+                if not POSTGRESQL_SERVER in model[DATA][GROUP_BY_NAME]:
+                    ERROR("hostonworks.database.mode == 'internal', but no group '{}' was defined".format(POSTGRESQL_SERVER))
+                model[CLUSTER][HORTONWORKS][DATABASE][SERVER] = model[DATA][GROUP_BY_NAME][POSTGRESQL_SERVER][0]
         return True

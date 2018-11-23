@@ -26,6 +26,14 @@ mapping:
       "disabled": { type: bool, required: false }    
       "security": { type: str, required: true,  enum: [ 'none', 'mit-kdc', 'active-directory' ]  }
       "java": { type: str, required: true,  enum: [ 'embedded', 'openjdk', 'oraclejdk' ]  }
+      "database":
+        type: map
+        required: true
+        mapping:
+          type: { type: str, required: true, enum: [ 'embedded', 'postgres', 'mysql', 'mariadb' ] }  # See ansible-hortonworks/playbooks/group_vars/all.database
+          mode: { type: str, required: false, enum: [ 'included', 'internal', 'external' ] } # If type != 'embedded' 'included': Server installed by ansible-hortonworks, 'internal': Server already installed, located by groups["postgresql_server"][0], 'external': Server already installed, located by 'server' option.
+          server: { type: str, required: false } #  Server fqdn if mode == 'external'
+          add_repo: { type: bool, required: false }  # If mode == included. If true, add postgresql yum repo (Require Internet). If false, use alreadu provided (os) yum repo. WARNING: os provided must be supported version
       "clients":
         type: seq
         required: true
