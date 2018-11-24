@@ -14,7 +14,21 @@
 #limitations under the License.
 #
 
-- name: restart postgresql
-  service: 
-    name: postgresql
-    state: restarted
+
+pg_max_connections: 200
+
+pg_config_file: "/var/lib/pgsql/{{pg_version}}/data/postgresql.conf"
+pg_hba_file: "/var/lib/pgsql/{{pg_version}}/data/pg_hba.conf"
+
+#pg_postgres_password: xxxxxx
+
+#pg_access_rules:
+#- type: host
+#  database: all
+#  user: all
+#  address: 192.168.0.0/16
+#  method: md5
+#- address: 10.0.0.0/8
+  
+  
+  

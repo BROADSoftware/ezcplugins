@@ -1,0 +1,5 @@
+{% if pg_access_rules is defined %}
+{% for rule in pg_access_rules %}
+{{ rule.type | default("host") }}	{{ rule.database | default("all") }}	{{ rule.user | default("all") }}	{{ rule.address }}	{{ rule.method | default("md5") }}
+{% endfor %}
+{% endif %}

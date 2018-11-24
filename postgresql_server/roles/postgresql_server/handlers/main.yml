@@ -14,17 +14,8 @@
 #limitations under the License.
 #
 
-
-
-#pg_postgres_password: xxxxxx
-
-#pg_access_rules:
-#- type: host
-#  database: all
-#  user: all
-#  address: 192.168.0.0/16
-#  method: md5
-#- address: 10.0.0.0/8
-  
-  
-  
+- name: Restart postgresql server
+  service: 
+    name: "postgresql-{{ pg_version }}"
+    state: restarted
+  listen: restart_postgresql_server

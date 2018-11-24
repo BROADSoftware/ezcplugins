@@ -17,13 +17,22 @@
 
 from misc import ERROR,lookupRepository,setDefaultInMap
 
-POSTGRESQL = "postgresql"
+POSTGRESQL_SERVER = "postgresql_server"
 CLUSTER = "cluster"
 DISABLED = "disabled"
+PASSWORD = "password"
+ENCRYPTED_PASSWORD = "encrypted_password"
 
 def groom(plugin, model):
-    setDefaultInMap(model[CLUSTER][POSTGRESQL], DISABLED, False)
-    if model[CLUSTER][POSTGRESQL][DISABLED]:
+    setDefaultInMap(model[CLUSTER][POSTGRESQL_SERVER], DISABLED, False)
+    if model[CLUSTER][POSTGRESQL_SERVER][DISABLED]:
         return False
     else:
+        lookupRepository(model, POSTGRESQL_SERVER)
+        if PASSWORD in model[CLUSTER][POSTGRESQL_SERVER]:
+            if ENCRYPTED_PASSWORD in model[CLUSTER][POSTGRESQL_SERVER]:
+                ERROR("posgresql_server: 'password' and 'encrypted_password' can't be both defined!")
+            else:
+                print("\n**WARNING**: usage of clear text password is discouraged. Use 'encrypted_password' instead.")
+                print("To encrypt a password: python -c \"import hashlib; print hashlib.md5('yourPassword'+'yourUser').hexdigest()\"\n")
         return True

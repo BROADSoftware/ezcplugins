@@ -15,24 +15,25 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-
 type: map
 mapping:
-  "postgresql":
+  "repositories":
     type: map
-    required: true
+    required: false
     mapping:
-      "disabled": { type: bool, required: false }
-      "password": { type: str, required: true }
-      "access_rules":
+      "postgresql_server": 
         type: seq
         required: false
         sequence:
         - type: map
           mapping:
-            address: { type: str, required: true }
-            type: { type: str, required: false }      # Default: 'host'
-            database: { type: str, required: false }  # Default: 'all'
-            user: { type: str, required: false }      # Default: all
-            method: { type: str, required: false }    # Default: 'md5'
-      
+            "repo_id": { type: str, required: True }
+            "version": { type: str, required: True }
+            "base_url": { type: str, required: True }
+            "libs_url": { type: str, required: True }
+            "server_url": { type: str, required: True }
+                      
+    
+    
+    
+  

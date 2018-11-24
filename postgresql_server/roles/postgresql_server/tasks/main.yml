@@ -1,0 +1,99 @@
+---
+# Copyright (C) 2015 BROADSoftware
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+#limitations under the License.
+#
+
+- name: Check if postgresql server is allready installed
+  stat: path="/var/lib/pgsql/{{ pg_version }}/data"
+  register: pgserver
+
+- name: install libs dependencies 
+  yum: pkg={{pg_libs_url}} state=present  
+  when: not pgserver.stat.exists
+
+- name: install base dependencies 
+  yum: pkg={{pg_base_url}} state=present
+  when: not pgserver.stat.exists
+  
+- name: install server itself 
+  yum: pkg={{pg_server_url}} state=present  
+  when: not pgserver.stat.exists
+
+- name: Initialize postgresql
+  command:  /usr/pgsql-9.6/bin/postgresql96-setup initdb
+  notify:
+  - restart_postgresql_server
+  when: not pgserver.stat.exists
+
+- name: Configure postgres to listen on all interfaces
+  lineinfile:
+    path: "{{ pg_config_file }}"
+    line: "listen_addresses = '*'"
+    regexp: '^#?listen_addresses\s+='
+    state: present
+  notify: restart_postgresql_server
+
+- name: Set postgres max_connections
+  lineinfile:
+    path: "{{ pg_config_file }}"
+    line: "max_connections = {{ pg_max_connections }}"
+    regexp: '^#?max_connections\s+='
+    state: present
+  notify: restart_postgresql_server
+  
+- set_fact:
+    hba_content: "{{ lookup('template', 'templates/pg_hba.conf.addon.j2') }}"
+
+- blockinfile:
+    dest: "{{ pg_hba_file }}"
+    content: '{{ hba_content }}'
+    state: present
+    marker: "# {mark} ANSIBLE MANAGED BLOCK (postgresql_server role)"
+  notify: restart_postgresql_server
+
+- meta: flush_handlers
+
+- name: Enable postgresql services and ensure it is started
+  service:
+    name: "postgresql-{{ pg_version }}"
+    state: started
+    enabled: yes 
+
+- name: Create an ansible tmp folder for postgresql user, to avoid a warning
+  file: path={{item}} mode=0777  state=directory
+  become: yes
+  become_user: postgres
+  with_items:
+  - "~/.ansible"
+  - "~/.ansible/tmp"
+   
+- name: Set password for postgres main account
+  shell: psql --command  "ALTER USER postgres WITH PASSWORD '{{pg_postgres_password}}'";
+  become: yes
+  become_user: postgres
+  changed_when: false
+  when: pg_postgres_password is defined
+  
+ # To generate an excrypted password: 
+ # python -c "import hashlib; print hashlib.md5('xxxxxxxxx').hexdigest()"
+   
+- name: Set encrypted password for postgres main account
+  shell: psql --command  "ALTER USER postgres WITH ENCRYPTED PASSWORD 'md5{{pg_postgres_encrypted_password}}'";
+  become: yes
+  become_user: postgres
+  changed_when: false
+  when: pg_postgres_encrypted_password is defined
+  
+  
+  
