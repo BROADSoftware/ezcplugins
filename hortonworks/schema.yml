@@ -26,6 +26,7 @@ mapping:
       "disabled": { type: bool, required: false }    
       "security": { type: str, required: true,  enum: [ 'none', 'mit-kdc', 'active-directory' ]  }
       "java": { type: str, required: true,  enum: [ 'embedded', 'openjdk', 'oraclejdk' ]  }
+      "weak_passwords": { type: bool, required: false }
       "database":
         type: map
         required: true

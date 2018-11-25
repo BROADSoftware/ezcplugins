@@ -1,4 +1,36 @@
 
+{%% if m.cluster.hortonworks.database.mode == 'internal' %%}
+- hosts: postgresql_server
+  tags: [ 'hortonworks', 'hortonworks_db' ]
+  vars:
+    db_users:
+{%%- for _, db in m.data.hortonworks.databases.iteritems() %%}    
+    - { name: {{{db.user}}}, password: '{{{db.md5Password}}}' }
+{%%- endfor %%}
+
+    db_databases:
+{%%- for _, db in m.data.hortonworks.databases.iteritems() %%}    
+    - { name: {{{db.database}}}, owner: '{{{db.user}}}' }
+{%%- endfor %%}
+
+  tasks:
+  - name: Create database users 
+    postgresql_user: name={{item.name}} password={{item.password}} role_attr_flags=NOSUPERUSER,NOCREATEROLE,NOCREATEDB,INHERIT,LOGIN  
+    with_items: "{{db_users}}"
+    become: yes
+    become_user: postgres
+  - name: Create databases
+    postgresql_db: name={{item.name}} owner={{item.owner}} 
+    with_items: "{{db_databases}}"
+    become: yes
+    become_user: postgres
+  - name: Remove public access on created databases
+    postgresql_privs: database={{item.name}} type=database roles=PUBLIC state=absent privs=ALL
+    with_items: "{{db_databases}}"
+    become: yes
+    become_user: postgres
+{%% endif %%}
+
 - import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/prepare_nodes.yml"
   tags: [ 'hortonworks', 'hortonworks_prep' ]
 

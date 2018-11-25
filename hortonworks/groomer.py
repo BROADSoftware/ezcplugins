@@ -17,6 +17,10 @@
 
 import os
 from misc import ERROR, setDefaultInMap, appendPath,lookupRepository
+import string
+import random
+import hashlib
+
 
 HORTONWORKS = "hortonworks"
 CLUSTER = "cluster"
@@ -46,6 +50,15 @@ MODE="mode"
 SERVER="server"
 ADD_REPO="add_repo"
 POSTGRESQL_SERVER="postgresql_server"   # The group hosting postgresql server (Should contains only one host).
+WEAK_PASSWORDS = "weak_passwords"
+PASSWORDS = "passwords"
+DATABASES="databases"
+
+
+
+def generatePassword():
+    chars=string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for i in range(12))
 
 def groom(plugin, model):
     setDefaultInMap(model[CLUSTER][HORTONWORKS], DISABLED, False)
@@ -94,4 +107,22 @@ def groom(plugin, model):
                 if not POSTGRESQL_SERVER in model[DATA][GROUP_BY_NAME]:
                     ERROR("hostonworks.database.mode == 'internal', but no group '{}' was defined".format(POSTGRESQL_SERVER))
                 model[CLUSTER][HORTONWORKS][DATABASE][SERVER] = model[DATA][GROUP_BY_NAME][POSTGRESQL_SERVER][0]
+        # -------------------------------------------------Handle database
+        # We need to create two layout.
+        # - One to create databases and users on db server.
+        # - One to provide info to group_vars/all
+        setDefaultInMap(model[CLUSTER][HORTONWORKS], WEAK_PASSWORDS, False)
+        setDefaultInMap(model[DATA], HORTONWORKS, {})
+        setDefaultInMap(model[DATA][HORTONWORKS], DATABASES, {})
+        setDefaultInMap(model, PASSWORDS, {})
+        setDefaultInMap(model[PASSWORDS], DATABASES, {})
+        for tag in ["ambari", "hive", "oozie", "druid", "superset", "rangeradmin", "rangerkms", "registry", "streamline" ]:
+            user = tag
+            if model[CLUSTER][HORTONWORKS][WEAK_PASSWORDS]:
+                password = user
+            else:
+                password = genaratePassword()
+            md5Password = "md5" + hashlib.md5(password + user).hexdigest()
+            model[DATA][HORTONWORKS][DATABASES][tag] = { 'user': user, 'database': tag, 'md5Password': md5Password }
+            model[PASSWORDS][DATABASES][tag] = password
         return True

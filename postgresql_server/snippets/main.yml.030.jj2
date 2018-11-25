@@ -5,17 +5,17 @@
     pg_libs_url: {{{ m.data.repositories.postgresql_server.libs_url }}}
     pg_server_url: {{{ m.data.repositories.postgresql_server.server_url }}}
     pg_version: "{{{ m.data.repositories.postgresql_server.version }}}"
-{%% if m.cluster.postgresql_server.access_rules is defined %%}
-    pg_access_rules: 
-    {{{ m.cluster.postgresql_server.access_rules | to_nice_yaml() }}}
-{%% else %%}
-    postgresql_access_rules: [] 
-{%% endif %%}
 {%% if m.cluster.postgresql_server.password is defined %%}
     pg_postgres_password: "{{{ m.cluster.postgresql_server.password }}}"
 {%% endif %%}
 {%% if m.cluster.postgresql_server.encrypted_password is defined %%}
     pg_postgres_encrypted_password: "{{{ m.cluster.postgresql_server.encrypted_password }}}"
+{%% endif %%}
+{%% if m.cluster.postgresql_server.access_rules is defined %%}
+    pg_access_rules: 
+    {{{ m.cluster.postgresql_server.access_rules | to_nice_yaml() }}}
+{%% else %%}
+    postgresql_access_rules: [] 
 {%% endif %%}
   roles:
   - { role: postgresql_server, tags: [ "postgresql", "postgresql_server" ] }
