@@ -60,12 +60,6 @@ Ref:
 https://ambari.apache.org/1.2.1/installing-hadoop-using-ambari/content/ambari-chap2-2-1.html
 
 
-
-## TODO:
-
-Seems postgres is installed by setting postgresql repo. Will fail without internet access
-
-
 ## Expected repository layout (HDP 2.6.5):
 
 This layout is somewhat hard coded into the playbooks.
