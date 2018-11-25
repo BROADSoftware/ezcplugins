@@ -20,6 +20,7 @@ from misc import ERROR, setDefaultInMap, appendPath,lookupRepository
 import string
 import random
 import hashlib
+from sets import Set
 
 
 HORTONWORKS = "hortonworks"
@@ -53,7 +54,7 @@ POSTGRESQL_SERVER="postgresql_server"   # The group hosting postgresql server (S
 WEAK_PASSWORDS = "weak_passwords"
 PASSWORDS = "passwords"
 DATABASES="databases"
-
+DATABASES_TO_CREATE = "databasesToCreate"
 
 
 def generatePassword():
@@ -116,6 +117,27 @@ def groom(plugin, model):
         setDefaultInMap(model[DATA][HORTONWORKS], DATABASES, {})
         setDefaultInMap(model, PASSWORDS, {})
         setDefaultInMap(model[PASSWORDS], DATABASES, {})
+        tags = Set()
+        tags.add("ambari")
+        for role in model[CLUSTER][ROLES]:
+            if HW_SERVICES in role:
+                if "HIVE_METASTORE" in role[HW_SERVICES]:
+                    tags.add("hive")
+                if "OOZIE_SERVER" in role[HW_SERVICES]:
+                    tags.add("oozie")
+                if "DRUID_BROKER" in role[HW_SERVICES] or "DRUID_OVERLORD" in role[HW_SERVICES]:
+                    tags.add("druid")
+                if "SUPERSET" in role[HW_SERVICES]:
+                    tags.add("superset")
+                if "RANGER_ADMIN" in role[HW_SERVICES]:
+                    tags.add("rangeradmin")
+                if "RANGER_KMS_SERVER" in role[HW_SERVICES]:
+                    tags.add("rangerkms")
+                if "REGISTRY_SERVER" in role[HW_SERVICES]:
+                    tags.add("registry")
+                if "STREAMLINE_SERVER" in role[HW_SERVICES]:
+                    tags.add("streamline")
+        model[DATA][HORTONWORKS][DATABASES_TO_CREATE] = tags
         for tag in ["ambari", "hive", "oozie", "druid", "superset", "rangeradmin", "rangerkms", "registry", "streamline" ]:
             user = tag
             if model[CLUSTER][HORTONWORKS][WEAK_PASSWORDS]:

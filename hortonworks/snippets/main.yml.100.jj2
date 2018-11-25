@@ -4,13 +4,13 @@
   tags: [ 'hortonworks', 'hortonworks_db' ]
   vars:
     db_users:
-{%%- for _, db in m.data.hortonworks.databases.iteritems() %%}    
-    - { name: {{{db.user}}}, password: '{{{db.md5Password}}}' }
+{%%- for db in m.data.hortonworks.databasesToCreate %%}    
+    - { name: {{{m.data.hortonworks.databases[db].user}}}, password: '{{{m.data.hortonworks.databases[db].md5Password}}}' }
 {%%- endfor %%}
 
     db_databases:
-{%%- for _, db in m.data.hortonworks.databases.iteritems() %%}    
-    - { name: {{{db.database}}}, owner: '{{{db.user}}}' }
+{%%- for db in m.data.hortonworks.databasesToCreate %%}    
+    - { name: {{{m.data.hortonworks.databases[db].database}}}, owner: '{{{m.data.hortonworks.databases[db].user}}}' }
 {%%- endfor %%}
 
   tasks:
