@@ -19,5 +19,26 @@
 {%% endif %%}
   roles:
   - { role: postgresql_server, tags: [ "postgresql", "postgresql_server" ] }
- 
- 
+
+{%% if  m.cluster.postgresql_server.users|length > 0 or m.cluster.postgresql_server.databases|length > 0 %%}
+  tasks:
+{%% endif %%}
+{%% if  m.cluster.postgresql_server.users|length > 0 %%}
+  - name: Create user(s) 
+    postgresql_user: name={{item.name}} password={{item.password}} role_attr_flags=NOSUPERUSER,NOCREATEROLE,NOCREATEDB,INHERIT,LOGIN  
+    with_items: {{{  m.cluster.postgresql_server.users }}}
+    become: yes
+    become_user: postgres
+{%% endif %%}
+{%% if  m.cluster.postgresql_server.databases|length > 0 %%}
+  - name: Create database(s)
+    postgresql_db: name={{item.name}} owner={{item.owner}} 
+    with_items: {{{  m.cluster.postgresql_server.databases }}}
+    become: yes
+    become_user: postgres
+  - name: Remove public access on created databases
+    postgresql_privs: database={{item.name}} type=database roles=PUBLIC state=absent privs=ALL
+    with_items: {{{  m.cluster.postgresql_server.databases }}}
+    become: yes
+    become_user: postgres
+{%% endif %%}

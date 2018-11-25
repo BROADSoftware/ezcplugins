@@ -25,7 +25,6 @@ mapping:
       "repo_id": { type: str, required: true }    
       "disabled": { type: bool, required: false }
       "password": { type: str, required: false }
-      "encrypted_password": { type: str, required: false }
       "access_rules":
         type: seq
         required: false
@@ -37,4 +36,21 @@ mapping:
             database: { type: str, required: false }  # Default: 'all'
             user: { type: str, required: false }      # Default: all
             method: { type: str, required: false }    # Default: 'md5'
+      "users":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "name": { type: str, required: true }
+            "password": { type: str, required: true }
+      "databases":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "name": { type: str, required: true }
+            "owner": { type: str, required: true }
+            
       

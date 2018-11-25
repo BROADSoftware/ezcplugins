@@ -14,6 +14,11 @@
 #limitations under the License.
 #
 
+
+- name: Install python-psycopg2 for ansible management
+  yum: pkg=python-psycopg2 state=present
+
+
 - name: Check if postgresql server is allready installed
   stat: path="/var/lib/pgsql/{{ pg_version }}/data"
   register: pgserver
@@ -72,28 +77,24 @@
 
 - name: Create an ansible tmp folder for postgresql user, to avoid a warning
   file: path={{item}} mode=0777  state=directory
-  become: yes
-  become_user: postgres
   with_items:
-  - "~/.ansible"
-  - "~/.ansible/tmp"
-   
+  - "/var/lib/pgsql/.ansible"
+  - "/var/lib/pgsql/.ansible/tmp"
+
 - name: Set password for postgres main account
-  shell: psql --command  "ALTER USER postgres WITH PASSWORD '{{pg_postgres_password}}'";
+  postgresql_user:
+    name: postgres
+    password: "{{pg_postgres_password}}"
   become: yes
   become_user: postgres
-  changed_when: false
   when: pg_postgres_password is defined
-  
- # To generate an excrypted password: 
- # python -c "import hashlib; print hashlib.md5('xxxxxxxxx').hexdigest()"
-   
-- name: Set encrypted password for postgres main account
-  shell: psql --command  "ALTER USER postgres WITH ENCRYPTED PASSWORD 'md5{{pg_postgres_encrypted_password}}'";
+
+- name: Remove public access on postgres databases
+  postgresql_privs: database=postgres type=database roles=PUBLIC state=absent privs=ALL
   become: yes
   become_user: postgres
-  changed_when: false
-  when: pg_postgres_encrypted_password is defined
-  
+
+
+
   
   
