@@ -1,6 +1,6 @@
 # Build 
 
-- Tested with kubspray on this commit:
+- Tested with kubespray on this commit:
 
 ```
 commit ccc3f89060b18b3532d6b054b15a7de10255671a (HEAD -> master, origin/master, origin/HEAD)
