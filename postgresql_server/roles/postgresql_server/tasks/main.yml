@@ -57,10 +57,20 @@
     state: present
   notify: restart_postgresql_server
   
-- set_fact:
+# Ident mode is not supported by some applications (i.e. django)  
+- name: Set localhost login using md5 (was ident)
+  lineinfile:
+    path: "{{ pg_hba_file }}"
+    line: "host    all             all             127.0.0.1/32            md5"
+    regexp: 'host\s+all\s+all\s+127\.0\.0\.1/32\s+.*'
+  notify: restart_postgresql_server
+  
+- name: Define access rules for pg_hba.conf file
+  set_fact:
     hba_content: "{{ lookup('template', 'templates/pg_hba.conf.addon.j2') }}"
 
-- blockinfile:
+- name: Configure access in pg_hba.conf file
+  blockinfile:
     dest: "{{ pg_hba_file }}"
     content: '{{ hba_content }}'
     state: present

@@ -1,5 +1,6 @@
 
 - hosts: postgresql_server
+  tags: [ "postgresql", "postgresql_server" ]
   vars:
     pg_base_url: {{{ m.data.repositories.postgresql_server.base_url }}}
     pg_libs_url: {{{ m.data.repositories.postgresql_server.libs_url }}}
@@ -18,7 +19,7 @@
     postgresql_access_rules: [] 
 {%% endif %%}
   roles:
-  - { role: postgresql_server, tags: [ "postgresql", "postgresql_server" ] }
+  - { role: postgresql_server }
 
 {%% if  m.cluster.postgresql_server.users|length > 0 or m.cluster.postgresql_server.databases|length > 0 %%}
   tasks:
