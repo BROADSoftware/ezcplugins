@@ -55,7 +55,8 @@ WEAK_PASSWORDS = "weak_passwords"
 PASSWORDS = "passwords"
 DATABASES="databases"
 DATABASES_TO_CREATE = "databasesToCreate"
-
+NODE_BY_NAME="nodeByName"
+FQDN="fqdn"
 
 def generatePassword():
     chars=string.ascii_letters + string.digits
@@ -107,7 +108,8 @@ def groom(plugin, model):
             if model[CLUSTER][HORTONWORKS][DATABASE][MODE] == 'internal':
                 if not POSTGRESQL_SERVER in model[DATA][GROUP_BY_NAME]:
                     ERROR("hostonworks.database.mode == 'internal', but no group '{}' was defined".format(POSTGRESQL_SERVER))
-                model[CLUSTER][HORTONWORKS][DATABASE][SERVER] = model[DATA][GROUP_BY_NAME][POSTGRESQL_SERVER][0]
+                srv = model[DATA][GROUP_BY_NAME][POSTGRESQL_SERVER][0]
+                model[CLUSTER][HORTONWORKS][DATABASE][SERVER] = model[DATA][NODE_BY_NAME][srv][FQDN]
         # -------------------------------------------------Handle database
         # We need to create two layout.
         # - One to create databases and users on db server.
