@@ -21,6 +21,7 @@ import string
 import random
 import hashlib
 from sets import Set
+import yaml
 
 
 HORTONWORKS = "hortonworks"
@@ -57,10 +58,9 @@ DATABASES="databases"
 DATABASES_TO_CREATE = "databasesToCreate"
 NODE_BY_NAME="nodeByName"
 FQDN="fqdn"
+SOURCE_FILE_DIR="sourceFileDir"
+from pykwalify.core import Core as kwalify
 
-def generatePassword():
-    chars=string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for i in range(12))
 
 def groom(plugin, model):
     setDefaultInMap(model[CLUSTER][HORTONWORKS], DISABLED, False)
@@ -119,34 +119,84 @@ def groom(plugin, model):
         setDefaultInMap(model[DATA][HORTONWORKS], DATABASES, {})
         setDefaultInMap(model, PASSWORDS, {})
         setDefaultInMap(model[PASSWORDS], DATABASES, {})
-        tags = Set()
-        tags.add("ambari")
+        toCreateDbSet = Set()
+        toCreateDbSet.add("ambari")
         for role in model[CLUSTER][ROLES]:
             if HW_SERVICES in role:
                 if "HIVE_METASTORE" in role[HW_SERVICES]:
-                    tags.add("hive")
+                    toCreateDbSet.add("hive")
                 if "OOZIE_SERVER" in role[HW_SERVICES]:
-                    tags.add("oozie")
+                    toCreateDbSet.add("oozie")
                 if "DRUID_BROKER" in role[HW_SERVICES] or "DRUID_OVERLORD" in role[HW_SERVICES]:
-                    tags.add("druid")
+                    toCreateDbSet.add("druid")
                 if "SUPERSET" in role[HW_SERVICES]:
-                    tags.add("superset")
+                    toCreateDbSet.add("superset")
                 if "RANGER_ADMIN" in role[HW_SERVICES]:
-                    tags.add("rangeradmin")
+                    toCreateDbSet.add("rangeradmin")
                 if "RANGER_KMS_SERVER" in role[HW_SERVICES]:
-                    tags.add("rangerkms")
+                    toCreateDbSet.add("rangerkms")
                 if "REGISTRY_SERVER" in role[HW_SERVICES]:
-                    tags.add("registry")
+                    toCreateDbSet.add("registry")
                 if "STREAMLINE_SERVER" in role[HW_SERVICES]:
-                    tags.add("streamline")
-        model[DATA][HORTONWORKS][DATABASES_TO_CREATE] = tags
-        for tag in ["ambari", "hive", "oozie", "druid", "superset", "rangeradmin", "rangerkms", "registry", "streamline" ]:
-            user = tag
-            if model[CLUSTER][HORTONWORKS][WEAK_PASSWORDS]:
-                password = user
-            else:
-                password = genaratePassword()
+                    toCreateDbSet.add("streamline")
+        model[DATA][HORTONWORKS][DATABASES_TO_CREATE] = toCreateDbSet
+        wallet = loadWallet(plugin, model, toCreateDbSet)   
+        model[PASSWORDS] = wallet
+        for db in wallet[DATABASES]:
+            user = db
+            password = wallet[DATABASES][db]
             md5Password = "md5" + hashlib.md5(password + user).hexdigest()
-            model[DATA][HORTONWORKS][DATABASES][tag] = { 'user': user, 'database': tag, 'md5Password': md5Password }
-            model[PASSWORDS][DATABASES][tag] = password
+            model[DATA][HORTONWORKS][DATABASES][db] = { 'user': user, 'database': db, 'md5Password': md5Password }
+        # We generate passwords for all db, even if unused, as they will be set in template
+        for db in ["ambari", "hive", "oozie", "druid", "superset", "rangeradmin", "rangerkms", "registry", "streamline" ]:
+            if db not in model[DATA][HORTONWORKS][DATABASES]:
+                user = db
+                md5Password = "md5" + hashlib.md5('unused' + user).hexdigest()
+                model[DATA][HORTONWORKS][DATABASES][db] = { 'user': db, 'database': db, 'md5Password': md5Password }
+            if db not in model[PASSWORDS][DATABASES]:
+                model[PASSWORDS][DATABASES][db] = "unused"
         return True
+
+
+def generatePassword():
+    chars=string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for i in range(12))
+
+def loadWallet(plugin, model, toCreateDbSet):
+    wfname = appendPath(model[DATA][SOURCE_FILE_DIR], "wallet.yml")
+    if os.path.exists(wfname):
+        wallet = yaml.load(open(wfname))
+        print ("\nWill reuse password from '{}'".format(wfname))
+        walletSchema = yaml.load(open(os.path.join(plugin.path, "wallet-schema.yml")))
+        k = kwalify(source_data = wallet, schema_data=walletSchema)
+        k.validate(raise_exception=False)
+        if len(k.errors) != 0:
+            ERROR("Problem in {0}: {1}".format(wfname, k.errors))
+        if wallet[WEAK_PASSWORDS] != model[CLUSTER][HORTONWORKS][WEAK_PASSWORDS]:
+            ERROR("Hortonworks: 'weak_passwords' value are not in sync between wallet.yml and cluster definition file!")
+        # Ensure all DB to create got an effective password:
+        for db in toCreateDbSet:
+            if db not in wallet[DATABASES]:
+                ERROR("Hortonworks: Wallet is missing effective password for database '{}'".format(db))
+        if "rangeradmin" in toCreateDbSet and "ranger_admin" not in wallet:
+            ERROR("Hoprtonworks: Missing 'ranger_admin' password in Wallet while RANGER service is defined")
+    else:
+        wallet = {}
+        weakp = wallet[WEAK_PASSWORDS] = model[CLUSTER][HORTONWORKS][WEAK_PASSWORDS]
+        wallet[DATABASES] = {}
+        for db in toCreateDbSet:
+            wallet[DATABASES][db] = db if weakp else generatePassword()
+        wallet["ambari_admin"] = "admin" if weakp else generatePassword()
+        wallet["default"] = "default2018" if weakp else generatePassword()
+        if "rangeradmin" in db:
+            wallet["ranger_admin"] = "admin" if weakp else generatePassword()
+        #print(wallet)
+        stream = file(wfname, 'w')
+        yaml.dump(wallet, stream, width=10240,  indent=4, allow_unicode=True, default_flow_style=False)
+        stream.close()
+        print ("\nNew passwords has been generated in '{}'".format(wfname))
+    return wallet
+
+def dump(plugin, model, dumper):
+    if PASSWORDS in model:
+        dumper.dump("passwords.json", model[PASSWORDS])

@@ -1,0 +1,23 @@
+
+
+
+type: map
+mapping:
+  weak_passwords: { type: bool, required: true }
+  ambari_admin: { type: str, required: true }
+  ranger_admin: { type: str, required: false }
+  default: { type: str, required: true }
+  "databases":
+    type: map
+    required: true
+    mapping: 
+      ambari: { type: str, required: true }
+      druid: { type: str, required: false }
+      hive: { type: str, required: false }
+      oozie: { type: str, required: false }
+      rangeradmin: { type: str, required: false }
+      rangerkms: { type: str, required: false }
+      registry: { type: str, required: false }
+      streamline: { type: str, required: false }
+      superset: { type: str, required: false }
+      
