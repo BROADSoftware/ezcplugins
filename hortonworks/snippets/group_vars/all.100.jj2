@@ -62,31 +62,40 @@ database_options:
 {%% endif %%}
   ambari_db_name: '{{{ m.data.hortonworks.databases.ambari.database }}}'
   ambari_db_username: '{{{ m.data.hortonworks.databases.ambari.user }}}'
-  ambari_db_password: '{{{ m.passwords.databases.ambari }}}'
+  ambari_db_password: !vault |
+{{{ m.passwords.databases.ambari|encrypt(4) }}}
   hive_db_name: '{{{ m.data.hortonworks.databases.hive.database }}}'
   hive_db_username: '{{{ m.data.hortonworks.databases.hive.user }}}'
-  hive_db_password: '{{{ m.passwords.databases.hive }}}'
+  hive_db_password: !vault |
+{{{ m.passwords.databases.hive|encrypt(4) }}}
   oozie_db_name: '{{{ m.data.hortonworks.databases.oozie.database }}}'
   oozie_db_username: '{{{ m.data.hortonworks.databases.oozie.user }}}'
-  oozie_db_password: '{{{ m.passwords.databases.oozie }}}'
+  oozie_db_password: !vault |
+{{{ m.passwords.databases.oozie|encrypt(4) }}}
   druid_db_name: '{{{ m.data.hortonworks.databases.druid.database }}}'
   druid_db_username: '{{{ m.data.hortonworks.databases.druid.user }}}'
-  druid_db_password: '{{{ m.passwords.databases.druid }}}'
+  druid_db_password: !vault |
+{{{ m.passwords.databases.druid|encrypt(4) }}}
   superset_db_name: '{{{ m.data.hortonworks.databases.superset.database }}}'
   superset_db_username: '{{{ m.data.hortonworks.databases.superset.user }}}'
-  superset_db_password: '{{{ m.passwords.databases.superset }}}'
+  superset_db_password: !vault |
+{{{ m.passwords.databases.superset|encrypt(4) }}}
   rangeradmin_db_name: '{{{ m.data.hortonworks.databases.rangeradmin.database }}}'
   rangeradmin_db_username: '{{{ m.data.hortonworks.databases.rangeradmin.user }}}'
-  rangeradmin_db_password: '{{{ m.passwords.databases.rangeradmin }}}'
+  rangeradmin_db_password: !vault |
+{{{ m.passwords.databases.rangeradmin|encrypt(4) }}}
   rangerkms_db_name: '{{{ m.data.hortonworks.databases.rangerkms.database }}}'
   rangerkms_db_username: '{{{ m.data.hortonworks.databases.rangerkms.user }}}'
-  rangerkms_db_password: '{{{ m.passwords.databases.rangerkms }}}'
+  rangerkms_db_password: !vault |
+{{{ m.passwords.databases.rangerkms|encrypt(4) }}}
   registry_db_name: '{{{ m.data.hortonworks.databases.registry.database }}}'
   registry_db_username: '{{{ m.data.hortonworks.databases.registry.user }}}'
-  registry_db_password: '{{{ m.passwords.databases.registry }}}'
+  registry_db_password: !vault |
+{{{ m.passwords.databases.registry|encrypt(4) }}}
   streamline_db_name: '{{{ m.data.hortonworks.databases.streamline.database }}}'
   streamline_db_username: '{{{ m.data.hortonworks.databases.streamline.user }}}'
-  streamline_db_password: '{{{ m.passwords.databases.streamline }}}'
+  streamline_db_password: !vault |
+{{{ m.passwords.databases.streamline|encrypt(4) }}}
 
 
 #####################################
@@ -113,8 +122,11 @@ security_options:
 ranger_options:                                           # only used if RANGER_ADMIN is part of the blueprint stack
   enable_plugins: yes                                     # set to 'yes' if the plugins should be enabled for all of the installed services
 
+# EZCLUSTER: the password for the Ranger admin users (both admin and amb_ranger_admin)
 ranger_security_options:                                  # only used if RANGER_ADMIN is part of the blueprint stack
-  ranger_admin_password: "{{{ m.passwords.ranger_admin|default('unused') }}}"  # EZCLUSTER: the password for the Ranger admin users (both admin and amb_ranger_admin)
+  ranger_admin_password: !vault |
+{{{ m.passwords.ranger_admin|default('unused')|encrypt(4) }}}  
+
   ranger_keyadmin_password: "{{ default_password }}"      # the password for the Ranger keyadmin user (will only be set in HDP3, in HDP2 it will remain the default keyadmin)
   kms_master_key_password: "{{ default_password }}"       # password used for encrypting the Master Key
 
@@ -123,8 +135,12 @@ ranger_security_options:                                  # only used if RANGER_
 ## other security configuration ##                        # only useful if blueprint is dynamic
 ##################################
 
-ambari_admin_password: '{{{ m.passwords.ambari_admin }}}'                            # the password for the Ambari admin user
-default_password: '{{{ m.passwords.default }}}'                          # a default password for all required passwords which are not specified in the blueprint
+ # the password for the Ambari admin user
+ambari_admin_password: !vault |
+{{{ m.passwords.ambari_admin|encrypt(4) }}}
+# a default password for all required passwords which are not specified in the blueprint
+default_password: !vault |
+{{{ m.passwords.default|encrypt(4) }}}
 
 atlas_security_options:
   admin_password: "{{ default_password }}"                # the password for the Atlas admin user
