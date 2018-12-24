@@ -22,6 +22,7 @@ import random
 import hashlib
 from sets import Set
 import yaml
+from vault import getVault
 
 
 HORTONWORKS = "hortonworks"
@@ -165,8 +166,9 @@ def generatePassword():
 def loadWallet(plugin, model, toCreateDbSet):
     wfname = appendPath(model[DATA][SOURCE_FILE_DIR], "wallet.yml")
     if os.path.exists(wfname):
-        wallet = yaml.load(open(wfname))
         print ("\nWill reuse password from '{}'".format(wfname))
+        data, was_encrypted = getVault().encryptedFile2String(wfname)
+        wallet = yaml.load(data)
         walletSchema = yaml.load(open(os.path.join(plugin.path, "wallet-schema.yml")))
         k = kwalify(source_data = wallet, schema_data=walletSchema)
         k.validate(raise_exception=False)
@@ -179,7 +181,10 @@ def loadWallet(plugin, model, toCreateDbSet):
             if db not in wallet[DATABASES]:
                 ERROR("Hortonworks: Wallet is missing effective password for database '{}'".format(db))
         if "rangeradmin" in toCreateDbSet and "ranger_admin" not in wallet:
-            ERROR("Hoprtonworks: Missing 'ranger_admin' password in Wallet while RANGER service is defined")
+            ERROR("Hortonworks: Missing 'ranger_admin' password in Wallet while RANGER service is defined")
+        if not was_encrypted:
+            print("'{}' was not encrypted. Will encrypt it".format(wfname))
+            getVault().stringToEncryptedFile(data, wfname)
     else:
         wallet = {}
         weakp = wallet[WEAK_PASSWORDS] = model[CLUSTER][HORTONWORKS][WEAK_PASSWORDS]
@@ -191,12 +196,11 @@ def loadWallet(plugin, model, toCreateDbSet):
         if "rangeradmin" in db:
             wallet["ranger_admin"] = "admin" if weakp else generatePassword()
         #print(wallet)
-        stream = file(wfname, 'w')
-        yaml.dump(wallet, stream, width=10240,  indent=4, allow_unicode=True, default_flow_style=False)
-        stream.close()
+        data = yaml.dump(wallet, width=10240,  indent=4, allow_unicode=True, default_flow_style=False)
+        getVault().stringToEncryptedFile(data, wfname)
         print ("\nNew passwords has been generated in '{}'".format(wfname))
     return wallet
 
 def dump(plugin, model, dumper):
-    if PASSWORDS in model:
+    if PASSWORDS in model and model[CLUSTER][HORTONWORKS][WEAK_PASSWORDS]:
         dumper.dump("passwords.json", model[PASSWORDS])
