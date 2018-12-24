@@ -20,6 +20,11 @@ shift
 
 #ansible --version
 
-ansible-playbook ./main.yml "$@"
+OPTS=""
+{% if m.data.vaultPasswordFile is defined %}
+OPTS="$OPTS --vault-password-file {{ m.data.vaultPasswordFile }}"
+{% endif %}
+
+ansible-playbook ./main.yml $OPTS "$@"
 
 
