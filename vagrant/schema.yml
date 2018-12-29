@@ -53,7 +53,7 @@ mapping:
     - type: map
       mapping:
         "vcpu": { type: int, required: true}
-        "memory": { type: int, required: true}
+        "memory": { type: float, required: true}
         "synced_folders":
           include: synced_folder_list
   
