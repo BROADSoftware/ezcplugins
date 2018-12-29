@@ -54,7 +54,7 @@ SERVER="server"
 ADD_REPO="add_repo"
 POSTGRESQL_SERVER="postgresql_server"   # The group hosting postgresql server (Should contains only one host).
 WEAK_PASSWORDS = "weak_passwords"
-PASSWORDS = "passwords"
+HW_PASSWORDS = "hwPasswords"
 DATABASES="databases"
 DATABASES_TO_CREATE = "databasesToCreate"
 NODE_BY_NAME="nodeByName"
@@ -118,8 +118,8 @@ def groom(plugin, model):
         setDefaultInMap(model[CLUSTER][HORTONWORKS], WEAK_PASSWORDS, False)
         setDefaultInMap(model[DATA], HORTONWORKS, {})
         setDefaultInMap(model[DATA][HORTONWORKS], DATABASES, {})
-        setDefaultInMap(model, PASSWORDS, {})
-        setDefaultInMap(model[PASSWORDS], DATABASES, {})
+        setDefaultInMap(model, HW_PASSWORDS, {})
+        setDefaultInMap(model[HW_PASSWORDS], DATABASES, {})
         toCreateDbSet = Set()
         toCreateDbSet.add("ambari")
         for role in model[CLUSTER][ROLES]:
@@ -142,7 +142,7 @@ def groom(plugin, model):
                     toCreateDbSet.add("streamline")
         model[DATA][HORTONWORKS][DATABASES_TO_CREATE] = toCreateDbSet
         wallet = loadWallet(plugin, model, toCreateDbSet)   
-        model[PASSWORDS] = wallet
+        model[HW_PASSWORDS] = wallet
         for db in wallet[DATABASES]:
             user = db
             password = wallet[DATABASES][db]
@@ -154,8 +154,8 @@ def groom(plugin, model):
                 user = db
                 md5Password = "md5" + hashlib.md5('unused' + user).hexdigest()
                 model[DATA][HORTONWORKS][DATABASES][db] = { 'user': db, 'database': db, 'md5Password': md5Password }
-            if db not in model[PASSWORDS][DATABASES]:
-                model[PASSWORDS][DATABASES][db] = "unused"
+            if db not in model[HW_PASSWORDS][DATABASES]:
+                model[HW_PASSWORDS][DATABASES][db] = "unused"
         return True
 
 
@@ -202,5 +202,5 @@ def loadWallet(plugin, model, toCreateDbSet):
     return wallet
 
 def dump(plugin, model, dumper):
-    if PASSWORDS in model and model[CLUSTER][HORTONWORKS][WEAK_PASSWORDS]:
-        dumper.dump("passwords.json", model[PASSWORDS])
+    if HW_PASSWORDS in model and dumper.unsafe:
+        dumper.dump("hw-passwords.json", model[HW_PASSWORDS])
