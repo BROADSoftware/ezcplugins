@@ -14,7 +14,7 @@
 {%% endif %%}
 {%% if m.cluster.postgresql_server.access_rules is defined %%}
     pg_access_rules: 
-    {{{ m.cluster.postgresql_server.access_rules | to_nice_yaml() }}}
+{{{ m.cluster.postgresql_server.access_rules | to_pretty_yaml()|indent(width=4, first=True) }}}
 {%% else %%}
     postgresql_access_rules: [] 
 {%% endif %%}
