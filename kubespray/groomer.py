@@ -15,8 +15,14 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-import os
-from misc import ERROR, setDefaultInMap, appendPath
+from misc import setDefaultInMap, appendPath,lookupHelper
+
+
+KUBESPRAY="kubespray"
+HELPERS="helpers"
+FOLDER="folder"
+DATA="data"
+ROLE_PATHS="rolePaths"
 
 def groom(plugin, model):
     setDefaultInMap(model["cluster"], "kubespray", {})
@@ -24,12 +30,8 @@ def groom(plugin, model):
     if model["cluster"]["kubespray"]["disabled"]:
         return False
     else:
-        if "kubespray" not in model["config"] or "ansible_repo_folder" not in model["config"]["kubespray"]:
-            ERROR("Missing 'kubespray.ansible_repo_folder' in configuration file")
-        ansible_repo_folder = appendPath(os.path.dirname(model["data"]["configFile"]),  model["config"]["kubespray"]["ansible_repo_folder"]) 
-        model["config"]["kubespray"]["ansible_repo_folder"] = ansible_repo_folder
-        model["data"]["rolePaths"].add(appendPath(ansible_repo_folder, "roles"))
-        
+        lookupHelper(model, KUBESPRAY)
+        model[DATA][ROLE_PATHS].add(appendPath(model[DATA][HELPERS][KUBESPRAY][FOLDER], "roles"))
         model["data"]["dnsNbrDots"] = model["cluster"]["domain"].count(".") + 1
         return True
 

@@ -20,13 +20,6 @@
 
 type: map
 mapping:
-  "confluent":
-    required: false
-    type: map
-    mapping:
-      "ansible_repo_folder": { type: str, required: yes }
-    
-    
   "repositories":
     type: map
     required: false
@@ -51,6 +44,20 @@ mapping:
               mapping:
                "baseurl": { type: str, required: True }
                "gpgkey": { type: str, required: True }
+  "helpers":
+    type: map
+    required: false
+    mapping:
+      "confluent":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "helper_id": { type: str, required: True }
+            "url": { type: str, required: True }     # Not used technically. This is only to require documentation.
+            "commit": { type: str, required: True }  # Not used technically. This is only to require documentation.
+            "folder": { type: str, required: True }
               
     
     

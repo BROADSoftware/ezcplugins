@@ -20,11 +20,6 @@
 
 type: map
 mapping:
-  "elasticsearch":
-    required: false
-    type: map
-    mapping:
-      "ansible_repo_folder": { type: str, required: yes }
   "repositories":
     type: map
     required: false
@@ -38,6 +33,20 @@ mapping:
             "repo_id": { type: str, required: True }
             "version": { type: str, required: True }
             "elasticsearch_package_url": { type: str, required: True }
+  "helpers":
+    type: map
+    required: false
+    mapping:
+      "elasticsearch":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "helper_id": { type: str, required: True }
+            "url": { type: str, required: True }     # Not used technically. This is only to require documentation.
+            "commit": { type: str, required: True }  # Not used technically. This is only to require documentation.
+            "folder": { type: str, required: True }
             
                                   
     

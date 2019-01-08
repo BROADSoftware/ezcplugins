@@ -23,6 +23,7 @@ mapping:
     required: true
     mapping:
       "repo_id": { type: str, required: true }
+      "helper_id": { type: str, required: true }
       "disabled": { type: bool, required: false }
       "playbook_vars": 
         type: any

@@ -22,4 +22,5 @@ mapping:
     type: map
     required: false
     mapping:
-      "disabled": { type: bool, required: false }    
+      "disabled": { type: bool, required: False }    
+      "helper_id": { type: str, required: True }

@@ -20,11 +20,6 @@
 
 type: map
 mapping:
-  "hortonworks":
-    required: false
-    type: map
-    mapping:
-      "ansible_repo_folder": { type: str, required: yes }
   "repositories":
     type: map
     required: false
@@ -42,6 +37,22 @@ mapping:
             "repo_base_url": { type: str, required: True }
             "oraclejdk_tarball_location": { type: str,  required: false }
             "oraclejdk_jce_location": { type: str,  required: false }
+  "helpers":
+    type: map
+    required: false
+    mapping:
+      "hortonworks":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "helper_id": { type: str, required: True }
+            "url": { type: str, required: True }     # Not used technically. This is only to require documentation.
+            "commit": { type: str, required: True }  # Not used technically. This is only to require documentation.
+            "folder": { type: str, required: True }
+             
+    
                                   
     
     

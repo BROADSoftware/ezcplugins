@@ -1,2 +1,2 @@
 
-- import_playbook: {{{ m.config.kubespray.ansible_repo_folder }}}/cluster.yml
+- import_playbook: {{{ m.data.helpers.kubespray.folder }}}/cluster.yml

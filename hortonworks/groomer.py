@@ -16,7 +16,7 @@
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
 import os
-from misc import ERROR, setDefaultInMap, appendPath,lookupRepository
+from misc import ERROR, setDefaultInMap, appendPath,lookupRepository,lookupHelper
 import string
 import random
 import hashlib
@@ -24,12 +24,10 @@ from sets import Set
 import yaml
 from vault import getVault
 
-
 HORTONWORKS = "hortonworks"
 CLUSTER = "cluster"
 DISABLED = "disabled"
 CONFIG = "config"
-ANSIBLE_REPO_FOLDER = "ansible_repo_folder"
 DATA = "data"
 CONFIG_FILE = "configFile"
 ROLE_PATHS = "rolePaths"
@@ -60,8 +58,12 @@ DATABASES_TO_CREATE = "databasesToCreate"
 NODE_BY_NAME="nodeByName"
 FQDN="fqdn"
 SOURCE_FILE_DIR="sourceFileDir"
-from pykwalify.core import Core as kwalify
+HELPERS="helpers"
+FOLDER="folder"
 
+
+
+from pykwalify.core import Core as kwalify
 
 def groom(plugin, model):
     setDefaultInMap(model[CLUSTER][HORTONWORKS], DISABLED, False)
@@ -69,11 +71,8 @@ def groom(plugin, model):
         return False
     else:
         lookupRepository(model, HORTONWORKS) 
-        if HORTONWORKS not in model[CONFIG] or ANSIBLE_REPO_FOLDER not in model[CONFIG][HORTONWORKS]:
-            ERROR("Missing 'hortonworks.ansible_repo_folder' in configuration file")
-        ansible_repo_folder = appendPath(os.path.dirname(model[DATA][CONFIG_FILE]),  model[CONFIG][HORTONWORKS][ANSIBLE_REPO_FOLDER]) 
-        model[CONFIG][HORTONWORKS][ANSIBLE_REPO_FOLDER] = ansible_repo_folder
-        model[DATA][ROLE_PATHS].add(appendPath(ansible_repo_folder, "roles"))
+        lookupHelper(model, HORTONWORKS)
+        model[DATA][ROLE_PATHS].add(appendPath(model[DATA][HELPERS][HORTONWORKS][FOLDER], "roles"))
         # ------------- We need to define some groups for the intention of external tools.
         zookeepers = [] 
         kafka_brokers = []

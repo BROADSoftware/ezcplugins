@@ -7,5 +7,5 @@
       state: present
     tags: [ "pre-install" ]
 
-- import_playbook: {{{ m.config.confluent.ansible_repo_folder }}}/all.yml
+- import_playbook: {{{ m.data.helpers.confluent.folder }}}/all.yml
 

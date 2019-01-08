@@ -15,9 +15,13 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-import os
-from misc import ERROR,lookupRepository,setDefaultInMap,appendPath
+from misc import lookupRepository,setDefaultInMap,appendPath,lookupHelper
 
+CONFLUENT="confluent"
+DATA="data"
+HELPERS="helpers"
+FOLDER="folder"
+ROLE_PATHS = "rolePaths"
 
 def groom(plugin, model):
     setDefaultInMap(model["cluster"]["confluent"], "disabled", False)
@@ -25,9 +29,9 @@ def groom(plugin, model):
         return False
     
     lookupRepository(model, "confluent")
-    if "confluent" not in model["config"] or "ansible_repo_folder" not in model["config"]["confluent"]:
-        ERROR("Missing 'confluent.ansible_repo_folder' in configuration file")
-    
+    lookupHelper(model, CONFLUENT)
+    model[DATA][ROLE_PATHS].add(appendPath(model[DATA][HELPERS][CONFLUENT][FOLDER], "roles"))
+
     for node in model['cluster']['nodes']:
         if "kafka_log_dirs" in node:
             if len(node["kafka_log_dirs"]) == 0:
@@ -35,10 +39,6 @@ def groom(plugin, model):
         else:
             if "kafka_log_dirs" in model["data"]["roleByName"][node["role"]]:
                 node["kafka_log_dirs"] = model["data"]["roleByName"][node["role"]]["kafka_log_dirs"]
-    
-    ansible_repo_folder = appendPath(os.path.dirname(model["data"]["configFile"]),  model["config"]["confluent"]["ansible_repo_folder"]) 
-    model["config"]["confluent"]["ansible_repo_folder"] = ansible_repo_folder
-    model["data"]["rolePaths"].add(appendPath(ansible_repo_folder, "roles"))
     
     # We need to define an ansible group "preflight" hosting all nodes 
     preflight = []

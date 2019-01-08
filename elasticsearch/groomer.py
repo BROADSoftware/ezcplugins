@@ -18,7 +18,7 @@
 import os
 import copy
 import yaml
-from misc import ERROR,setDefaultInMap,appendPath,lookupRepository
+from misc import ERROR,setDefaultInMap,appendPath,lookupRepository,lookupHelper
 from schema import schemaMerge
 
 
@@ -43,7 +43,9 @@ _ELASTICSEARCH_="_elasticsearch_"
 NODES="nodes"
 GROUP_BY_NAME="groupByName"
 REPOSITORIES="repositories"
-ANSIBLE_REPO_FOLDER="ansible_repo_folder"
+ROLE_PATHS="rolePaths"
+HELPERS="helpers"
+FOLDER="folder"
 
 NODES="nodes"
 PLAYBOOK_VARS="playbook_vars"
@@ -56,12 +58,8 @@ def groom(plugin, model):
     if model[CLUSTER][ELASTICSEARCH][DISABLED]:
         return False
     lookupRepository(model, ELASTICSEARCH)
-    if ELASTICSEARCH not in model[CONFIG] or ANSIBLE_REPO_FOLDER not in model[CONFIG][ELASTICSEARCH]:
-        ERROR("Missing 'elasticsearch.ansible_repo_folder' in configuration file")
-    ansible_repo_folder = appendPath(os.path.dirname(model[DATA]["configFile"]),  model[CONFIG][ELASTICSEARCH][ANSIBLE_REPO_FOLDER]) 
-    model[CONFIG][ELASTICSEARCH][ANSIBLE_REPO_FOLDER] = ansible_repo_folder
-    model[DATA]["rolePaths"].add(ansible_repo_folder)
-    
+    lookupHelper(model, ELASTICSEARCH)
+    model[DATA][ROLE_PATHS].add(model[DATA][HELPERS][ELASTICSEARCH][FOLDER])
     f = os.path.join(plugin.path, "default.yml")
     if os.path.exists(f):
         base = yaml.load(open(f))

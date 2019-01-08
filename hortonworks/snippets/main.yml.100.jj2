@@ -31,19 +31,19 @@
     become_user: postgres
 {%% endif %%}
 
-- import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/prepare_nodes.yml"
+- import_playbook: "{{{ m.data.helpers.hortonworks.folder }}}/playbooks/prepare_nodes.yml"
   tags: [ 'hortonworks', 'hortonworks_prep' ]
 
-- import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/install_ambari.yml"
+- import_playbook: "{{{ m.data.helpers.hortonworks.folder }}}/playbooks/install_ambari.yml"
   tags: [ 'hortonworks', 'hortonworks_ambari', 'hortonworks_ambari_install' ]  
 
-- import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/configure_ambari.yml"
+- import_playbook: "{{{ m.data.helpers.hortonworks.folder }}}/playbooks/configure_ambari.yml"
   tags: [ 'hortonworks', 'hortonworks_ambari', 'hortonworks_ambari_configure' ]  
   
-- import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/apply_blueprint.yml"
+- import_playbook: "{{{ m.data.helpers.hortonworks.folder }}}/playbooks/apply_blueprint.yml"
   tags: [ 'hortonworks', 'hortonworks_blueprint' ]    
 
-- import_playbook: "{{{ m.config.hortonworks.ansible_repo_folder }}}/playbooks/post_install.yml"
+- import_playbook: "{{{ m.data.helpers.hortonworks.folder }}}/playbooks/post_install.yml"
   tags: [ 'hortonworks', 'hortonworks_post' ]    
 
   
