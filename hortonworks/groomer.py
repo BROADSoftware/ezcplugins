@@ -157,10 +157,10 @@ def groom(plugin, model):
                 model[HW_PASSWORDS][DATABASES][db] = "unused"
         return True
 
-
+# Ensure there is a least one digit and one letter. (ranger_admin constrain on hdp3)
 def generatePassword():
     chars=string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for i in range(12))
+    return random.choice(string.ascii_letters) + random.choice(string.digits) + ''.join(random.choice(chars) for _ in range(10))
 
 def loadWallet(plugin, model, toCreateDbSet):
     wfname = appendPath(model[DATA][SOURCE_FILE_DIR], "wallet.yml")
@@ -193,7 +193,7 @@ def loadWallet(plugin, model, toCreateDbSet):
         wallet["ambari_admin"] = "admin" if weakp else generatePassword()
         wallet["default"] = "default2018" if weakp else generatePassword()
         if "rangeradmin" in db:
-            wallet["ranger_admin"] = "admin" if weakp else generatePassword()
+            wallet["ranger_admin"] = "admin2018" if weakp else generatePassword()   # ranger admin constraint on password on hdp3
         #print(wallet)
         data = yaml.dump(wallet, width=10240,  indent=4, allow_unicode=True, default_flow_style=False)
         getVault().stringToEncryptedFile(data, wfname)

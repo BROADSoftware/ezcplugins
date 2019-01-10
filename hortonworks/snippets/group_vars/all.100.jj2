@@ -15,8 +15,8 @@ hdp_build_number: 'auto'                                  # the HDP build number
 hdf_version: '{{{ m.data.repositories.hortonworks.hdf_version }}}'     # must be the 4-part full version number EZCLUSTER
 hdf_build_number: 'auto'                                  # the HDF build number from docs.hortonworks.com (if set to 'auto', Ansible will try to get it from the repository)
 
-hdpsearch_version: '3.0.0'                                # must be the full version number
-hdpsearch_build_number: '100'                             # the HDP Search build number from docs.hortonworks.com (hardcoded to 100 for the moment)
+hdpsearch_version: '4.0.0'                                # must be the full version number
+hdpsearch_build_number: '400'                             # the HDP Search build number from docs.hortonworks.com (hardcoded to 100 for the moment)
 
 repo_base_url: '{{{ m.data.repositories.hortonworks.repo_base_url }}}'     # change this if using a Local Repository EZCLUSTER
 
@@ -120,7 +120,7 @@ security_options:
 ##########################
 
 ranger_options:                                           # only used if RANGER_ADMIN is part of the blueprint stack
-  enable_plugins: no                                     # set to 'yes' if the plugins should be enabled for all of the installed services EZCLUSTER: Set to no
+  enable_plugins: yes                                     # set to 'yes' if the plugins should be enabled for all of the installed services
 
 # EZCLUSTER: the password for the Ranger admin users (both admin and amb_ranger_admin)
 ranger_security_options:                                  # only used if RANGER_ADMIN is part of the blueprint stack
@@ -162,6 +162,11 @@ smartsense_security_options:
 logsearch_security_options:
   admin_password: "{{ default_password }}"                # the password for the Logsearch admin user
 
+accumulo_security_options:
+  root_password: "{{ default_password }}"                 # the password for the Accumulo root user
+  instance_secret: "{{ default_password }}"               # a secret unique to a given instance
+  trace_user: "trace"                                     # user that the tracer process uses to write tracing data to Accumulo
+  trace_password: "{{ default_password }}"                # password for the trace user
 
 ##########################
 ## ambari configuration ##
@@ -223,5 +228,11 @@ hdf_minor_version: "{{ hdf_version | regex_replace('.[0-9]+.[0-9]+[0-9_-]*$','')
 hdf_major_version: "{{ hdf_minor_version.split('.').0 }}"
 utils_version: "{{ '1.1.0.20' if hdp_minor_version is version_compare('2.5', '<') else ('1.1.0.21' if hdp_version is version_compare('2.6.4', '<') else '1.1.0.22' ) }}"
 hdfs_ha_name: "{{ cluster_name | regex_replace('_','-') }}"
+
+#############################
+### advanced configuration ##
+#############################
+
+is_vm_docker_containers: 'no' # docker containers have some specifics like mount points for example
 
 

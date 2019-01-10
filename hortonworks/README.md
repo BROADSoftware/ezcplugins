@@ -136,7 +136,7 @@ Initial layout:
 -rwxr-xr-x@ 1 sa  staff         600 Oct 24 22:36 setup.sh*
 ```
 
-setup.sh:
+setup265.sh:
 
 ```
 mkdir hdp2.6.5
@@ -160,6 +160,57 @@ mv HDP/centos7/2.6.5.0-292 HDP/centos7/2.x/updates/2.6.5.0
 ```
 
 
+setup310.sh
+
+```
+mkdir hdp3.1.0
+cd hdp3.1.0
+
+SRC=/Users/xxxx/Downloads/hdp310
+
+tar xvzf ${SRC}/ambari-2.7.3.0-centos7.tar.gz
+mkdir -p ambari/centos7/2.x/updates
+mv ambari/centos7/2.7.3.0-139 ambari/centos7/2.x/updates/2.7.3.0
+
+tar xvzf ${SRC}/HDP-GPL-3.1.0.0-centos7-gpl.tar.gz
+mkdir -p HDP-GPL/centos7/3.x/updates
+mv HDP-GPL/centos7/3.1.0.0-78 HDP-GPL/centos7/3.x/updates/3.1.0.0
+
+tar xvzf ${SRC}/HDP-UTILS-1.1.0.22-centos7.tar.gz
+mkdir -p HDP-UTILS-1.1.0.22/repos
+mv HDP-UTILS/centos7/1.1.0.22 HDP-UTILS-1.1.0.22/repos/centos7
+
+tar xvzf ${SRC}/HDP-3.1.0.0-centos7-rpm.tar.gz
+mkdir -p HDP/centos7/3.x/updates
+mv HDP/centos7/3.1.0.0-78 HDP/centos7/3.x/updates/3.1.0.0
+
+```
+
+
+
+# HDP 3.1
+
+## Services from hdp2.6.5
+
+- Remove SLIDER, HCAT, WEBHCAT_SERVER, SPARK_CLIENT, SPARK_JOBHISTORYSERVER
+
+- Add YARN_REGISTRY_DNS,TIMELINE_READER (On namnode or runnode)
+
+There is no choices to add another YARN_REGISTRY_DNS using Ambari.
+Another TIMELINE_READER can be added later with Ambari. But when building with two instances, it failed.
+
+
+# TODO
+
+- Postgresql DRP compliance
+- Postgresql 9.6 or 10.2
+- HDFS Rack awarness
+- Kafka Rack awarness
+- Securing
+- Test DRP
+- Setup Ranger admin HA.
+- Check Timeline service 2.0
+- Passage en openjdk.
 
 
 

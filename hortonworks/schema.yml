@@ -114,6 +114,8 @@ mapping:
             - RANGER_USERSYNC
             - STREAMLINE_SERVER
             - NIFI_MASTER
+            - YARN_REGISTRY_DNS # New to hdp 3.0
+            - TIMELINE_READER   # New to hdp 3.0
             
             
     
