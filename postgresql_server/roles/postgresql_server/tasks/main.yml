@@ -36,7 +36,7 @@
   when: not pgserver.stat.exists
 
 - name: Initialize postgresql
-  command:  /usr/pgsql-9.6/bin/postgresql96-setup initdb
+  command:  /usr/pgsql-{{ pg_version }}/bin/postgresql96-setup initdb
   notify:
   - restart_postgresql_server
   when: not pgserver.stat.exists
