@@ -19,7 +19,7 @@ Date:   Sun Oct 21 10:35:52 2018 +0300
 
 https://m1.kspray4:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login
 
-To get a token, on m1:
+To get a token, on m1, as root (Loaged as root, not by sudo)
 
 kubectl -n kube-system get secret
 
