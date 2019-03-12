@@ -15,13 +15,20 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import setDefaultInMap
 
-
-def groom(plugin, model):
-    setDefaultInMap(model["cluster"]["hdfs_users"], "disabled", False)
-    if model["cluster"]["hdfs_users"]["disabled"]:
-        return False
-    else:
-        return True
-    
+type: map
+mapping:
+  "sudo":
+    type: map
+    required: true
+    mapping:
+      disabled: { type: bool, required: false }
+      users:
+        type: seq
+        required: true
+        sequence:
+        - type: map
+          mapping:
+            "login": { type: str, required: true }
+            "can_sudo_to": { type: str, required: false }
+      

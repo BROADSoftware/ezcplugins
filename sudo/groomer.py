@@ -19,8 +19,8 @@ from misc import setDefaultInMap
 
 
 def groom(plugin, model):
-    setDefaultInMap(model["cluster"]["hdfs_users"], "disabled", False)
-    if model["cluster"]["hdfs_users"]["disabled"]:
+    setDefaultInMap(model["cluster"]["sudo"], "disabled", False)
+    if model["cluster"]["sudo"]["disabled"]:
         return False
     else:
         return True

@@ -1,0 +1,25 @@
+
+{%% if m.cluster.sudo is defined and m.cluster.sudo.users is defined and m.cluster.sudo.users|length > 0 %%}
+
+
+- hosts: all
+  tags: [ "sudo" ]
+  vars:
+    sudoers:
+{{{ m.cluster.sudo.users | to_pretty_yaml() | indent(width=4, first=True) }}}
+  tasks:
+   
+  - name: Sudo rights to allowed users
+    copy:
+      content: |
+        {{item.login}}  ALL=({{item.can_sudo_to|default("nonexisting")}}) NOPASSWD:ALL
+      dest: /etc/sudoers.d/{{item.login}}
+      mode: "0400"
+      owner: root
+      group: root
+    with_items: "{{sudoers}}"
+
+   
+{%% endif %%}
+ 
+ 
