@@ -17,11 +17,7 @@
 
 
 import logging
-import os
 from misc import ERROR,setDefaultInMap,appendPath
-import ipaddress
-import yaml
-
 
 loggerConfig = logging.getLogger("ezcluster.config")
 
@@ -30,9 +26,8 @@ SYNCED_FOLDERS="synced_folders"
 
 def groom(plugin, model):
     repoInConfig = "repositories" in model["config"] and "vagrant" in model["config"]["repositories"]  and "yum_repo_base_url" in model["config"]["repositories"]["vagrant"]
-    setDefaultInMap(model["cluster"]["vagrant"], "local_yum_repo", repoInConfig)
-    if model["cluster"]["vagrant"]["local_yum_repo"] and not repoInConfig:
-        ERROR("'repositories.vagrant.repo_yum_base_url' is not defined in config file while 'vagrant.local_yum_repo' is set to True in '{}'".format(model["data"]["sourceFileDir"]))
+    if model["cluster"]["vagrant"]["yum_repo"] == "local" and not repoInConfig:
+        ERROR("'repositories.vagrant.repo_yum_base_url' is not defined in config file while 'vagrant.yum_repo' is set to 'local' in '{}'".format(model["data"]["sourceFileDir"]))
     if repoInConfig:
         # All plugins are lookinhg up their repositories in model["data"]. So does the vagrant one.
         setDefaultInMap(model["data"], "repositories", {})

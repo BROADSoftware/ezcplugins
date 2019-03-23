@@ -43,7 +43,7 @@ mapping:
     required: true
     mapping:
       "box": { type: str, required: true }    
-      "local_yum_repo": { type: bool, required: false }  # Default: true
+      "yum_repo": { type: str, required: true, enum: ["public", "local", "untouched" ] }  # public: Set public repo  local: Set local one (Must be defined in config).  untouched: Preserve Vms original config
       "synced_folders":
         include: synced_folder_list
   "roles": 
