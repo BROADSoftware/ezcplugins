@@ -32,6 +32,7 @@ mapping:
           mapping:
             "repo_id": { type: str, required: True }
             "version": { type: str, required: True }
+            "package_name": { type: str, required: True }
             "main":
               type: map
               required: true
