@@ -19,6 +19,17 @@
 
 type: map
 mapping:
+  "docker_certificates":
+    type: seq
+    required: false
+    sequence:
+    - type: map
+      mapping:
+        "name": { type: str, required: True }
+        "host": { type: str, required: True }  
+        "port":  { type: int, required: False }
+        "ip": { type: str, required: False }        # If set, will be added in target /etc/hosts 
+        "path": { type: str, required: True }
   "helpers":
     type: map
     required: false

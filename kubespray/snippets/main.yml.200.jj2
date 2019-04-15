@@ -1,2 +1,38 @@
 
 - import_playbook: {{{ m.data.helpers.kubespray.folder }}}/cluster.yml
+
+
+{%% if 'docker_certificates' in m.data and m.data.docker_certificates|length > 0 %%}
+- hosts: kube-node
+  tags: [ "docker_certificates" ]
+  tasks:
+{%% for cert in m.data.docker_certificates %%}
+  - name: Create certificate folder for '{{{cert.endpoint }}}'
+    file: path=/etc/docker/certs.d/{{{ cert.endpoint }}} state=directory owner=root group=root mode=0755
+  - name: copy certificate '{{{cert.endpoint }}}' file
+    copy: src={{{ cert.path }}} dest=/etc/docker/certs.d/{{{ cert.endpoint }}} owner=root group=root mode=0644
+    notify:
+    - restart_docker
+{%% if 'ip' in cert %%}
+  - name: Add '{{{cert.ip}}}    {{{cert.host}}}' in /etc/hosts
+    blockinfile:
+      path: /etc/hosts
+      marker: "# {mark} Ansible managed (kubspray plugin)"
+      content: "{{{cert.ip}}}   {{{cert.host}}}"
+{%% else %%}
+  - name: Ensure no fake definition in /etc/hosts
+    blockinfile:
+      path: /etc/hosts
+      marker: "# {mark} Ansible managed (kubspray plugin)"
+      content: "# Placeholder"
+{%% endif %%}
+{%% endfor %%}
+  handlers:
+  - name: Restart Docker
+    service:
+      name: docker
+      state: restarted
+    listen: restart_docker
+{%% endif %%}
+
+

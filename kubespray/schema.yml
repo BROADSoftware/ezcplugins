@@ -24,3 +24,8 @@ mapping:
     mapping:
       "disabled": { type: bool, required: False }    
       "helper_id": { type: str, required: True }
+      "docker_certificates":
+        type: seq
+        required: false
+        sequence:
+        -  type: str
