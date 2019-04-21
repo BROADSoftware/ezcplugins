@@ -23,3 +23,6 @@ confluent:
         gpgkey:  "{{{ m.data.repositories.confluent.dist.gpgkey }}}"
         enabled: 1
 
+
+# playbook vars
+{{{ m.cluster.confluent.vars | to_pretty_yaml() }}}
