@@ -15,20 +15,18 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import lookupRepository,setDefaultInMap
+type: map
+mapping:
+  "nfs_server":
+    type: map
+    required: true
+    mapping:
+      "disabled": { type: bool, required: no }
+      "exports": 
+        type: seq
+        required: true
+        sequence:
+        - type: str
+         
 
-HD_CLIENT = "hdp_client"
-CLUSTER = "cluster"
-DISABLED = "disabled"
-HORTONWORKS = "hortonworks"
-AMBARI_SERVER_URL = "ambari_server_url"
-
-def groom(_plugin, model):
-    setDefaultInMap(model[CLUSTER][HD_CLIENT], DISABLED, False)
-    if model[CLUSTER][HD_CLIENT][DISABLED]:
-        return False
-    else:
-        lookupRepository(model, HD_CLIENT, HORTONWORKS)
-        if model[CLUSTER][HD_CLIENT][AMBARI_SERVER_URL].endswith("/"):
-            model[CLUSTER][HD_CLIENT][AMBARI_SERVER_URL] = model[CLUSTER][HD_CLIENT][AMBARI_SERVER_URL][:-1]
-        return True
+        
