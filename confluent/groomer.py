@@ -96,48 +96,48 @@ def groom(plugin, model):
             for cp_node in role[NODES]:
                 index += 1
 
-                map = {}
-                map[KAFKA] = {}
-                map[KAFKA][BROKER] = {}
-                map[ZOOKEEPER] = {}
+                mymap = {}
+                mymap[KAFKA] = {}
+                mymap[KAFKA][BROKER] = {}
+                mymap[ZOOKEEPER] = {}
 
                 if BROKER in cp_node[GROUPS]:
                     broker_id += 1
                     # Add broker id
-                    map[KAFKA][BROKER][ID] = broker_id
+                    mymap[KAFKA][BROKER][ID] = broker_id
 
                 # Add the role specific value
                 if BROKER in role:
                     if not isinstance(role[BROKER], dict):
                         ERROR("Invalid role definition ('{}'):  '{}' is not a dictionary".format(role[NAME], BROKER))
                     else:
-                        map[KAFKA][BROKER] = schemaMerge(map[KAFKA][BROKER], role[BROKER])
+                        mymap[KAFKA][BROKER] = schemaMerge(mymap)
 
                 if ZOOKEEPER in role:
                     if not isinstance(role[ZOOKEEPER], dict):
                         ERROR("Invalid role definition ('{}'):  '{}' is not a dictionary".format(role[NAME], ZOOKEEPER))
                     else:
-                        map[ZOOKEEPER] = schemaMerge(map[ZOOKEEPER], role[ZOOKEEPER])
+                        mymap[ZOOKEEPER] = schemaMerge(mymap[ZOOKEEPER], role[ZOOKEEPER])
 
                 # And get the node specific value
                 if BROKER in cp_node:
                     if not isinstance(cp_node[BROKER], dict):
                         ERROR("Invalid node definition in role '{}':  '{}.{}' is not a dictionary".format(role[NAME], cp_node[NAME], BROKER))
                     else:
-                        map[KAFKA][BROKER] = schemaMerge(map[KAFKA][BROKER], cp_node[BROKER])
+                        mymap[KAFKA][BROKER] = schemaMerge(mymap[KAFKA][BROKER], cp_node[BROKER])
 
                 if ZOOKEEPER in cp_node:
                     if not isinstance(cp_node[ZOOKEEPER], dict):
                         ERROR("Invalid node definition in role '{}':  '{}.{}' is not a dictionary".format(role[NAME], cp_node[NAME], ZOOKEEPER))
                     else:
-                        map[ZOOKEEPER] = schemaMerge(map[ZOOKEEPER], cp_node[ZOOKEEPER])
+                        mymap[ZOOKEEPER] = schemaMerge(mymap[ZOOKEEPER], cp_node[ZOOKEEPER])
 
                 # Remove empty keys
-                map[KAFKA] = dict( [(k,v) for k,v in map[KAFKA].items() if len(v)>0])
-                map = dict( [(k,v) for k,v in map.items() if len(v)>0])
+                mymap[KAFKA] = dict( [(k,v) for k,v in mymap[KAFKA].items() if len(v)>0])
+                mymap = dict( [(k,v) for k,v in mymap.items() if len(v)>0])
 
-                if bool(map):
-                    model[DATA][NODE_BY_NAME][cp_node[NAME]][CP_VARS] = map
+                if bool(mymap):
+                    model[DATA][NODE_BY_NAME][cp_node[NAME]][CP_VARS] = mymap
 
     return True
 
