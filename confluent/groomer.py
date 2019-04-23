@@ -111,7 +111,7 @@ def groom(plugin, model):
                     if not isinstance(role[BROKER], dict):
                         ERROR("Invalid role definition ('{}'):  '{}' is not a dictionary".format(role[NAME], BROKER))
                     else:
-                        mymap[KAFKA][BROKER] = schemaMerge(mymap)
+                        mymap[KAFKA][BROKER] = schemaMerge(mymap, role[BROKER])
 
                 if ZOOKEEPER in role:
                     if not isinstance(role[ZOOKEEPER], dict):
