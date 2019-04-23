@@ -18,7 +18,7 @@
 import os
 import copy
 import yaml
-from misc import ERROR,setDefaultInMap,appendPath,lookupRepository,lookupHelper
+from misc import ERROR,setDefaultInMap,lookupRepository,lookupHelper
 from schema import schemaMerge
 
 
@@ -78,42 +78,42 @@ def groom(plugin, model):
             index = -1
             for esnode in role[ELASTICSEARCH][NODES]:
                 index += 1
-                map = copy.deepcopy(base)
+                mymap = copy.deepcopy(base)
                 # Add repository info.  There is two reasons to use a package url:
                 # - It will be faster if the repo is local
                 # - Seems yum install is bugged on current role:  
                 #     TASK [ansible-elasticsearch : RedHat - Install Elasticsearch] **************************************************************************************************
                 #     fatal: [w2]: FAILED! => {"msg": "The conditional check 'redhat_elasticsearch_install_from_repo.rc == 0' failed. The error was: error while evaluating conditional (redhat_elasticsearch_install_from_repo.rc == 0): 'dict object' has no attribute 'rc'"}  
-                map["es_custom_package_url"] = model[DATA][REPOSITORIES][ELASTICSEARCH]["elasticsearch_package_url"]
-                map["es_use_repository"] = False
+                mymap["es_custom_package_url"] = model[DATA][REPOSITORIES][ELASTICSEARCH]["elasticsearch_package_url"]
+                mymap["es_use_repository"] = False
                 # Add global value
                 if ELASTICSEARCH in model[CLUSTER] and PLAYBOOK_VARS in model[CLUSTER][ELASTICSEARCH]:
                     if not isinstance(model[CLUSTER][ELASTICSEARCH][PLAYBOOK_VARS], dict):
                         ERROR("Invalid global '{}.{}' definition:  not a dictionary".format(ELASTICSEARCH, PLAYBOOK_VARS))
                     else:
-                        map = schemaMerge(map, model[CLUSTER][ELASTICSEARCH][PLAYBOOK_VARS])
+                        mymap = schemaMerge(mymap, model[CLUSTER][ELASTICSEARCH][PLAYBOOK_VARS])
                 # Add the role specific value
                 if PLAYBOOK_VARS in role[ELASTICSEARCH]:
                     if not isinstance(role[ELASTICSEARCH][PLAYBOOK_VARS], dict):
                         ERROR("Invalid role definition ('{}'):  '{}.{}' is not a dictionary".format(role[NAME], ELASTICSEARCH,PLAYBOOK_VARS))
                     else:
-                        map = schemaMerge(map, role[ELASTICSEARCH][PLAYBOOK_VARS])
+                        mymap = schemaMerge(mymap, role[ELASTICSEARCH][PLAYBOOK_VARS])
                 # And get the es_node specific value
                 if not isinstance(esnode, dict):
                     ERROR("Invalid node definition in role '{}':  item#{} is not a dictionary".format(role[NAME], index))
                 else:
-                    map = schemaMerge(map, esnode)
-                if not ES_CONFIG in map or not NODE_MASTER in map[ES_CONFIG]:
+                    mymap = schemaMerge(mymap, esnode)
+                if not ES_CONFIG in mymap or not NODE_MASTER in mymap[ES_CONFIG]:
                     ERROR("Invalid es_node definition in role '{}, item#{}: es_config.'node.master' must be defined".format(role[NAME], index))
-                if not ES_CONFIG in map or not NODE_DATA in map[ES_CONFIG]:
+                if not ES_CONFIG in mymap or not NODE_DATA in mymap[ES_CONFIG]:
                     ERROR("Invalid es_node definition in role '{}, item#{}: es_config.'node.data' must be defined".format(role[NAME], index))
-                if not ES_INSTANCE_NAME in map:
+                if not ES_INSTANCE_NAME in mymap:
                     ERROR("Invalid es_node definition in role '{}, item#{}: es_instance_name must be defined".format(role[NAME], index))
-                map[ES_VERSION] = model[DATA][REPOSITORIES][ELASTICSEARCH][VERSION]
-                map[ES_MAJOR_VERSION] = map[ES_VERSION][:2] + "X"
+                mymap[ES_VERSION] = model[DATA][REPOSITORIES][ELASTICSEARCH][VERSION]
+                mymap[ES_MAJOR_VERSION] = mymap[ES_VERSION][:2] + "X"
                 esn = {}
                 esn[ROLE] = role[NAME]
-                esn[VARS] = map
+                esn[VARS] = mymap
                 model[DATA][ESNODES].append(esn)
     # We must arrange for master nodes to be deployed first.
     model[DATA][ESNODES].sort(key=keyFromEsNode, reverse=False)   
