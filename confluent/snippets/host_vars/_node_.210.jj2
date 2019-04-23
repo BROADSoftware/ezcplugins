@@ -1,20 +1,2 @@
 
-{%% if m.node.name in m.data.groupByName.broker %%}
-kafka:
-  broker:
-{%% for host in m.data.groupByName.broker %%}
-{%% if host == m.node.name %%}
-    id: {{{ loop.index }}}
-{%% endif %%}
-{%% endfor %%}
-{%% if m.node.kafka_log_dirs is defined %%}
-    datadir: {{{ m.node.kafka_log_dirs }}}
-{%% endif %%}
-{%% if m.cluster.confluent.edition == "oss" %%}
-    config:
-      metric.reporters: null
-      confluent.metrics.reporter.bootstrap.servers: null
-{%% endif %%}
-{%% endif %%}
-       
-       
+{{{ (m.data.nodeByName[m.node.name].cp_vars | to_pretty_yaml()) if "cp_vars" in m.data.nodeByName[m.node.name] else ""  }}}
