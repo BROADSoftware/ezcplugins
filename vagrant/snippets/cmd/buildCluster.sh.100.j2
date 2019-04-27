@@ -1,8 +1,21 @@
 #!/bin/bash
 
-
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 cd ${MYDIR}/..
+
+{% for node in m.cluster.nodes %}
+{% if node.name in m.data.dataDisksByNode %}
+{% for disk in m. data.dataDisksByNode[node.name] %}
+if [ ! -f {{ disk.fileName }} ]
+then
+	echo "Will create {{ disk.fileName }}"
+	VBoxManage createmedium disk --filename {{ disk.fileName }} --size {{disk.size_mb}} --format VMDK >/dev/null
+else
+	echo "{{ disk.fileName }} already existing"
+fi
+{% endfor %}
+{% endif %}
+{% endfor %}
 
 vagrant up
