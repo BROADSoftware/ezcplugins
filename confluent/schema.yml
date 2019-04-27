@@ -41,7 +41,6 @@ mapping:
       "disabled": { type: bool, required: no }
       "repo_id": { type: str, required: true }
       "helper_id": { type: str, required: true }
-      "edition": { type: str, required: true,  enum: [ 'oss', 'ee' ]  }
       "broker": { type: any, required: no }
       "zookeeper": { type: any, required: no }
 #      "connect": { type: any, required: no }
