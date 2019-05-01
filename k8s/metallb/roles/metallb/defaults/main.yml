@@ -1,7 +1,7 @@
 
 
 
-metallb_version: "0.7.3"
+#metallb_version: "0.7.3"
 
 #metallb:
 #  external_ip_range:

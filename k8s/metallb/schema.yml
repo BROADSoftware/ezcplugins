@@ -18,17 +18,22 @@
 
 type: map
 mapping:
-  "metallb":
+  "k8s":
     type: map
-    required: true
+    required: True
     mapping:
-      "disabled": { type: bool, required: False }
-      "external_ip_range":
+      "metallb":
         type: map
         required: true
         mapping:
-          "first": { type: str, required: true }
-          "last": { type: str, required: true }
-      "dashboard_ip": { type: str, required: false }
+          "disabled": { type: bool, required: False }
+          "version": { type: str, required: True } 
+          "external_ip_range":
+            type: map
+            required: true
+            mapping:
+              "first": { type: str, required: true }
+              "last": { type: str, required: true }
+          "dashboard_ip": { type: str, required: false }
               
                 

@@ -5,12 +5,12 @@
   vars:
     metallb:
       external_ip_range:
-        first: {{{ m.cluster.metallb.external_ip_range.first }}}
-        last: {{{ m.cluster.metallb.external_ip_range.last }}}
-{%% if  m.cluster.metallb.dashboard_ip is defined %%}        
-      dashboard_ip: {{{  m.cluster.metallb.dashboard_ip  }}}
+        first: {{{ m.cluster.k8s.metallb.external_ip_range.first }}}
+        last: {{{ m.cluster.k8s.metallb.external_ip_range.last }}}
+{%% if  m.cluster.k8s.metallb.dashboard_ip is defined %%}        
+      dashboard_ip: {{{  m.cluster.k8s.metallb.dashboard_ip  }}}
 {%% endif %%}     
   roles:
-  - metallb
+  - { role: "metallb", metallb_version: {{{ m.cluster.k8s.metallb.version }}} }
       
      

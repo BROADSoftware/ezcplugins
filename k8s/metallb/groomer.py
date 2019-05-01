@@ -19,6 +19,7 @@ from misc import setDefaultInMap, ERROR
 import ipaddress
 
 CLUSTER = "cluster"
+K8S="k8s"
 METALLB="metallb"
 DISABLED = "disabled"
 EXTERNAL_IP_RANGE="external_ip_range"
@@ -27,16 +28,18 @@ LAST="last"
 DASHBOARD_IP="dashboard_ip"
 
 def groom(_plugin, model):
-    setDefaultInMap(model[CLUSTER][METALLB], DISABLED, False)
-    if model[CLUSTER][METALLB][DISABLED]:
+    setDefaultInMap(model[CLUSTER], K8S, {})
+    setDefaultInMap(model[CLUSTER][K8S], METALLB, {})
+    setDefaultInMap(model[CLUSTER][K8S][METALLB], DISABLED, False)
+    if model[CLUSTER][K8S][METALLB][DISABLED]:
         return False
     else:
-        first_ip = ipaddress.ip_address(u"" + model[CLUSTER][METALLB][EXTERNAL_IP_RANGE][FIRST])
-        last_ip = ipaddress.ip_address(u"" + model[CLUSTER][METALLB][EXTERNAL_IP_RANGE][LAST])
+        first_ip = ipaddress.ip_address(u"" + model[CLUSTER][K8S][METALLB][EXTERNAL_IP_RANGE][FIRST])
+        last_ip = ipaddress.ip_address(u"" + model[CLUSTER][K8S][METALLB][EXTERNAL_IP_RANGE][LAST])
         if not last_ip > first_ip:
             ERROR("Invalid metallb.external_ip_range (first >= last)")
-        if DASHBOARD_IP in model[CLUSTER][METALLB]:
-            db_ip =  ipaddress.ip_address(u"" + model[CLUSTER][METALLB][DASHBOARD_IP])
+        if DASHBOARD_IP in model[CLUSTER][K8S][METALLB]:
+            db_ip =  ipaddress.ip_address(u"" + model[CLUSTER][K8S][METALLB][DASHBOARD_IP])
             if db_ip < first_ip or db_ip > last_ip:
                 ERROR("metallb.dashboard_ip is not in metallb.external_ip_range")
         return True
