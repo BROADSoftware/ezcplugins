@@ -1,0 +1,26 @@
+
+
+
+- name: Install k8s ansible module required package
+  yum: name=python2-openshift state=present
+  
+- name: Copy definition file
+  template:
+    src: metallb_{{ metallb_version }}.yaml
+    dest: /tmp/metallb.yaml  
+
+- name: Copy configuration file
+  template:
+    src: metallb-config.yaml
+    dest: /tmp/metallb-config.yaml  
+       
+- name: Install metallb
+  k8s:
+    state: present
+    src: "/tmp/metallb.yaml"
+  
+- name: Configure metallb
+  k8s:
+    state: present
+    src: "/tmp/metallb-config.yaml"
+        

@@ -1,0 +1,31 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+    address-pools:
+    - name: metallb-ip-space
+      protocol: layer2
+      addresses:
+      - {{metallb.external_ip_range.first}}-{{metallb.external_ip_range.last}}
+{% if metallb.dashboard_ip is defined %}
+---
+apiVersion: v1
+kind: Service
+metadata:  
+  namespace: kube-system
+  name: dashboard-lb
+spec:
+  selector:    
+    k8s-app: kubernetes-dashboard
+  type: LoadBalancer
+  loadBalancerIP: {{metallb.dashboard_ip }}
+  ports:
+  - port: 443
+    targetPort: 8443
+{% endif %}
+      
+      

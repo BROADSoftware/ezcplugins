@@ -1,0 +1,16 @@
+
+
+- hosts: kube-master[0]
+  tags: [ "metallb" ]
+  vars:
+    metallb:
+      external_ip_range:
+        first: {{{ m.cluster.metallb.external_ip_range.first }}}
+        last: {{{ m.cluster.metallb.external_ip_range.last }}}
+{%% if  m.cluster.metallb.dashboard_ip is defined %%}        
+      dashboard_ip: {{{  m.cluster.metallb.dashboard_ip  }}}
+{%% endif %%}     
+  roles:
+  - metallb
+      
+     

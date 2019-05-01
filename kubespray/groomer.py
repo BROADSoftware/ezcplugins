@@ -25,9 +25,10 @@ DATA="data"
 ROLE_PATHS="rolePaths"
 CONFIG_FILE = "configFile"
 
-def groom(plugin, model):
+def groom(_plugin, model):
     setDefaultInMap(model["cluster"], "kubespray", {})
     setDefaultInMap(model["cluster"]["kubespray"], "disabled", False)
+    setDefaultInMap(model["cluster"]["kubespray"], "basic_auth", False)
     if model["cluster"]["kubespray"]["disabled"]:
         return False
     else:

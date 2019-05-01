@@ -18,16 +18,17 @@
 
 type: map
 mapping:
-  "kubespray":
+  "metallb":
     type: map
     required: true
     mapping:
-      "disabled": { type: bool, required: False }    
-      "helper_id": { type: str, required: True }
-      "basic_auth": { type: bool, required: True }
-      "admin_password": { type: str, required: False }
-      "docker_certificates":
-        type: seq
-        required: false
-        sequence:
-        -  type: str
+      "disabled": { type: bool, required: False }
+      "external_ip_range":
+        type: map
+        required: true
+        mapping:
+          "first": { type: str, required: true }
+          "last": { type: str, required: true }
+      "dashboard_ip": { type: str, required: false }
+              
+                
