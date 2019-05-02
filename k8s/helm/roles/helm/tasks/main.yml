@@ -1,0 +1,78 @@
+
+
+# thanks to https://github.com/geerlingguy/ansible-for-devops/blob/master/kubernetes/examples/helm.yml
+
+- name: Create Tiller Service account.
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: tiller
+        namespace: kube-system
+
+- name: Apply Tiller RBAC definition.
+  k8s:
+    state: present
+    definition: 
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: tiller
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: cluster-admin
+      subjects:
+        - kind: ServiceAccount
+          name: tiller
+          namespace: kube-system
+    
+- name: Retrieve helm binary archive.
+  unarchive:
+    src: "{{ helm_archive_url }}"
+    dest: /tmp
+    creates: /usr/local/bin/helm
+    remote_src: yes
+
+- name: Move helm binary into place.
+  shell: cp /tmp/linux-amd64/helm /usr/local/bin/helm
+  args:
+    creates: /usr/local/bin/helm
+        
+- name: Set up Helm and Tiller.
+  shell:  /usr/local/bin/helm init --service-account tiller
+  register: helm_init_result
+  changed_when: "'already installed' not in helm_init_result.stdout"
+
+- debug: var=helm_init_result
+
+- name: Get Tiller's ClusterIP.
+  k8s:
+    api_version: v1
+    kind: Service
+    name: tiller-deploy
+    namespace: kube-system
+  register: tiller_service
+
+- name: Set the Helm host and port.
+  set_fact:
+    helm_host: "{{ tiller_service.result.spec.clusterIP }}"
+    helm_port: "{{ tiller_service.result.spec.ports[0].port }}"
+    
+- name: Wait for Tiller to become responsive.
+  wait_for:
+    host: '{{ helm_host }}'
+    port: '{{ helm_port }}'
+    state: started
+    
+#- name: List installed Helm charts.
+#  command: /usr/local/bin/helm list
+#  environment:
+#    HELM_HOST: '{{ helm_host }}:{{ helm_port }}'
+#  register: helm_list_results
+#  changed_when: False
+#
+#- debug: var=helm_list_results
+

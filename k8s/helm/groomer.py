@@ -15,17 +15,19 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import lookupRepository,setDefaultInMap
+from misc import setDefaultInMap,lookupRepository
 
-ORACLEJDK = "oraclejdk"
 CLUSTER = "cluster"
+K8S="k8s"
+HELM="helm"
 DISABLED = "disabled"
 
 def groom(_plugin, model):
-    setDefaultInMap(model[CLUSTER][ORACLEJDK], DISABLED, False)
-    if model[CLUSTER][ORACLEJDK][DISABLED]:
+    setDefaultInMap(model[CLUSTER], K8S, {})
+    setDefaultInMap(model[CLUSTER][K8S], HELM, {})
+    setDefaultInMap(model[CLUSTER][K8S][HELM], DISABLED, False)
+    if model[CLUSTER][K8S][HELM][DISABLED]:
         return False
     else:
-        lookupRepository(model, ORACLEJDK)
-        setDefaultInMap(model[CLUSTER][ORACLEJDK], "set_java_home", False)
+        lookupRepository(model, HELM, repoId=model[CLUSTER][K8S][HELM]["repo_id"])
         return True
