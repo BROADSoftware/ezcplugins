@@ -2,6 +2,9 @@
 
 # thanks to https://github.com/geerlingguy/ansible-for-devops/blob/master/kubernetes/examples/helm.yml
 
+- name: Install k8s ansible module required package
+  yum: name=python2-openshift state=present
+
 - name: Create Tiller Service account.
   k8s:
     state: present
@@ -46,7 +49,7 @@
   register: helm_init_result
   changed_when: "'already installed' not in helm_init_result.stdout"
 
-- debug: var=helm_init_result
+#- debug: var=helm_init_result
 
 - name: Get Tiller's ClusterIP.
   k8s:

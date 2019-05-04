@@ -35,4 +35,12 @@
     listen: restart_docker
 {%% endif %%}
 
-
+- hosts: kube-master[0]
+  tasks:
+  - name: "Retrieve config file"
+    fetch:
+      src: /root/.kube/config
+      dest: ./config
+      flat: yes
+    
+    

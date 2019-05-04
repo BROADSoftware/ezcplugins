@@ -1,9 +1,0 @@
-
-
-
-- hosts: m1
-  tasks:
-  - name: Install openshift python client
-    yum: name=python2-openshift state=present
-    
-    
