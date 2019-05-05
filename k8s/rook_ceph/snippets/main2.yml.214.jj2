@@ -1,0 +1,9 @@
+
+
+- hosts: kube-master[0]
+  tags: [ "ceph", "rook" ]
+  roles:
+  - { role: rook_ceph_operator }
+  - { role: rook_ceph_cluster }
+      
+ 

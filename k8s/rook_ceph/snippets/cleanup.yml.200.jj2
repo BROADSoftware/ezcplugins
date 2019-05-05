@@ -1,0 +1,35 @@
+
+
+- hosts: kube-master[0]
+  vars:
+    cluster_namespace: rook-ceph
+  tags: [ "ceph", "rook" ]
+  tasks:
+  - name: delete rook-ceph namespace
+    k8s:
+      name: rook-ceph
+      api_version: v1
+      kind: Namespace
+      state: absent
+
+  
+  - name: Wait for namespace to be deleted
+    k8s_facts:
+      api_version: v1
+      kind: Namespace
+      name: rook-ceph
+    register: ns
+    until: ns.resources|length() == 0
+    retries: 600
+    delay: 10
+
+
+# Must ensure namespace is deleted
+
+#- hosts: all
+#  tasks:
+#  - name: delete /var/lib/rook folder
+#    file: 
+#      path: /var/lib/rook
+#      state: absent      
+ 

@@ -1,0 +1,60 @@
+
+
+- name: Ensure {{rook_ceph_yaml}} folder 
+  file:
+    path: "{{rook_ceph_yaml}}"
+    state: directory
+    
+- name: Setup cluster manifest
+  template:
+    src: "{{item}}.yaml"
+    dest: "/{{rook_ceph_yaml}}/{{item}}.yaml"
+  with_items:
+  - rbac
+  - cluster
+  - dashboard_lb
+  - blockstorage
+
+- name: Apply namespace and rbac definition
+  k8s:
+    state: present
+    src: "{{rook_ceph_yaml}}/rbac.yaml"
+  register: rbac_out
+
+#- debug: var=rbac_out
+
+- name: Apply cluster definition
+  k8s:
+    state: present
+    src: "{{rook_ceph_yaml}}/cluster.yaml"
+  register: cluster_out
+
+#- debug: var=cluster_out
+
+- name: Wait for rook-ceph-mgr pods to be running
+  k8s_facts:
+    api_version: v1
+    kind: Pod
+    namespace: "{{rook_ceph_cluster_namespace}}"
+    label_selectors: 
+      - app=rook-ceph-mgr
+  register: pods
+  until: pods.resources|length() > 0 and pods.resources[0].status.phase == 'Running'
+  retries: 600
+  delay: 10
+
+- name: Apply dashboard definition
+  k8s:
+    state: present
+    src: "{{rook_ceph_yaml}}/dashboard_lb.yaml"
+  register: dashboard_lb_out
+
+
+- name: Create storage classes
+  k8s:
+    state: present
+    src: "{{rook_ceph_yaml}}/blockstorage.yaml"
+  register: blockstorage_out
+                      
+                      
+                      

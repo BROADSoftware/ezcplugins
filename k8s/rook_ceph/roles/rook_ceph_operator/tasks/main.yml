@@ -1,0 +1,54 @@
+
+- name: Install k8s ansible module required package
+  yum: name=python2-openshift state=present
+  
+- name: Ensure {{rook_ceph_yaml}} folder 
+  file:
+    path: "{{rook_ceph_yaml}}"
+    state: directory
+    
+- name: Setup operator manifest
+  template:
+    src: "{{item}}.yaml"
+    dest: "{{rook_ceph_yaml}}/{{item}}.yaml"
+  with_items:
+  - common
+  - operator
+
+#- name: Patch operator manifest
+#  blockinfile:
+#    path: "{{rook_ceph_yaml}}/operator.yml"
+#    marker: "# {mark} Ansible patch for kubespray"
+#    block: |
+#      # Left pad
+#              - name: FLEXVOLUME_DIR_PATH
+#                value: /var/lib/kubelet/volume-plugins
+#    insertafter: '#  value: "<PathToFlexVolumes>"'
+
+- name: Create operator (1/2)
+  k8s:
+    state: present
+    src: "{{rook_ceph_yaml}}/common.yaml"
+  register: common_out
+
+#- debug: var=common_out
+
+- name: Create operator (2/2)
+  k8s:
+    state: present
+    src: "{{rook_ceph_yaml}}/operator.yaml"
+  register: operator_out
+
+#- debug: var=operator_out
+
+- name: Wait for rook-ceph-operator pods to be running
+  k8s_facts:
+    api_version: v1
+    kind: Pod
+    namespace: rook-ceph
+    label_selectors: 
+      - app=rook-ceph-operator
+  register: pods
+  until: pods.resources|length() > 0 and pods.resources[0].status.phase == 'Running'
+  retries: 600
+  delay: 10
