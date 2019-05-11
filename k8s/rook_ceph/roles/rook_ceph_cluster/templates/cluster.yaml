@@ -130,13 +130,5 @@ spec:
 #    - name: "172.17.4.301"
 #      deviceFilter: "^sd."
     nodes:
-{% for node in rook_ceph_cluster_nodes %}
-    - name: {{node.name}}
-{% if 'directories' in node %}
-      directories: {{node.directories|to_json}}
-{% endif %}
-{% if 'devices' in node %}
-      devices: {{node.devices|to_json}}
-{% endif %}
-{% endfor %}
+{{rook_ceph_cluster_nodes|to_nice_yaml(indent=2)|indent(width=4, first=True)}}
       

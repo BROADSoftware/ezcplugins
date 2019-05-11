@@ -41,5 +41,5 @@ def groom(_plugin, model):
         if DASHBOARD_IP in model[CLUSTER][K8S][METALLB]:
             db_ip =  ipaddress.ip_address(u"" + model[CLUSTER][K8S][METALLB][DASHBOARD_IP])
             if db_ip < first_ip or db_ip > last_ip:
-                ERROR("metallb.dashboard_ip is not in metallb.external_ip_range")
+                ERROR("metallb.dashboard_ip is not included in metallb.external_ip_range")
         return True

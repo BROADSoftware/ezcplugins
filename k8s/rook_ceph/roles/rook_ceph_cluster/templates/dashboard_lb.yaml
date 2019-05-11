@@ -1,4 +1,5 @@
 
+{% if rook_ceph_cluster_dashboard_ip is defined %}
 apiVersion: v1
 kind: Service
 metadata:
@@ -18,4 +19,4 @@ spec:
   selector:
     app: rook-ceph-mgr
     rook_cluster: {{rook_ceph_cluster_name}}
-  
+{% endif %}  

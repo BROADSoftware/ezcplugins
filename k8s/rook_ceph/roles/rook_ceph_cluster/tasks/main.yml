@@ -5,7 +5,7 @@
     path: "{{rook_ceph_yaml}}"
     state: directory
     
-- name: Setup cluster manifest
+- name: "'{{rook_ceph_cluster_name}}': Setup cluster manifest"
   template:
     src: "{{item}}.yaml"
     dest: "/{{rook_ceph_yaml}}/{{item}}.yaml"
@@ -15,7 +15,7 @@
   - dashboard_lb
   - blockstorage
 
-- name: Apply namespace and rbac definition
+- name: "'{{rook_ceph_cluster_name}}': Apply namespace and rbac definition"
   k8s:
     state: present
     src: "{{rook_ceph_yaml}}/rbac.yaml"
@@ -23,7 +23,7 @@
 
 #- debug: var=rbac_out
 
-- name: Apply cluster definition
+- name: "'{{rook_ceph_cluster_name}}': Apply cluster definition"
   k8s:
     state: present
     src: "{{rook_ceph_yaml}}/cluster.yaml"
@@ -31,7 +31,7 @@
 
 #- debug: var=cluster_out
 
-- name: Wait for rook-ceph-mgr pods to be running
+- name: "'{{rook_ceph_cluster_name}}': Wait for rook-ceph-mgr pods to be running"
   k8s_facts:
     api_version: v1
     kind: Pod
@@ -43,17 +43,19 @@
   retries: 600
   delay: 10
 
-- name: Apply dashboard definition
+- name: "'{{rook_ceph_cluster_name}}': Apply dashboard definition"
   k8s:
     state: present
     src: "{{rook_ceph_yaml}}/dashboard_lb.yaml"
+  when: rook_ceph_cluster_dashboard_ip is defined  
   register: dashboard_lb_out
 
 
-- name: Create storage classes
+- name: "'{{rook_ceph_cluster_name}}': Create storage classes"
   k8s:
     state: present
     src: "{{rook_ceph_yaml}}/blockstorage.yaml"
+  when: rook_ceph_cluster_block_pool is defined and rook_ceph_cluster_block_pool|length() > 0    
   register: blockstorage_out
                       
                       
