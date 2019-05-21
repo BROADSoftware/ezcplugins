@@ -71,7 +71,7 @@
   k8s:
     state: present
     src: "{{rook_ceph_yaml}}/blockstorage.yaml"
-  when: rook_ceph_cluster_block_pool is defined and rook_ceph_cluster_block_pool|length() > 0    
+  when: rook_ceph_cluster_block_pools is defined and rook_ceph_cluster_block_pools|length() > 0    
   register: blockstorage_out
                       
                       

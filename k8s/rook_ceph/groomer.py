@@ -83,7 +83,7 @@ def groom(_plugin, model):
             if BLOCK_POOLS in cluster:
                 for bp in cluster[BLOCK_POOLS]:
                     if NAME not in bp:
-                        bp[NAME] = "{}_bp_{}".format(cluster[NAME], bp[REPLICATION])
+                        bp[NAME] = "{}-bp-{}".format(cluster[NAME], bp[REPLICATION])
             if DASHBOARD_IP in cluster:
                 if not METALLB in model[CLUSTER][K8S]:
                     ERROR("rook_ceph.clusters.{}.dashboard_ip is defined while there is no metallb defined".format(cluster["name"]))
