@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import ERROR,lookupRepository,setDefaultInMap,appendPath,lookupHelper
+from misc import ERROR,lookupSecurityContext,lookupRepository,setDefaultInMap,appendPath,lookupHelper
 import os
 import yaml
 from schema import schemaMerge
@@ -46,11 +46,20 @@ PREFLIGHT="preflight"
 GROUPS="groups"
 ZOOKEEPER="zookeeper"
 CP_VARS="cp_vars"
+SECURITY_CONTEXT="security_context"
+SECURITY="security"
+SECURITY_CONTEXTS="security_contexts"
+CONFIG="config"
+ENVIRONMENT="environment"
+EXTRA_ARGS="EXTRA_ARGS"
+CONTEXT="context"
+SUPER_USERS="super.users"
+
 def groom(plugin, model):
     setDefaultInMap(model[CLUSTER][CONFLUENT], DISABLED, False)
     if model[CLUSTER][CONFLUENT][DISABLED]:
         return False
-    
+
     lookupRepository(model, CONFLUENT)
     lookupHelper(model, CONFLUENT)
     model[DATA][ROLE_PATHS].add(appendPath(model[DATA][HELPERS][CONFLUENT][FOLDER], ROLES))
@@ -67,8 +76,31 @@ def groom(plugin, model):
     else:
         all_vars = {}
 
-    # Merge confluent vars from cluster definition file (cluster.confluent)
+    security = 'none'
+    setDefaultInMap(model[DATA], CONFLUENT, {})
     if CONFLUENT in model[CLUSTER]:
+
+        # Get security context
+        if SECURITY in model[CLUSTER][CONFLUENT]:
+            if CONTEXT in model[CLUSTER][CONFLUENT][SECURITY]:
+                model[CLUSTER][CONFLUENT][SECURITY_CONTEXT] = model[CLUSTER][CONFLUENT][SECURITY][CONTEXT] # TODO : review
+                lookupSecurityContext(model, CONFLUENT)
+
+                if "mit_kdc" in model[DATA][SECURITY_CONTEXTS][CONFLUENT] and "active_directory" in model[DATA][SECURITY_CONTEXTS][CONFLUENT]:
+                    ERROR("Invalid context '{}.{}.{}' definition:  mit_kdc and active_directory are both defined, please keep only one !".format(SECURITY_CONTEXTS, CONFLUENT, model[DATA][SECURITY_CONTEXTS][CONFLUENT][NAME]))
+
+
+
+                if "mit_kdc" in model[DATA][SECURITY_CONTEXTS][CONFLUENT]:
+                    security = "mit_kdc"
+
+                if "active_directory" in model[DATA][SECURITY_CONTEXTS][CONFLUENT]:
+                    security = "active_directory"
+
+                if security == 'none':
+                    ERROR("Invalid context '{}.{}.{}' definition:  mit_kdc or active_directory should be defined".format(SECURITY_CONTEXTS, CONFLUENT, model[DATA][SECURITY_CONTEXTS][CONFLUENT][NAME]))
+
+        # Merge confluent vars from cluster definition file (cluster.confluent)
         # Get broker vars
         if BROKER in model[CLUSTER][CONFLUENT]:
             if not isinstance(model[CLUSTER][CONFLUENT][BROKER], dict):
@@ -82,9 +114,9 @@ def groom(plugin, model):
             else:
                 all_vars[ZOOKEEPER] = schemaMerge(all_vars[ZOOKEEPER], model[CLUSTER][CONFLUENT][ZOOKEEPER])
 
-    model[CLUSTER][CONFLUENT][VARS] = all_vars
-
-    """ 
+    model[DATA][CONFLUENT][VARS] = all_vars
+    model[DATA][CONFLUENT][SECURITY] = security
+    """
     For each node, will merge confluent vars from:
     - parent role
     - node """
@@ -131,6 +163,41 @@ def groom(plugin, model):
                         ERROR("Invalid node definition in role '{}':  '{}.{}' is not a dictionary".format(role[NAME], cp_node[NAME], ZOOKEEPER))
                     else:
                         mymap[ZOOKEEPER] = schemaMerge(mymap[ZOOKEEPER], cp_node[ZOOKEEPER])
+
+
+                # if security is not 'none', enable SASL
+                if security != 'none':
+                    setDefaultInMap(mymap[ZOOKEEPER], CONFIG, {})
+                    mymap[ZOOKEEPER][CONFIG]["authProvider.1"] = "org.apache.zookeeper.server.auth.SASLAuthenticationProvider"
+                    mymap[ZOOKEEPER][CONFIG]["zookeeper.set.acl"] = "true"
+
+                    zk_extra_args = ""
+                    setDefaultInMap(mymap[ZOOKEEPER], ENVIRONMENT, {})
+                    if EXTRA_ARGS in model[DATA][CONFLUENT][VARS][ZOOKEEPER][ENVIRONMENT]:
+                        zk_extra_args = model[DATA][CONFLUENT][VARS][ZOOKEEPER][ENVIRONMENT][EXTRA_ARGS]
+
+                    if EXTRA_ARGS in mymap[ZOOKEEPER][ENVIRONMENT]:
+                        zk_extra_args = zk_extra_args + " " + mymap[ZOOKEEPER][ENVIRONMENT][EXTRA_ARGS]
+
+                    zk_extra_args = zk_extra_args + " " + "-Djava.security.auth.login.config=/etc/kafka/zookeeper_server_jaas.conf" # Static path value
+
+                    mymap[ZOOKEEPER][ENVIRONMENT][EXTRA_ARGS] = zk_extra_args
+
+                    broker_extra_args = ""
+                    setDefaultInMap(mymap[KAFKA][BROKER], ENVIRONMENT, {})
+                    setDefaultInMap(mymap[KAFKA][BROKER], CONFIG, {})
+                    if EXTRA_ARGS in model[DATA][CONFLUENT][VARS][KAFKA][BROKER][ENVIRONMENT]:
+                        broker_extra_args = model[DATA][CONFLUENT][VARS][KAFKA][BROKER][ENVIRONMENT][EXTRA_ARGS]
+
+                    if EXTRA_ARGS in mymap[KAFKA][BROKER][ENVIRONMENT]:
+                        broker_extra_args = broker_extra_args + " " + mymap[KAFKA][BROKER][ENVIRONMENT][EXTRA_ARGS]
+
+                    broker_extra_args = broker_extra_args + " " + "-Djava.security.auth.login.config=/etc/kafka/broker_server_jaas.conf" # Static path value
+
+                    mymap[KAFKA][BROKER][ENVIRONMENT][EXTRA_ARGS] = broker_extra_args
+                    mymap[KAFKA][BROKER][CONFIG][SUPER_USERS] = "User:kafka_" + model[CLUSTER][ID]
+
+
 
                 # Remove empty keys
                 mymap[KAFKA] = dict( [(k,v) for k,v in mymap[KAFKA].items() if len(v)>0])

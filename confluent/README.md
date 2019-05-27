@@ -32,4 +32,62 @@ Date:   Mon Oct 22 18:09:45 2018 +0200
 
 ```
 
-No modification.
+Modifications are pushed to :
+    https://github.com/mlahouar/cp-ansible
+    branch : 5.2.X
+    commit : 
+        commit 90b3e4af373cab700c46fb5d006f2d8d0e138577
+        Author: moncef lahouar <moncef.lahouar@gmail.com>
+        Date:   Mon May 27 14:56:26 2019 +0200
+        
+            Add sasl_plaintext support (broker)
+        
+        commit a90472e5d3d13ae75dbfc13c17a763ca3aa77f2d
+        Author: moncef lahouar <moncef.lahouar@gmail.com>
+        Date:   Mon May 20 16:59:30 2019 +0200
+        
+            Create zk log directory if set (zookeeper user don't have rights on /var/log for ex)
+            
+## Howto
+
+### Enable security
+1. Define your security context on config file, ex : 
+
+    ```
+    ...
+    security_contexts:
+      confluent:
+        - name: 'ml'
+          mit_kdc:
+            realm: 'ML.COM'
+            server: mydomain.ml.com
+            admin:
+              login: 'admin/admin'
+              password: 'AdminPassword'
+        - name: 'cib'
+          active_directory:
+            realm: 'ML.COM'
+            uri: 'ldaps://dc1.dc2:636'
+            container_dn: 'OU=....,DC=DC1,DC=DC2'
+            rw_user:
+              login: 'admin'
+              password: 'AdminPassword'
+    ...
+    ```
+2. Reference your security context on your cluster definition file:
+
+    ```
+    ...
+    confluent:
+      disabled: false
+      repo_id: "RepoID"
+      helper_id: "X.Y.Z"
+      security:
+        context: 'ml'           # sasl will be enable automatically if running inside a security context, remove security.context to have a non secured cluster
+    ...
+    ```
+
+
+    
+        
+

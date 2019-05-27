@@ -1,0 +1,12 @@
+
+#service_name: zookeeper # zookeeper, kafka,
+#ad_domain: ML.COM
+#ad_container_dn: ""
+
+#rw_ad_uri: ""
+#ad_rw_user: ""
+#ad_rw_password: ""
+
+ldap_attempts_retry: 10
+ldap_sync_delay: 15
+
