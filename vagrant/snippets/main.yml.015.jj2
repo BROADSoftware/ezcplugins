@@ -1,10 +1,10 @@
 
 - hosts: all
   roles:
-  - etc_hosts
+  - { role: etc_hosts, tags: [ "base", "etc_hosts" ] }
 {%% if m.cluster.vagrant.yum_repo == "local" %%}
-  - { role: yum_repo, yum_repo_mode: "local", yum_repositories_url: "{{{ m.data.repositories.vagrant.yum_repo_base_url }}}" }
+  - { role: yum_repo, yum_repo_mode: "local", yum_repositories_url: "{{{ m.data.repositories.vagrant.yum_repo_base_url }}}", tags: [ "base", "yum" ] }
 {%% elif m.cluster.vagrant.yum_repo == "public" %%}
-  - { role: yum_repo, yum_repo_mode: "as_fresh" }
+  - { role: yum_repo, yum_repo_mode: "as_fresh", tags: [ "base", "yum" ] }
 {%% endif %%}
-
+  - { role: disk_format, tags: [ "base", "disks" ] }

@@ -1,0 +1,119 @@
+
+
+
+{%% for cluster in m.cluster.k8s.rook_ceph.clusters %%}
+
+- hosts: kube-master[0]
+  tasks:
+  - name: delete '{{{ cluster.name }}}' namespace
+    k8s:
+      name: {{{ cluster.name }}}
+      api_version: v1
+      kind: Namespace
+      state: absent
+
+  
+  - name: Wait for '{{{ cluster.name }}}' namespace to be deleted
+    k8s_facts:
+      api_version: v1
+      kind: Namespace
+      name: {{{ cluster.name }}}
+    register: ns
+    until: ns.resources|length() == 0
+    retries: 600
+    delay: 10
+
+{%% endfor %%}
+
+- hosts: kube-master[0]
+  tasks:
+  - name: delete 'rook-ceph' namespace
+    k8s:
+      name: rook-ceph
+      api_version: v1
+      kind: Namespace
+      state: absent
+
+  
+  - name: Wait for 'rook-ceph' namespace to be deleted
+    k8s_facts:
+      api_version: v1
+      kind: Namespace
+      name: rook-ceph
+    register: ns
+    until: ns.resources|length() == 0
+    retries: 600
+    delay: 10
+
+
+
+- hosts: all
+  tasks:
+  - name: delete /var/lib/rook folder
+    file: 
+      path: /var/lib/rook
+      state: absent      
+
+  - name: delete /var/lib/rookceph folder
+    file: 
+      path: /var/lib/rookceph
+      state: absent      
+
+
+ 
+ {%% for cluster in m.cluster.k8s.rook_ceph.clusters %%}
+ {%% for config in cluster.node_configs %%}
+ 
+- hosts: {{{ config.group }}}
+  tasks:
+{%% if config.directories is defined %%}  
+  - name: Cleanup directories
+    shell: rm -rf {{item.path}}/*  
+    args: 
+      warn: false
+    with_items: {{{ config.directories }}}
+{%% endif %%}
+{%% if config.devices is defined %%}  
+  # One can check with lsblk
+  - name: Reset devices by zeroing the first mega
+    shell: dd if=/dev/zero of=/dev/{{ item.name}} bs=10k count=100
+    with_items: {{{ config.devices }}}
+{%% endif %%}
+{%% endfor %%}    
+{%% endfor %%}    
+    
+
+- hosts: {{{m.data.k8s.rook_ceph.groupsWithDevices|join(':') }}}
+  tasks:    
+  - name: Rebooting
+    shell: sleep 2; init 6
+    async: 5
+    poll: 0
+    ignore_errors: true
+  
+  - name: Waiting for resurection
+    wait_for_connection:
+      delay: 20
+      timeout: 600
+  
+{%% for cluster in m.cluster.k8s.rook_ceph.clusters %%}
+{%% if cluster.block_pools is defined and cluster.block_pools|length() > 0 %%}
+
+- hosts: kube-master[0]
+  tasks:
+  - name: delete '{{{ cluster.name }}}' storage class(es)
+    k8s:
+      name: "{{ item }}"
+      api_version: v1
+      kind: StorageClass
+      namespace: {{{ cluster.name }}}
+      state: absent
+    with_items:
+{%% for bp in cluster.block_pools %%}
+    - {{{ bp.storage_class_name }}}
+{%% endfor %%}
+{%% endif %%}
+{%% endfor %%}
+    
+    
+    

@@ -1,0 +1,56 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+type: map
+mapping:
+  "k8s":
+    type: map
+    required: true
+    mapping:
+      "rook_ceph":
+        type: map
+        required: true
+        mapping:
+          "disabled": { type: bool, required: False }
+          "clusters":
+            type: seq
+            required: false
+            sequence:
+            - type: map
+              mapping:
+                "name": { type: str, required: true } # Will be cluster and namespace name
+                "dashboard_ip": { type: str, required: false }    # metallb load balancer must be set
+                "ceph_image": { type: str, required: false }  # Default to template defined value 
+                "node_configs":
+                  type: seq
+                  required: true
+                  sequence:
+                  - type: any
+                "block_pools":
+                  type: seq
+                  required: false
+                  sequence:
+                  - type: map
+                    mapping:
+                      "replication": { type: int, required: true }
+                      "storage_class_name": { type: str, required: true }
+                      "reclaim_policy": { type: str, required: true, enum: [ "Retain", "Recycle", "Delete" ] }
+                      "name": { type: str, required: false }  # Will be defined by groomer if not explicit
+                      
+                        
+                      
