@@ -1,0 +1,28 @@
+---
+
+- name: "Create Zookeeper Principals"
+  shell: kadmin -p {{ kdc_admin }} -w {{ kdc_admin_password }}  -q 'addprinc -randkey {{ service_name }}/{{ ansible_fqdn }}@{{ realm }}'
+
+- file:
+    path: /etc/security/keytabs
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: "Create Zookeeper keytabs"
+  shell: |
+    rm -rf /etc/security/keytabs/zookeeper.service.keytab
+    kadmin -p {{ kdc_admin }} -w {{ kdc_admin_password }}  -q 'xst -k /etc/security/keytabs/zookeeper.service.keytab {{ service_name }}/{{ ansible_fqdn }}@{{ realm }}'
+
+- file:
+    path: /etc/security/keytabs/zookeeper.service.keytab
+    owner: "{{ zookeeper.user }}"
+    group: "{{ zookeeper.group }}"
+    mode: 0400
+
+- name: Create jaas conf file for zookeeper
+  template:
+    src: zookeeper_server_jaas.conf.j2
+    dest: /etc/kafka/zookeeper_server_jaas.conf
+    mode: 0644

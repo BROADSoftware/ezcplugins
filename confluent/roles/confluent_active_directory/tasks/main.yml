@@ -1,0 +1,157 @@
+---
+
+- name: Install python-ldap
+  yum: name=python-ldap state=present
+
+- name: Build some vars
+  shell: "date +%s | sha256sum | base64 | head -c 21"
+  register: gen_pwd
+
+- set_fact:
+    password: "{{ gen_pwd.stdout }}1"
+    password_file_tmp: "/tmp/confluent_ad_users_pass1"
+    password_file: "/tmp/confluent_ad_users_pass_file"
+
+- name: Generate Password (1/4)
+  shell: echo -n '"{{ password }}"' > {{ password_file_tmp }}
+
+- name: Generate Password (2/4)
+  shell: iconv -t utf-16le {{ password_file_tmp }} -o {{ password_file }}
+
+- name: Generate Password (3/4)
+  shell: cat {{ password_file }}
+  register: utf16_password
+
+- name: Generate Password (4/4)
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ password_file_tmp }}"
+    - "{{ password_file }}"
+
+- name: Create service accounts struct
+  run_once: true
+  ldap_entry:
+    server_uri: "{{ rw_ad_uri }}"
+    validate_certs: no
+    bind_dn: "{{ad_rw_user}}"
+    bind_pw: "{{ad_rw_password}}"
+    dn: "OU={{ ad_target_ou }},{{ ad_container_dn }}"
+    objectClass:
+    - organizationalUnit
+    - top
+    attributes:
+      ou: "{{ ad_target_ou }}"
+    state: present
+  register: ldap_create_struct
+  until: "'failed' not in ldap_create_struct or not ldap_create_struct.failed"
+  retries: "{{ldap_attempts_retry}}"
+  delay: "{{ ldap_sync_delay }}"
+
+- name: Create service account
+  ldap_entry:
+    server_uri: "{{ rw_ad_uri }}"
+    validate_certs: no
+    bind_dn: "{{ad_rw_user}}"
+    bind_pw: "{{ad_rw_password}}"
+    dn: "CN={{ service_name }}/{{ ansible_fqdn }},OU={{ ad_target_ou }},{{ ad_container_dn }}"
+    objectClass:
+      - organizationalPerson
+      - person
+      - top
+      - user
+    attributes:
+      cn: "{{ service_name }}/{{ ansible_fqdn }}"
+      accountExpires: 0
+      unicodePwd: "{{ utf16_password.stdout }}"
+      servicePrincipalName: "{{ service_name }}/{{ ansible_fqdn }}"
+      userAccountControl: "66048"
+      userPrincipalName: "{{ service_name }}/{{ ansible_fqdn }}@{{ realm }}"
+    state: present
+  register: ldap_create_app_user
+  until: "'failed' not in ldap_create_app_user or not ldap_create_app_user.failed"
+  retries: "{{ldap_attempts_retry}}"
+  delay: "{{ ldap_sync_delay }}"
+
+- name: Allow some time for ldap to replicate
+  shell: "sleep {{ldap_sync_delay}}"
+
+- name: Update password if needed
+  ldap_passwd2:
+    ldap_uri: "{{ rw_ad_uri }}"
+    ldap_type: "ad"
+    bind_dn: "{{ ad_rw_user }}"
+    bind_password: "{{ ad_rw_password }}"
+    user_dn: "CN={{ service_name }}/{{ ansible_fqdn }},OU={{ ad_target_ou }},{{ ad_container_dn }}"
+    new_password: "{{ password }}"
+  register: ldap_create_app_user
+  until: "'failed' not in ldap_create_app_user or not ldap_create_app_user.failed"
+  retries: "{{ldap_attempts_retry}}"
+  delay: "{{ ldap_sync_delay }}"
+
+- name: Allow some time for ldap to replicate
+  shell: "sleep {{ldap_sync_delay}}"
+
+- file:
+    path: /etc/security/keytabs
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Create Kafka Service Keytab
+  shell: |
+    rm -rf /etc/security/keytabs/kafka.service.keytab
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e aes256-cts-hmac-sha1-96\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e aes128-cts-hmac-sha1-96\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e des3-cbc-sha1\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e arcfour-hmac\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e camellia256-cts-cmac\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e camellia128-cts-cmac\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e des-hmac-sha1\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e des-cbc-md5\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
+  when: " 'kafka' in service_name "
+
+- name: Create Zookeeper Service Keytab
+  shell: |
+    rm -rf /etc/security/keytabs/zookeeper.service.keytab
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e aes256-cts-hmac-sha1-96\n{{ password }}\nwrite_kt /etc/security/keytabs/zookeeper.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e aes128-cts-hmac-sha1-96\n{{ password }}\nwrite_kt /etc/security/keytabs/zookeeper.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e des3-cbc-sha1\n{{ password }}\nwrite_kt /etc/security/keytabs/zookeeper.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e arcfour-hmac\n{{ password }}\nwrite_kt /etc/security/keytabs/zookeeper.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e camellia256-cts-cmac\n{{ password }}\nwrite_kt /etc/security/keytabs/zookeeper.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e camellia128-cts-cmac\n{{ password }}\nwrite_kt /etc/security/keytabs/zookeeper.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e des-hmac-sha1\n{{ password }}\nwrite_kt /etc/security/keytabs/zookeeper.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e des-cbc-md5\n{{ password }}\nwrite_kt /etc/security/keytabs/zookeeper.service.keytab" | ktutil
+  when: " service_name == 'zookeeper'"
+
+
+
+- file:
+    path: /etc/security/keytabs/kafka.service.keytab
+    owner: "{{ kafka.broker.user }}"
+    group: "{{ kafka.broker.group }}"
+    mode: 0400
+  when: " 'kafka' in service_name "
+
+- file:
+    path: /etc/security/keytabs/zookeeper.service.keytab
+    owner: "{{ zookeeper.user }}"
+    group: "{{ zookeeper.group }}"
+    mode: 0400
+  when: " 'zookeeper' in service_name "
+
+- name: Create jaas conf file for service
+  template:
+    src: broker_server_jaas.conf.j2
+    dest: /etc/kafka/broker_server_jaas.conf
+    mode: 0644
+  when: " 'kafka' in service_name "
+
+- name: Create jaas conf file for service
+  template:
+    src: zookeeper_server_jaas.conf.j2
+    dest: /etc/kafka/zookeeper_server_jaas.conf
+    mode: 0644
+  when: " 'zookeeper' in service_name "

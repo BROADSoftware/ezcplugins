@@ -2,10 +2,97 @@
 - hosts: ssl_CA
   tasks:
   - name: "Install rsync"
-    yum: 
-      name: rsync 
+    yum:
+      name: rsync
       state: present
     tags: [ "pre-install" ]
 
 - import_playbook: {{{ m.data.helpers.confluent.folder }}}/all.yml
 
+{%% if m.data.confluent.security == 'mit_kdc' %%}
+
+- hosts: zookeeper
+  vars:
+    service_name: zookeeper
+    kdc_admin: {{{ m.data.security_contexts.confluent.mit_kdc.admin.login }}}
+    kdc_admin_password: {{{ m.data.security_contexts.confluent.mit_kdc.admin.password }}}
+    realm: {{{ m.data.security_contexts.confluent.mit_kdc.realm }}}
+  roles:
+    - zookeeper_mit_kdc
+
+- hosts: broker
+  vars:
+    service_name: kafka_{{{ m.cluster.id }}}
+    kdc_admin: {{{ m.data.security_contexts.confluent.mit_kdc.admin.login }}}
+    kdc_admin_password: {{{ m.data.security_contexts.confluent.mit_kdc.admin.password }}}
+    realm: {{{ m.data.security_contexts.confluent.mit_kdc.realm }}}
+  roles:
+    - broker_mit_kdc
+
+{%% endif %%}
+
+{%% if m.data.confluent.security == 'active_directory' %%}
+
+- hosts: zookeeper
+  vars:
+    service_name: zookeeper
+    realm: {{{ m.data.security_contexts.confluent.active_directory.realm }}}
+    ad_container_dn: {{{ m.data.security_contexts.confluent.active_directory.container_dn }}}
+    ad_target_ou: {{{ m.cluster.id | upper}}}
+    rw_ad_uri: "{{{ m.data.security_contexts.confluent.active_directory.uri }}}"
+    ad_rw_user: "{{{ m.data.security_contexts.confluent.active_directory.rw_user.login }}}"
+    ad_rw_password: "{{{ m.data.security_contexts.confluent.active_directory.rw_user.password }}}"
+  roles:
+    - confluent_active_directory
+
+- hosts: broker
+  vars:
+    service_name: kafka_{{{ m.cluster.id }}}
+    realm: {{{ m.data.security_contexts.confluent.active_directory.realm }}}
+    ad_container_dn: {{{ m.data.security_contexts.confluent.active_directory.container_dn }}}
+    ad_target_ou: {{{ m.cluster.id | upper}}}
+    rw_ad_uri: "{{{ m.data.security_contexts.confluent.active_directory.uri }}}"
+    ad_rw_user: "{{{ m.data.security_contexts.confluent.active_directory.rw_user.login }}}"
+    ad_rw_password: "{{{ m.data.security_contexts.confluent.active_directory.rw_user.password }}}"
+  roles:
+    - confluent_active_directory
+
+{%% endif %%}
+
+
+{%% if m.data.confluent.security != 'none' %%}
+
+- hosts: "zookeeper"
+  serial: 1
+  tasks:
+    - name: restart zookeeper
+      systemd:
+        name: "{{zookeeper.service_name}}"
+        state: restarted
+    - name: reload systemd
+      command: systemctl daemon-reload
+    - pause:
+        seconds: 20
+
+- hosts: "broker"
+  serial: 1
+  tasks:
+    - name: restart kafka
+      systemd:
+        name: "{{kafka.broker.service_name}}"
+        state: restarted
+    - name: reload systemd
+      command: systemctl daemon-reload
+    - pause:
+        seconds: 20
+
+- hosts: "broker"
+  run_once: true
+  tasks:
+    - name: "Migrate Zookeeper ACLs if needed (1/2)"
+      shell: cat /etc/kafka/server.properties | grep zookeeper.connect= | cut -c 19-
+      register: zkConnect
+    - name: "Migrate Zookeeper ACLs if needed (2/2)"
+      shell: "KAFKA_OPTS=-Djava.security.auth.login.config=/etc/kafka/broker_server_jaas.conf /usr/bin/zookeeper-security-migration --zookeeper.acl secure --zookeeper.connect {{ zkConnect.stdout }}"
+
+{%% endif %%}
