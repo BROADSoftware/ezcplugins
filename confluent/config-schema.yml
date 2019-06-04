@@ -24,7 +24,7 @@ mapping:
     type: map
     required: false
     mapping:
-      "confluent": 
+      "confluent":
         type: seq
         required: false
         sequence:
@@ -37,14 +37,14 @@ mapping:
               type: map
               required: true
               mapping:
-               "baseurl": { type: str, required: True }
-               "gpgkey": { type: str, required: True }
+                "baseurl": { type: str, required: True }
+                "gpgkey": { type: str, required: True }
             "dist":
               type: map
               required: true
               mapping:
-               "baseurl": { type: str, required: True }
-               "gpgkey": { type: str, required: True }
+                "baseurl": { type: str, required: True }
+                "gpgkey": { type: str, required: True }
   "helpers":
     type: map
     required: false
@@ -60,6 +60,45 @@ mapping:
             "commit": { type: str, required: True }  # Not used technically. This is only to require documentation.
             "folder": { type: str, required: True }
               
-    
+  "security_contexts":
+    type: map
+    required: false
+    mapping:
+      "confluent":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "name": { type: str, required: True }
+            "mit_kdc":
+              type: map
+              required: false
+              mapping:
+                "realm": { type: str, required: True }
+                "server": { type: str, required: True }
+                "admin":
+                  type: map
+                  required: True
+                  mapping:
+                    "login": { type: str, required: True }
+                    "password": { type: str, required: True }
+
+            "active_directory":
+              type: map
+              required: false
+              mapping:
+                "realm": { type: str, required: True }
+                "uri": { type: str, required: True }
+                "container_dn": { type: str, required: True }
+                "rw_user":
+                  type: map
+                  required: True
+                  mapping:
+                    "login": { type: str, required: True }
+                    "password": { type: str, required: True }
+
+
+
     
   

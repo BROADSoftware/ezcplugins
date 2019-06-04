@@ -1,6 +1,13 @@
 
+{%% if m.data.confluent.security != 'none' %%}
 
-security_mode: '{{{ m.cluster.confluent.security }}}'           
+security_mode: 'sasl_plaintext'
+
+{%% else %%}
+
+security_mode: 'plaintext'
+
+{%% endif %%}
 
 confluent:
   package_name: "{{{ m.data.repositories.confluent.package_name }}}"
@@ -24,4 +31,4 @@ confluent:
 
 
 # playbook vars
-{{{ m.cluster.confluent.vars | to_pretty_yaml() }}}
+{{{ m.data.confluent.vars | to_pretty_yaml() }}}
