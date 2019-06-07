@@ -24,3 +24,16 @@ To get a token, on m1, as root (Loaged as root, not by sudo)
 kubectl -n kube-system get secret
 
 kubectl -n kube-system describe secret namespace-controller-token-9w5j6
+
+
+
+# Enable nodelocal dns cache
+enable_nodelocaldns: true
+
+Was before:
+enable_nodelocaldns: False     # EZCLUSTER (Was true)
+
+
+
+
+

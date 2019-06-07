@@ -1,0 +1,22 @@
+
+{% if rook_ceph_cluster_dashboard_ip is defined %}
+apiVersion: v1
+kind: Service
+metadata:
+  name: rook-ceph-mgr-dashboard-external-https
+  namespace: {{rook_ceph_cluster_namespace}}
+  labels:
+    app: rook-ceph-mgr
+    rook_cluster: rook-ceph
+spec:
+  type: LoadBalancer
+  loadBalancerIP: {{rook_ceph_cluster_dashboard_ip}}
+  ports:
+  - name: dashboard
+    port: 443
+    protocol: TCP
+    targetPort: 8443
+  selector:
+    app: rook-ceph-mgr
+    rook_cluster: {{rook_ceph_cluster_name}}
+{% endif %}  
