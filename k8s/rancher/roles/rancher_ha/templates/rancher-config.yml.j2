@@ -1,0 +1,18 @@
+
+
+nodes:
+{% for node in rancher_config_nodes %}
+- address: {{ node.address }}
+  internal_address: {{ node.internal_address }}
+  user: {{ rancher_user }}
+  role: [controlplane,worker,etcd]
+{% endfor %}
+
+services:
+  etcd:
+    snapshot: true
+    creation: 6h
+    retention: 24h
+
+
+

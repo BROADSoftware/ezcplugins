@@ -1,0 +1,96 @@
+
+
+- name: "Create {{rancher_user}} if not existing and add in docker group"
+  user:
+    name: "{{rancher_user}}"
+    groups: docker
+    append: yes    
+
+- name: "Generate a key pair"
+  user:
+    name: "{{rancher_user}}"
+    generate_ssh_key: yes
+  when: inventory_hostname == ansible_play_hosts[0]
+  
+- name: "Retrieve {{rancher_user}} home folder (1/2)"
+  getent:
+    database: passwd
+    key: "{{ rancher_user }}"
+    split: ":"
+
+#- debug:
+#    msg: "{{ getent_passwd[rancher_user][4] }}"
+
+- name: "Retrieve {{rancher_user}} home folder (2/2)"
+  set_fact:
+    rancher_user_home: "{{ getent_passwd[rancher_user][4] }}"
+
+#- debug: msg="{{ rancher_user_home }}"
+    
+- name: "Retrieve {{rancher_user}}'s public key"
+  fetch:
+    dest: id_rsa.pub
+    src: "{{ rancher_user_home + '/.ssh/id_rsa.pub' }}"
+    flat: yes
+  when: inventory_hostname == ansible_play_hosts[0]
+    
+- name: "Push {{rancher_user}}'s public key on other server"
+  authorized_key:
+    user: "{{rancher_user}}"
+    key: "{{lookup('file', 'id_rsa.pub') }}"
+
+# Will use the first node of the inventory as the command issuer
+- name: "Download rke binary on {{ansible_play_hosts[0]}}"
+  get_url:
+    url: "{{rancher_rke_url}}"
+    dest: /usr/local/bin/rke
+    mode: 0755
+  when: inventory_hostname == ansible_play_hosts[0]
+  
+- name: Generate cluster config file
+  template:
+    src: rancher-config.yml.j2
+    dest: /tmp/rancher-config.yml
+  when: inventory_hostname == ansible_play_hosts[0]
+    
+- name: "Launch cluster build"
+  shell:  /usr/local/bin/rke up --config /tmp/rancher-config.yml 2>&1 | tee /tmp/rancher.log
+  become_user:  "{{ rancher_user }}"
+  become: true
+  args:
+    creates: /tmp/kube_config_rancher-config.yml
+  when: inventory_hostname == ansible_play_hosts[0]
+    
+ # ------------------------------------------------------------------Goodies parts
+ 
+- name: Configure first node as client
+  block: 
+
+  - name: "Retrieve root home folder"
+    getent:
+      database: passwd
+      key: "root"
+      split: ":"
+
+  # We will make 'root' and rancher_user account able to use kubectl. NB: 'root' will be used by helm and may be other playbooks 
+  - name: Build kubctl users list
+    set_fact:
+      kubectl_users: "{{ [ { 'login': 'root', 'home': getent_passwd['root'][4] }, { 'login': rancher_user, 'home': rancher_user_home } ] }}"
+  
+  - name: "Create .kube folder"
+    file: path={{ item.home + '/.kube'}}     state=directory owner={{item.login}}
+    with_items: "{{kubectl_users}}"
+    
+      
+  - name: copy kubectl config file
+    shell: cp /tmp/kube_config_rancher-config.yml {{ item.home + '/.kube/config' }}
+    args:
+      creates: "{{ item.home + '/.kube/config' }}"
+    with_items: "{{kubectl_users}}"
+      
+  - name: "Adjust right on config file"
+    file: path={{ item.home + '/.kube/config' }} owner={{item.login}}
+    with_items: "{{kubectl_users}}"
+          
+  when: inventory_hostname == ansible_play_hosts[0]
+    

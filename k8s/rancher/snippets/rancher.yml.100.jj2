@@ -1,0 +1,19 @@
+
+
+- hosts: rancher
+  vars:
+    rancher_config_nodes:
+{%%- for node in m.cluster.nodes %%}    
+    - address: {{{ node.fqdn }}}
+      internal_address: {{{ node.fqdn }}}
+{%%- endfor %%}  
+  tags: [ "rancher" ]
+  roles:
+  - rancher_ha
+  
+- hosts: rancher[0]
+  roles:
+  - { role: "kubectl", tags: [ "kubectl" ] }
+  - { role: "helm", tags: [ "helm" ] }
+
+  
