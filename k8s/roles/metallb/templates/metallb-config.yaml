@@ -10,7 +10,10 @@ data:
     - name: metallb-ip-space
       protocol: layer2
       addresses:
-      - {{metallb.external_ip_range.first}}-{{metallb.external_ip_range.last}}
+{%- for range in  metallb.external_ip_ranges %}   
+      - {{range.first}}-{{range.last}}
+{%- endfor %}      
+
 {% if metallb.dashboard_ip is defined %}
 ---
 apiVersion: v1

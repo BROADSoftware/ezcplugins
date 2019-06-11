@@ -15,8 +15,11 @@
       enabled: yes
       state: started        
 
+# Alternate (But still unsafe) solution:
+# sudo setfacl -m user:username:rw /var/run/docker.sock
+
 {%% if m.cluster.docker.users is defined and m.cluster.docker.users|length > 0 %%}
-  - name: Add some user(s) to docker group
+  - name: "Add some user(s) to docker group (WARNING: This grant full sudo access)"
     user:
       name: "{{ item }}"
       groups: docker

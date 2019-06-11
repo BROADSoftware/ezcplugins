@@ -20,8 +20,8 @@
 #metallb_version: "0.7.3"
 
 #metallb:
-#  external_ip_range:
-#    first: 192.168.100.100    
+#  external_ip_ranges:
+#  - first: 192.168.100.100    
 #    last: 192.168.100.100
 #  dashboard_ip: 192.168.100.100
     
