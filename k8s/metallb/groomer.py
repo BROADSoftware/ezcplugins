@@ -22,7 +22,7 @@ CLUSTER = "cluster"
 K8S="k8s"
 METALLB="metallb"
 DISABLED = "disabled"
-EXTERNAL_IP_RANGE="external_ip_range"
+EXTERNAL_IP_RANGES="external_ip_ranges"
 FIRST="first"
 LAST="last"
 DASHBOARD_IP="dashboard_ip"
@@ -34,10 +34,11 @@ def groom(_plugin, model):
     if model[CLUSTER][K8S][METALLB][DISABLED]:
         return False
     else:
-        first_ip = ipaddress.ip_address(u"" + model[CLUSTER][K8S][METALLB][EXTERNAL_IP_RANGE][FIRST])
-        last_ip = ipaddress.ip_address(u"" + model[CLUSTER][K8S][METALLB][EXTERNAL_IP_RANGE][LAST])
-        if not last_ip > first_ip:
-            ERROR("Invalid metallb.external_ip_range (first >= last)")
+        for rangeip in model[CLUSTER][K8S][METALLB][EXTERNAL_IP_RANGES]:
+            first_ip = ipaddress.ip_address(u"" + rangeip[FIRST])
+            last_ip = ipaddress.ip_address(u"" + rangeip[LAST])
+            if not last_ip > first_ip:
+                ERROR("Invalid metallb.external_ip_range (first >= last)")
         if DASHBOARD_IP in model[CLUSTER][K8S][METALLB]:
             db_ip =  ipaddress.ip_address(u"" + model[CLUSTER][K8S][METALLB][DASHBOARD_IP])
             if db_ip < first_ip or db_ip > last_ip:

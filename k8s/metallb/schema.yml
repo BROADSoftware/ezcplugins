@@ -28,12 +28,14 @@ mapping:
         mapping:
           "disabled": { type: bool, required: False }
           "version": { type: str, required: True } 
-          "external_ip_range":
-            type: map
+          "external_ip_ranges":
+            type: seq
             required: true
-            mapping:
-              "first": { type: str, required: true }
-              "last": { type: str, required: true }
+            sequence:
+            - type: map
+              mapping:
+                "first": { type: str, required: true }
+                "last": { type: str, required: true }
           "dashboard_ip": { type: str, required: false }
               
                 
