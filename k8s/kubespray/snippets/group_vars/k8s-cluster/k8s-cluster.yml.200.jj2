@@ -43,8 +43,8 @@ credentials_dir: "{{ inventory_dir }}/credentials"
 
 # Users to create for basic auth in Kubernetes API via HTTP
 # Optionally add groups for user
-{%% if 'admin_password' in m.cluster.kubespray %%}
-kube_api_pwd: "{{{ m.cluster.kubespray.admin_password }}}"
+{%% if 'admin_password' in m.cluster.k8s.kubespray %%}
+kube_api_pwd: "{{{ m.cluster.k8s.kubespray.admin_password }}}"
 {%% else %%}
 kube_api_pwd: "{{ lookup('password', credentials_dir + '/kube_user.creds length=15 chars=ascii_letters,digits') }}"
 {%% endif %%}
@@ -57,7 +57,7 @@ kube_users:
 
 ## It is possible to activate / deactivate selected authentication methods (basic auth, static token auth)
 # kube_oidc_auth: false
-kube_basic_auth: {{{ m.cluster.kubespray.basic_auth }}}     # EZCLUSTER (Was false and commented)
+kube_basic_auth: {{{ m.cluster.k8s.kubespray.basic_auth }}}     # EZCLUSTER (Was false and commented)
 # kube_token_auth: false
 
 

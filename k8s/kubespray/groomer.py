@@ -18,40 +18,45 @@
 from misc import setDefaultInMap, appendPath,lookupHelper,ERROR
 import os
 
+K8S="k8s"
 KUBESPRAY="kubespray"
 HELPERS="helpers"
 FOLDER="folder"
 DATA="data"
 ROLE_PATHS="rolePaths"
 CONFIG_FILE = "configFile"
+CLUSTER = "cluster"
+DOCKER_CERTIFICATES = "docker_certificates"
+DISABLED = "disabled"
 
 def groom(_plugin, model):
-    setDefaultInMap(model["cluster"], "kubespray", {})
-    setDefaultInMap(model["cluster"]["kubespray"], "disabled", False)
-    setDefaultInMap(model["cluster"]["kubespray"], "basic_auth", False)
-    if model["cluster"]["kubespray"]["disabled"]:
+    setDefaultInMap(model[CLUSTER], K8S, {})
+    setDefaultInMap(model[CLUSTER][K8S], KUBESPRAY, {})
+    setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], DISABLED, False)
+    setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], "basic_auth", False)
+    if model[CLUSTER][K8S][KUBESPRAY][DISABLED]:
         return False
     else:
-        lookupHelper(model, KUBESPRAY)
+        lookupHelper(model, KUBESPRAY, helperId=model[CLUSTER][K8S][KUBESPRAY]["helper_id"])
         model[DATA][ROLE_PATHS].add(appendPath(model[DATA][HELPERS][KUBESPRAY][FOLDER], "roles"))
-        model["data"]["dnsNbrDots"] = model["cluster"]["domain"].count(".") + 1
+        model[DATA]["dnsNbrDots"] = model[CLUSTER]["domain"].count(".") + 1
         certByName = {}
-        if "docker_certificates" in model["config"]:
-            for cert in model["config"]["docker_certificates"]:
+        if DOCKER_CERTIFICATES in model["config"]:
+            for cert in model["config"][DOCKER_CERTIFICATES]:
                 cert["path"] = appendPath(os.path.dirname(model[DATA][CONFIG_FILE]), cert["path"])
                 if not os.path.isfile(cert["path"]) or not os.access(cert["path"], os.R_OK):
                     ERROR("Configuration error: docker_certificates.{}: Invalid path '{}'".format(cert["name"],  cert["path"]))
                 certByName[cert["name"]] = cert
-        model["data"]["docker_certificates"] = []
-        if "docker_certificates" in model["cluster"]["kubespray"]:
-            for certName in model["cluster"]["kubespray"]["docker_certificates"]:
+        model[DATA][DOCKER_CERTIFICATES] = []
+        if DOCKER_CERTIFICATES in model[CLUSTER][K8S][KUBESPRAY]:
+            for certName in model[CLUSTER][K8S][KUBESPRAY][DOCKER_CERTIFICATES]:
                 if certName in certByName:
                     cert = certByName[certName]
                     if "port" in cert:
                         cert["endpoint"] = "{}:{}".format(cert["host"], cert['port'])
                     else:
                         cert["endoint"] = cert["host"]
-                    model["data"]["docker_certificates"].append(cert)
+                    model[DATA][DOCKER_CERTIFICATES].append(cert)
                 else:
                     ERROR("docker_certificates '{}' is not defined in configuration file!".format(certName))
         return True

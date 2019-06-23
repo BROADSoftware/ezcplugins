@@ -18,16 +18,20 @@
 
 type: map
 mapping:
-  "kubespray":
+  "k8s":
     type: map
-    required: true
+    required: True
     mapping:
-      "disabled": { type: bool, required: False }    
-      "helper_id": { type: str, required: True }
-      "basic_auth": { type: bool, required: True }
-      "admin_password": { type: str, required: False }
-      "docker_certificates":
-        type: seq
-        required: false
-        sequence:
-        -  type: str
+      "kubespray":
+        type: map
+        required: true
+        mapping:
+          "disabled": { type: bool, required: False }    
+          "helper_id": { type: str, required: True }
+          "basic_auth": { type: bool, required: True }
+          "admin_password": { type: str, required: False }
+          "docker_certificates":
+            type: seq
+            required: false
+            sequence:
+            -  type: str
