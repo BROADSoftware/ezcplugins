@@ -36,7 +36,7 @@ Modifications are pushed to :
     https://github.com/mlahouar/cp-ansible
     branch : 5.2.X
     commit : 
-        commit 90b3e4af373cab700c46fb5d006f2d8d0e138577
+        commit 6472174f8b421eaa52005c0ba410da8eaf759c92
         Author: moncef lahouar <moncef.lahouar@gmail.com>
         Date:   Mon May 27 14:56:26 2019 +0200
         
