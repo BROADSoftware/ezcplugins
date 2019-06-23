@@ -1,4 +1,7 @@
 
+- hosts: rancher[0]
+  roles:
+  - { role: "kubectl", tags: [ "kubectl" ] }
 
 - hosts: rancher
   vars:
@@ -13,7 +16,6 @@
   
 - hosts: rancher[0]
   roles:
-  - { role: "kubectl", tags: [ "kubectl" ] }
   - { role: "helm", tags: [ "helm" ] }
 
   
