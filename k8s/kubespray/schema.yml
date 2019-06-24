@@ -35,3 +35,29 @@ mapping:
             required: false
             sequence:
             -  type: str
+  "roles":
+    type: seq
+    required: true
+    sequence:
+    - type: map
+      mapping:
+        "k8s":      # TODO: node_labels and node_taints still to implements (Don't use kubspray definitions, as it will apply only on initial node registration)
+          type: map
+          required: false
+          mapping:
+            "node_labels":
+              type: map
+              required: false
+              mapping:
+                regex;(.*):
+                  type: str
+            "node_taints":
+              type: seq
+              required: false
+              sequence:
+              - type: map
+                mapping:
+                  key: { type: str, required: True }
+                  value: { type: str, required: False }
+                  effect: { type: str, required: True }
+  

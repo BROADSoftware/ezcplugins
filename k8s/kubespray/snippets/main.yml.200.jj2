@@ -35,6 +35,7 @@
     listen: restart_docker
 {%% endif %%}
 
+
 - hosts: kube-master[0]
   tasks:
   - name: "Retrieve config file"
@@ -42,5 +43,38 @@
       src: /root/.kube/config
       dest: ./config
       flat: yes
+
+    
+- hosts:  kube-master[0]
+  tags: [ "node_labels", "node_taints" ]
+  tasks:
+  - name: Install k8s ansible module required package
+    yum: name=python2-openshift state=present
+{%%- for role in m.cluster.roles %%}
+{%%- if role.k8s is defined and (role.k8s.node_labels is defined or role.k8s.node_taints is defined) %%}    
+  - name: Set Node label and taint for role {{{role.name}}}
+    k8s:
+      state: present
+      definition:
+        apiVersion: "v1"
+        kind: Node
+        metadata:
+          name: "{{item}}"
+{%%- if role.k8s.node_labels is defined %%}     
+          labels: {{{role.k8s.node_labels}}}
+{%% endif %%}
+{%%- if role.k8s.node_taints is defined %%}     
+        spec:
+          taints: {{{ role.k8s.node_taints }}}
+{%% endif %%}
+    with_items: 
+{%% for node in role.nodes %%}
+    - {{{node.name}}}
+{%% endfor %%}
+{%% endif %%}    
+{%% endfor %%}
+
+
+                 
     
     
