@@ -18,6 +18,16 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "{{{ node.name}}}" do |node|
     node.vm.network "private_network", ip: "{{{node.ip}}}"
+{%% if node.default_router is defined  and node.default_router != None %%}
+ 	# default router (https://www.vagrantup.com/docs/networking/public_network.html)
+  	config.vm.provision "shell",
+    	run: "always",
+    	inline: "route add default gw {{{node.default_router}}}"
+  	# delete default gw on eth0
+  	config.vm.provision "shell",
+    	run: "always",
+    	inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
+{%% endif %%}
 {%% if m.cluster.domain is defined  and m.cluster.domain != None %%}
     node.vm.hostname = "{{{ node.hostname }}}.{{{ m.cluster.domain }}}"
 {%% else %%}

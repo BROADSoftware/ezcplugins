@@ -45,6 +45,8 @@ def groomRoles(model):
         else:
             role["disksToMountCount"] = 0
 
+DEFAULT_ROUTER="default_router"
+
 def groomNodes(model):
     model['data']['dataDisksByNode'] = {}
     for node in model['cluster']['nodes']:
@@ -61,6 +63,11 @@ def groomNodes(model):
                 disk["fileName"] = "../disks/{}_{}.vmdk".format(node["name"], disk["device"])
                 disk["size_mb"] = disk["size"] * 1024
             model['data']['dataDisksByNode'][node["name"]] = dataDisks
+        if DEFAULT_ROUTER not in node:
+            if DEFAULT_ROUTER in role:
+                node[DEFAULT_ROUTER] = role[DEFAULT_ROUTER]
+            elif DEFAULT_ROUTER in model["cluster"]["vagrant"]:
+                node[DEFAULT_ROUTER] = model["cluster"]["vagrant"][DEFAULT_ROUTER]
 
 def groom(_plugin, model):
     repoInConfig = "repositories" in model["config"] and "vagrant" in model["config"]["repositories"]  and "yum_repo_base_url" in model["config"]["repositories"]["vagrant"]
