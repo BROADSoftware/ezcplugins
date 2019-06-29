@@ -128,7 +128,7 @@ kube_encrypt_secret_data: false
 
 # DNS configuration.
 # Kubernetes cluster name, also will be used as DNS domain
-cluster_name: {{{ m.cluster.domain }}}  # EZCLUSTER: old: cluster.local
+cluster_name: {{{ m.cluster.k8s.kubespray.cluster_name }}}  # EZCLUSTER: old: cluster.local
 # Subdomains of DNS domain to be resolved via /etc/resolv.conf for hostnet pods
 ndots: {{{ m.data.dnsNbrDots }}}  # EZCLUSTER: old: 2
 # Can be coredns, coredns_dual, manual or none

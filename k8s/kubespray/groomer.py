@@ -28,6 +28,7 @@ CONFIG_FILE = "configFile"
 CLUSTER = "cluster"
 DOCKER_CERTIFICATES = "docker_certificates"
 DISABLED = "disabled"
+CLUSTER_NAME="cluster_name"
 
 def groom(_plugin, model):
     setDefaultInMap(model[CLUSTER], K8S, {})
@@ -39,7 +40,7 @@ def groom(_plugin, model):
     else:
         lookupHelper(model, KUBESPRAY, helperId=model[CLUSTER][K8S][KUBESPRAY]["helper_id"])
         model[DATA][ROLE_PATHS].add(appendPath(model[DATA][HELPERS][KUBESPRAY][FOLDER], "roles"))
-        model[DATA]["dnsNbrDots"] = model[CLUSTER]["domain"].count(".") + 1
+        model[DATA]["dnsNbrDots"] = model[CLUSTER][K8S][KUBESPRAY][CLUSTER_NAME].count(".") + 1
         certByName = {}
         if DOCKER_CERTIFICATES in model["config"]:
             for cert in model["config"][DOCKER_CERTIFICATES]:

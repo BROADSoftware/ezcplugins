@@ -1,5 +1,5 @@
 
 rancher_kubctl_url: https://storage.googleapis.com/kubernetes-release/release/v1.14.3/bin/linux/amd64/kubectl
 
-rancher_k9s_url: https://github.com/derailed/k9s/releases/download/0.7.6/k9s_0.7.6_Linux_x86_64.tar.gz 
+
 

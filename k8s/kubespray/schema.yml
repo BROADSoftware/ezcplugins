@@ -27,6 +27,7 @@ mapping:
         required: true
         mapping:
           "disabled": { type: bool, required: False }    
+          "cluster_name": { type: str, required: True }
           "helper_id": { type: str, required: True }
           "basic_auth": { type: bool, required: True }
           "admin_password": { type: str, required: False }
