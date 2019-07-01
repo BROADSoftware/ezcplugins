@@ -1,0 +1,46 @@
+
+
+- hosts: docker
+  tags: [ "docker" ]
+  vars: 
+    docker_rh_repo_base_url: {{{ m.data.repositories.docker_yum.docker_rh_repo_base_url }}}
+    docker_rh_repo_gpgkey: {{{ m.data.repositories.docker_yum.docker_rh_repo_gpgkey }}}
+
+    dockerproject_rh_repo_base_url: {{{ m.data.repositories.docker_yum.dockerproject_rh_repo_base_url }}}
+    dockerproject_rh_repo_gpgkey: {{{ m.data.repositories.docker_yum.dockerproject_rh_repo_gpgkey }}}
+    
+    docker_version: "{{{m.cluster.docker.version}}}"
+    
+{%% if m.cluster.docker.http_proxy is defined %%}    
+    docker_http_proxy: {{{m.cluster.docker.http_proxy}}}
+{%% endif %%}
+{%% if m.cluster.docker.https_proxy is defined %%}    
+    docker_https_proxy: {{{m.cluster.docker.https_proxy}}}
+{%% endif %%}
+{%% if m.cluster.docker.no_proxy is defined %%}    
+    docker_no_proxy: {{{m.cluster.docker.no_proxy}}}
+{%% endif %%}
+{%% if m.cluster.docker.proxy_ca_url is defined %%}    
+    docker_proxy_ca_url: {{{m.cluster.docker.proxy_ca_url}}}
+{%% endif %%}
+
+  roles:
+  - docker_yum
+  
+  tasks:
+{%% if m.cluster.docker.users is defined and m.cluster.docker.users|length > 0 %%}
+  - name: "Add some user(s) to docker group (WARNING: This grant full sudo access)"
+    user:
+      name: "{{ item }}"
+      groups: docker
+      append: yes
+    with_items:  
+{%% for user in m.cluster.docker.users %%}
+     - {{{ user }}}
+{%% endfor %%}  
+{%% endif %%}
+
+# Alternate (But still unsafe) solution:
+# sudo setfacl -m user:username:rw /var/run/docker.sock
+
+

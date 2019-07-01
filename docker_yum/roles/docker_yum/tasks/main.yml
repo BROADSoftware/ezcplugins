@@ -1,0 +1,51 @@
+
+- name: Configure docker repository on RedHat/CentOS
+  template:
+    src: "rh_docker.repo.j2"
+    dest: "/etc/yum.repos.d/docker.repo"
+
+  
+- name: "Install docker packages ({{docker_version}})"  
+  yum:
+    name:
+    - "{{docker_versioned_pkg[docker_version]}}"
+    - containerd.io
+    state: present
+
+- name: Create docker service systemd directory if it doesn't exist
+  file:
+    path: /etc/systemd/system/docker.service.d
+    state: directory
+  when: docker_http_proxy is defined or docker_https_proxy is defined
+
+- name: Write docker proxy drop-in
+  template:
+    src: http-proxy.conf.j2
+    dest: /etc/systemd/system/docker.service.d/http-proxy.conf
+  notify: restart_docker
+  when: docker_http_proxy is defined or docker_https_proxy is defined
+
+- name: Remove proxy
+  file: 
+    path: /etc/systemd/system/docker.service.d/http-proxy.conf
+    state: absent
+  notify: restart_docker
+  when: docker_http_proxy is not defined and docker_https_proxy is not defined
+
+# WARNING Centos/RHEL specifics
+- name: Fetch CA proxy
+  get_url:
+    url: "{{docker_proxy_ca_url}}"
+    dest: /etc/pki/ca-trust/source/anchors/docker_registry_proxy.crt       
+  notify: update_trust_store
+  when: docker_proxy_ca_url is defined
+  
+- meta: flush_handlers
+
+- name: ensure docker service is started and enabled
+  service:
+    name: "{{ item }}"
+    enabled: yes
+    state: started
+  with_items:
+    - docker
