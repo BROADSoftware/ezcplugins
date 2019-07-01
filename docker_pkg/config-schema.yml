@@ -21,7 +21,7 @@ mapping:
     type: map
     required: false
     mapping:
-      "docker": 
+      "docker_pkg": 
         type: seq
         required: false
         sequence:

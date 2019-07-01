@@ -16,13 +16,13 @@
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
 
-from misc import ERROR,setDefaultInMap,lookupRepository
+from misc import setDefaultInMap,lookupRepository
 
-def groom(plugin, model):
+def groom(_plugin, model):
     setDefaultInMap(model["cluster"]["docker"], "disabled", False)
     if model["cluster"]["docker"]["disabled"]:
         return False
     else:
-        lookupRepository(model, "docker")
+        lookupRepository(model, "docker", configEntry="docker_pkg")
         return True
     
