@@ -1,0 +1,20 @@
+
+
+- name: Generate files name from urls
+  set_fact:
+    register_ca_list: "{{ register_ca_list|default([]) + [ { 'url': item, 'file': item|replace('https://', '')|replace('http://', '')|replace('/', '_')|replace(':','_')|replace('.','_') } ] }}"
+  with_items: "{{register_ca_urls}}"
+  #when: register_ca_urls is defined  # Better to fail
+
+#- debug: var=register_ca_list
+
+# WARNING Centos/RHEL specifics
+- name: Fetch CA certificate
+  get_url:
+    url: "{{item.url}}"
+    dest: "/etc/pki/ca-trust/source/anchors/{{item.file}}.crt"       
+  notify: update_trust_store
+  when: register_ca_list is defined # Will be undefined if register_ca_urls == []
+  with_items: "{{register_ca_list}}"
+  
+  

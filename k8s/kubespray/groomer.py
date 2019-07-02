@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import setDefaultInMap, appendPath,lookupHelper,ERROR
+from misc import setDefaultInMap, appendPath,lookupHelper,ERROR,lookupRepository,lookupHttpProxy
 import os
 
 K8S="k8s"
@@ -38,7 +38,10 @@ def groom(_plugin, model):
     if model[CLUSTER][K8S][KUBESPRAY][DISABLED]:
         return False
     else:
+        lookupRepository(model, None, "docker_yum", model[CLUSTER][K8S][KUBESPRAY]['docker_yum_repo_id'])
         lookupHelper(model, KUBESPRAY, helperId=model[CLUSTER][K8S][KUBESPRAY]["helper_id"])
+        lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["docker_proxy_id"] if "docker_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "docker")
+        lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["ansible_proxy_id"] if "ansible_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "ansible")
         model[DATA][ROLE_PATHS].add(appendPath(model[DATA][HELPERS][KUBESPRAY][FOLDER], "roles"))
         model[DATA]["dnsNbrDots"] = model[CLUSTER][K8S][KUBESPRAY][CLUSTER_NAME].count(".") + 1
         certByName = {}

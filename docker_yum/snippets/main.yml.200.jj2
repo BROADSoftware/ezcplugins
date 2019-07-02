@@ -10,25 +10,27 @@
     dockerproject_rh_repo_gpgkey: {{{ m.data.repositories.docker_yum.dockerproject_rh_repo_gpgkey }}}
     
     docker_version: "{{{m.cluster.docker.version}}}"
-    
-{%% if m.cluster.docker.http_proxy is defined %%}    
-    docker_http_proxy: {{{m.cluster.docker.http_proxy}}}
+
+{%% if m.data.httpProxies.docker is defined %%}    
+{%% if m.data.httpProxies.docker.http_proxy is defined %%}    
+    docker_http_proxy: {{{m.data.httpProxies.docker.http_proxy}}}
 {%% endif %%}
-{%% if m.cluster.docker.https_proxy is defined %%}    
-    docker_https_proxy: {{{m.cluster.docker.https_proxy}}}
+{%% if m.data.httpProxies.docker.https_proxy is defined %%}    
+    docker_https_proxy: {{{m.data.httpProxies.docker.https_proxy}}}
 {%% endif %%}
-{%% if m.cluster.docker.no_proxy is defined %%}    
-    docker_no_proxy: {{{m.cluster.docker.no_proxy}}}
+{%% if m.data.httpProxies.docker.no_proxy is defined %%}    
+    docker_no_proxy: {{{m.data.httpProxies.docker.no_proxy}}}
 {%% endif %%}
-{%% if m.cluster.docker.proxy_ca_url is defined %%}    
-    docker_proxy_ca_url: {{{m.cluster.docker.proxy_ca_url}}}
 {%% endif %%}
 
   roles:
   - docker_yum
-  
-  tasks:
+{%% if  m.data.httpProxies.docker is defined and m.data.httpProxies.docker.proxy_ca_url is defined %%}
+  - { role: register_ca, register_ca_urls: [ "{{{m.data.httpProxies.docker.proxy_ca_url}}}" ] }  
+{%% endif %%}
+    
 {%% if m.cluster.docker.users is defined and m.cluster.docker.users|length > 0 %%}
+  tasks:
   - name: "Add some user(s) to docker group (WARNING: This grant full sudo access)"
     user:
       name: "{{ item }}"

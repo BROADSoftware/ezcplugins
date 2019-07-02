@@ -44,7 +44,7 @@ credentials_dir: "{{ inventory_dir }}/credentials"
 # Users to create for basic auth in Kubernetes API via HTTP
 # Optionally add groups for user
 {%% if 'admin_password' in m.cluster.k8s.kubespray %%}
-kube_api_pwd: "{{{ m.cluster.k8s.kubespray.admin_password }}}"
+kube_api_pwd: "{{{ m.cluster.k8s.kubespray.admin_password }}}"    # EZCLUSTER
 {%% else %%}
 kube_api_pwd: "{{ lookup('password', credentials_dir + '/kube_user.creds length=15 chars=ascii_letters,digits') }}"
 {%% endif %%}

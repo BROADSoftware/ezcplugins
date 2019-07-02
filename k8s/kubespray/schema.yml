@@ -36,13 +36,17 @@ mapping:
             required: false
             sequence:
             -  type: str
+          "docker_yum_repo_id":  { type: str, required: True }
+          "docker_proxy_id":  { type: str, required: False }
+          "ansible_proxy_id":  { type: str, required: False }
+          
   "roles":
     type: seq
     required: true
     sequence:
     - type: map
       mapping:
-        "k8s":      # TODO: node_labels and node_taints still to implements (Don't use kubspray definitions, as it will apply only on initial node registration)
+        "k8s":      
           type: map
           required: false
           mapping:

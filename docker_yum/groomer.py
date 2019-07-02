@@ -16,7 +16,7 @@
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
 
-from misc import setDefaultInMap,lookupRepository
+from misc import setDefaultInMap,lookupRepository,lookupHttpProxy
 
 def groom(_plugin, model):
     setDefaultInMap(model["cluster"]["docker"], "disabled", False)
@@ -25,5 +25,6 @@ def groom(_plugin, model):
     else:
         setDefaultInMap(model["cluster"]["docker"], "version", "latest")
         lookupRepository(model, "docker", configEntry="docker_yum")
+        lookupHttpProxy(model, model["cluster"]["docker"]["proxy_id"] if "proxy_id" in model["cluster"]["docker"] else None, "docker")
         return True
     

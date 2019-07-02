@@ -23,10 +23,4 @@
   delay: 1
   until: docker_ready.rc == 0
 
-# WARNING Centos/RHEL specifics
-- name: Update trust store  
-  listen: update_trust_store
-  shell: update-ca-trust extract
-  
-  
   

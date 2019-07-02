@@ -44,4 +44,6 @@ mapping:
             "url": { type: str, required: True }     # Not used technically. This is only to require documentation.
             "commit": { type: str, required: True }  # Not used technically. This is only to require documentation.
             "folder": { type: str, required: True }
-     
+            
+            
+            

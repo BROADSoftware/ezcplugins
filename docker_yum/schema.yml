@@ -30,10 +30,7 @@ mapping:
       "repo_id": { type: str, required: yes }
       "disabled": { type: bool, required: false }
       "version": { type: str, required: no }  # Default 'lastest'
-      "http_proxy": { type: str, required: no }
-      "https_proxy": { type: str, required: no }
-      "no_proxy": { type: str, required: no }
-      "proxy_ca_url": { type: str, required: no }
+      "proxy_id": { type: str, required: no }
        
       
       
