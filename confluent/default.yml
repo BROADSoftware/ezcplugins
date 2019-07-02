@@ -18,7 +18,6 @@ kafka:
       log.retention.hours: 168
       log.segment.bytes: 1073741824
       num.io.threads: 16
-      authorizer.class.name: kafka.security.auth.SimpleAclAuthorizer
       num.network.threads: 8
       num.partitions: 1
       num.recovery.threads.per.data.dir: 2
