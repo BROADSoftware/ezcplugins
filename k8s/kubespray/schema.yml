@@ -39,6 +39,7 @@ mapping:
           "docker_yum_repo_id":  { type: str, required: True }
           "docker_proxy_id":  { type: str, required: False }
           "ansible_proxy_id":  { type: str, required: False }
+          "k9s_repo_id":  { type: str, required: False }    # Default: latest. 
           
   "roles":
     type: seq

@@ -40,15 +40,6 @@
     listen: restart_docker
 {%% endif %%}
 
-
-- hosts: kube-master[0]
-  tasks:
-  - name: "Retrieve config file"
-    fetch:
-      src: /root/.kube/config
-      dest: ./config
-      flat: yes
-
     
 - hosts:  kube-master[0]
   tags: [ "node_labels", "node_taints" ]
@@ -79,6 +70,19 @@
 {%% endif %%}    
 {%% endfor %%}
 
+
+- hosts:  kube-master[0]
+  tasks:
+  - name: "Copy config file locally"
+    fetch:
+      src: /root/.kube/config
+      dest: ./config
+      flat: yes
+    tags: [ "config" ]      
+{%% if m.data.repositories.k9s is defined %%}    
+  roles:
+  - { role: k9s,  tags: [ "k9s" ], k9s_tgz_url: "{{{ m.data.repositories.k9s.k9s_tgz_url}}}" }
+{%% endif %%}    
 
                  
     

@@ -5,7 +5,7 @@
         
 - name: "Download k9s archive"
   unarchive:
-    src: "{{rancher_k9s_url}}"
+    src: "{{k9s_tgz_url}}"
     dest: /tmp
     remote_src: yes
   when: not k9s.stat.exists

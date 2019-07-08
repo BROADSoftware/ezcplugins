@@ -29,16 +29,20 @@ CLUSTER = "cluster"
 DOCKER_CERTIFICATES = "docker_certificates"
 DISABLED = "disabled"
 CLUSTER_NAME="cluster_name"
+K9S_REPO_ID="k9s_repo_id"
 
 def groom(_plugin, model):
     setDefaultInMap(model[CLUSTER], K8S, {})
     setDefaultInMap(model[CLUSTER][K8S], KUBESPRAY, {})
     setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], DISABLED, False)
     setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], "basic_auth", False)
+    setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], K9S_REPO_ID, "latest")
     if model[CLUSTER][K8S][KUBESPRAY][DISABLED]:
         return False
     else:
         lookupRepository(model, None, "docker_yum", model[CLUSTER][K8S][KUBESPRAY]['docker_yum_repo_id'])
+        if model[CLUSTER][K8S][KUBESPRAY][K9S_REPO_ID] is not None:
+            lookupRepository(model, "k9s", repoId = model[CLUSTER][K8S][KUBESPRAY][K9S_REPO_ID])
         lookupHelper(model, KUBESPRAY, helperId=model[CLUSTER][K8S][KUBESPRAY]["helper_id"])
         lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["docker_proxy_id"] if "docker_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "docker")
         lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["ansible_proxy_id"] if "ansible_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "ansible")

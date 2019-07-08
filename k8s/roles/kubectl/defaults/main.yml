@@ -1,5 +1,5 @@
 
-rancher_kubctl_url: https://storage.googleapis.com/kubernetes-release/release/v1.14.3/bin/linux/amd64/kubectl
+kubctl_bin_url: https://storage.googleapis.com/kubernetes-release/release/v1.14.3/bin/linux/amd64/kubectl
 
 
 
