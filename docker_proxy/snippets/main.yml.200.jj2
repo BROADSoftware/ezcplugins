@@ -1,0 +1,6 @@
+
+
+- hosts: docker_proxy
+  tags: [ "docker_proxy" ]
+  roles:
+  - docker_proxy

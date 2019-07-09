@@ -1,6 +1,6 @@
 # Kubspray follow up 
 
-All this files in `snippets/group_vars` are copied as is from `inventory/local/group_vars`, except:
+All this files in `snippets/group_vars` are copied as is from `sample/local/group_vars`, except:
 
 - all.yml, renamed to all.yml.200.jj2
 - k8s-cluster/k8s-cluster.yml renamed k8s-cluster/k8s-cluster.yml.200.jj2 and with some modification marked with EZCLUSTER
@@ -18,6 +18,8 @@ A quick fix is to replace `http_proxy` per `yum_http_proxy` in the following fil
 A forked version solving this issue and intended to be used with this plugin is located at:
 
 https://github.com/SergeAlexandre/kubespray/tree/bs2.10.4
+
+USING THIS FORK IS MANDATORY IF YOU NEED PROXY SUPPORT (Air gapped installation)
 
 # Proposal for http_proxy segregation
 
