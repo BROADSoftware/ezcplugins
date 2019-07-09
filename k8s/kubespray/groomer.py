@@ -46,6 +46,8 @@ def groom(_plugin, model):
         lookupHelper(model, KUBESPRAY, helperId=model[CLUSTER][K8S][KUBESPRAY]["helper_id"])
         lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["docker_proxy_id"] if "docker_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "docker")
         lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["ansible_proxy_id"] if "ansible_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "ansible")
+        lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["root_proxy_id"] if "root_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "root")
+        lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["yumproxy_id"] if "yum_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "yum")
         model[DATA][ROLE_PATHS].add(appendPath(model[DATA][HELPERS][KUBESPRAY][FOLDER], "roles"))
         model[DATA]["dnsNbrDots"] = model[CLUSTER][K8S][KUBESPRAY][CLUSTER_NAME].count(".") + 1
         certByName = {}

@@ -1,8 +1,4 @@
 
-
-- hosts: kube-master[0]
-  tags: [ "helm" ]
-  roles:
-  - { role: helm, helm_archive_url: {{{ m.data.repositories.helm.url }}} }
-      
+- name: Install Helm
+  import_playbook: helm.yml
      

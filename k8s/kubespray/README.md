@@ -1,23 +1,27 @@
 # Kubspray follow up 
 
-All this files in snippets/group_vars are copied as is from inventory/local/group_vars, except:
+All this files in `snippets/group_vars` are copied as is from `inventory/local/group_vars`, except:
 
 - all.yml, renamed to all.yml.200.jj2
 - k8s-cluster/k8s-cluster.yml renamed k8s-cluster/k8s-cluster.yml.200.jj2 and with some modification marked with EZCLUSTER
 
+# Proxy issue
 
-If proxy must be set, there is a problem as http_proxy set both docker's proxy and yum proxy.
+If proxy must be set, there is a problem as `http_proxy` set both docker's proxy and yum proxy.
 
-A quick fix is to replace http_proxy per yum_http_proxy in the following files:
+A quick fix is to replace `http_proxy` per `yum_http_proxy` in the following files:
 
-roles/bootstrap-os/tasks/bootstrap-centos.yml
-roles/container-engine/docker/tasks/main.yml
-roles/container-engine/docker/templates/rh_docker.repo.j2
+- roles/bootstrap-os/tasks/bootstrap-centos.yml
+- roles/container-engine/docker/tasks/main.yml
+- roles/container-engine/docker/templates/rh_docker.repo.j2
 
+A forked version solving this issue and intended to be used with this plugin is located at:
 
-proposal for http_proxy segregation
+https://github.com/SergeAlexandre/kubespray/tree/bs2.10.4
 
-CurWhat would you like to be added:
+# Proposal for http_proxy segregation
+
+## What would you like to be added:
 
 I suggest to replace the http_proxy variable by a more specific one, depending of the use case:
 
@@ -38,7 +42,7 @@ configuration is out of its scope and should be performed before, as part of the
 
 Please let me know what you think.
 
-Why is this needed:
+## Why is this needed:
 
 Because there is some cases where these values need to be different. For example, I need to setup 
 the proxy in docker configuration (targeting a specific docker proxy-cache) while still using direct yum access
