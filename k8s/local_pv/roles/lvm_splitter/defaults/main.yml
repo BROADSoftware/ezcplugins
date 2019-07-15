@@ -1,0 +1,22 @@
+
+
+#lvm_splitter:
+#  physical_volumes: 
+#    - /dev/vdd
+#  vg_name: vgd
+#  # List of logical volumes
+#  logical_volumes:
+#  - name: split1  
+#    size: 20G
+#    fstype: xfs
+#    mount_options: "defaults,noatime"
+#    fsopts: ""
+#    mount: /data02/s1
+#  - name: split2  
+#    size: 10G
+#    fstype: xfs
+#    mount_options: "defaults,noatime"
+#    fsopts: ""
+#    mount: /data02/s2
+    
+        

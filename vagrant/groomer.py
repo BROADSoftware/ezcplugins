@@ -61,7 +61,7 @@ def groomNodes(model):
             dataDisks = copy.deepcopy(role['data_disks'])
             for disk in dataDisks:
                 disk["fileName"] = "../disks/{}_{}.vmdk".format(node["name"], disk["device"])
-                disk["size_mb"] = disk["size"] * 1024
+                disk["size_mb"] = disk["size"] * 1024 + 4   # +4 for lvm metadata if lvm is used in top of this disk
             model['data']['dataDisksByNode'][node["name"]] = dataDisks
         if DEFAULT_ROUTER not in node:
             if DEFAULT_ROUTER in role:

@@ -2,17 +2,17 @@
 
 # TODO: Update to https://github.com/AerisCloud/ansible-disk
 
-
-- name: "Install util-linux"
-  apt:
-    name: '{{ item }}'
-    state: 'present'
-  with_flattened:
-    - 'parted'
-  when: disk_additional_disks is defined and disk_additional_disks and ansible_distribution in [ 'Debian', 'Ubuntu' ]
-  tags:
-    - disk
-    - pkgs
+#
+#- name: "Install util-linux"
+#  apt:
+#    name: '{{ item }}'
+#    state: 'present'
+#  with_flattened:
+#    - 'parted'
+#  when: disk_additional_disks is defined and disk_additional_disks and ansible_distribution in [ 'Debian', 'Ubuntu' ]
+#  tags:
+#    - disk
+#    - pkgs
 
 - name: "Partition additional disks"
   shell: |

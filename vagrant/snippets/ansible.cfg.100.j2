@@ -6,4 +6,4 @@ roles_path = {% for rp in m.data.rolePaths %}{% if not loop.first %}:{% endif %}
 inventory = ./inventory
 host_key_checking = False
 retry_files_enabled = False
-
+any_errors_fatal = True

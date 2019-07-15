@@ -1,0 +1,64 @@
+
+- name: Ensure mount points exists
+  file:
+    path: "{{item.mount}}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0755'
+  with_items: "{{lvm_splitter.logical_volumes}}"
+
+- name: Create volume group
+  lvg:
+    vg: "{{lvm_splitter.vg_name}}"
+    pvs: "{{lvm_splitter.physical_volumes|join(',')}}"
+
+- name: Create logical volumes
+  lvol:
+    vg: "{{lvm_splitter.vg_name}}"
+    lv: "{{item.name}}"
+    size: "{{item.size}}"
+    opts: "{{item.lvcreate_otions|default(omit)}}" 
+  with_items: "{{lvm_splitter.logical_volumes}}"
+
+- name: Follow /dev/mapper/... symlinks
+  stat:
+    path: "/dev/mapper/{{lvm_splitter.vg_name}}-{{ item.name }}"
+  register: mapper_stats
+  with_items: "{{lvm_splitter.logical_volumes}}"
+
+#- debug: var=mapper_stats
+
+- name: "Build '{symlink: target}' map" 
+  set_fact:
+    slmap: "{{ slmap|default({}) | combine( { item.stat.path: item.stat.lnk_source } ) }}"
+  with_items: "{{mapper_stats.results}}"
+  loop_control:
+    label: "{{ item.stat.path }} -> {{item.stat.lnk_source }}"
+    
+#- debug: var=slmap
+
+- name: Create filesystem on each split
+  filesystem:
+    dev: "{{slmap['/dev/mapper/' + lvm_splitter.vg_name + '-' + item.name ] }}"
+    force: '{{ item.force|default(omit) }}'
+    fstype: '{{ item.fstype }}'
+    opts: '{{ item.fsopts|default(omit) }}'
+  with_items: "{{lvm_splitter.logical_volumes}}"
+  when: item.fstype is defined  
+
+- name: "Mount splits"
+  mount:
+    path: '{{ item.mount }}'
+    fstype: '{{ item.fstype }}'
+    opts: '{{ item.mount_options|default(omit) }}'
+    passno: '0'
+    src: "/dev/mapper/{{lvm_splitter.vg_name}}-{{ item.name }}"
+    state: mounted
+  with_items: "{{lvm_splitter.logical_volumes}}"
+  when: item.fstype is defined and item.mount is defined  
+
+  
+  
+  
+  
