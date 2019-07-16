@@ -44,4 +44,21 @@ mapping:
             "url": { type: str, required: True }     # Not used technically. This is only to require documentation.
             "commit": { type: str, required: True }  # Not used technically. This is only to require documentation.
             "folder": { type: str, required: True }
-     
+  "repositories":
+    type: map
+    required: false
+    mapping:
+      "k9s": 
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "repo_id": { type: str, required: True }
+            "version": { type: str, required: True }
+            "k9s_tgz_url": { type: str, required: True }
+            
+                                  
+            
+            
+            

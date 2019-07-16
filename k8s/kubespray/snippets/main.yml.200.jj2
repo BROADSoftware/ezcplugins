@@ -1,4 +1,9 @@
 
+
+{%% if  m.data.httpProxies.docker is defined and m.data.httpProxies.docker.proxy_ca_url is defined %%}
+  - { role: register_ca, register_ca_urls: [ "{{{m.data.httpProxies.docker.proxy_ca_url}}}" ] }  
+{%% endif %%}
+
 - import_playbook: {{{ m.data.helpers.kubespray.folder }}}/cluster.yml
 
 
@@ -35,12 +40,66 @@
     listen: restart_docker
 {%% endif %%}
 
-- hosts: kube-master[0]
+    
+- hosts:  kube-master[0]
+  tags: [ "node_labels", "node_taints" ]
   tasks:
-  - name: "Retrieve config file"
+  - name: Install k8s ansible module required package
+    yum: name=python2-openshift state=present
+{%%- for role in m.cluster.roles %%}
+{%%- if role.k8s is defined and (role.k8s.node_labels is defined or role.k8s.node_taints is defined) %%}    
+  - name: Set Node label and taint for role {{{role.name}}}
+    k8s:
+      state: present
+      definition:
+        apiVersion: "v1"
+        kind: Node
+        metadata:
+          name: "{{item}}"
+{%%- if role.k8s.node_labels is defined %%}     
+          labels: {{{role.k8s.node_labels}}}
+{%% endif %%}
+{%%- if role.k8s.node_taints is defined %%}     
+        spec:
+          taints: {{{ role.k8s.node_taints }}}
+{%% endif %%}
+    with_items: 
+{%% for node in role.nodes %%}
+    - {{{node.name}}}
+{%% endfor %%}
+{%% endif %%}    
+{%% endfor %%}
+
+
+- hosts:  kube-master[0]
+  tasks:
+  - name: "Copy config file locally"
     fetch:
       src: /root/.kube/config
       dest: ./config
       flat: yes
+    tags: [ "config" ]      
+{%% if m.data.httpProxies.root is defined %%}
+  - name: Add proxy config to root environment
+    blockinfile:
+      path: /root/.bashrc
+      marker: "# {mark} ANSIBLE MANAGED BLOCK FOR HTTP_PROXY"
+      create: yes
+      block: |
+{%% if m.data.httpProxies.root.http_proxy is defined %%}
+        export http_proxy={{{m.data.httpProxies.root.http_proxy}}}
+{%% endif %%}
+{%% if m.data.httpProxies.root.https_proxy is defined %%}
+        export https_proxy={{{m.data.httpProxies.root.https_proxy}}}
+{%% endif %%}
+{%% if m.data.httpProxies.root.no_proxy is defined %%}
+        export no_proxy={{{m.data.httpProxies.root.no_proxy}}}
+{%% endif %%}
+    tags: [ "proxy", "http_proxy", "root_http_proxy" ]      
+{%% endif %%}    
+{%% if m.data.repositories.k9s is defined %%}    
+  roles:
+  - { role: k9s,  tags: [ "k9s" ], k9s_tgz_url: "{{{ m.data.repositories.k9s.k9s_tgz_url}}}" }
+{%% endif %%}    
     
     

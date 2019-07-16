@@ -15,14 +15,26 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import lookupRepository,setDefaultInMap
-
-
-def groom(_plugin, model):
-    setDefaultInMap(model["cluster"]["cerebro"], "disabled", False)
-    if model["cluster"]["cerebro"]["disabled"]:
-        return False
-    else:
-        lookupRepository(model, "cerebro")
-        return True
+type: map
+mapping:
+  "repositories":
+    type: map
+    required: false
+    mapping:
+      "docker_yum": 
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "repo_id": { type: str, required: True }
+            "docker_rh_repo_base_url": { type: str, required: True }
+            "docker_rh_repo_gpgkey": { type: str, required: True }
+            "dockerproject_rh_repo_base_url": { type: str, required: True }
+            "dockerproject_rh_repo_gpgkey": { type: str, required: True }
+            
+                                  
     
+    
+    
+  

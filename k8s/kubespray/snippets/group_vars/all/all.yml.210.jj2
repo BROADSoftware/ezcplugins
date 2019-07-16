@@ -1,0 +1,56 @@
+
+# -------------------------------------- EZCLUSTER ADD ON
+
+access_ip: "{{ ansible_host }}" 
+ip: "{{ ansible_host }}"
+
+# Override values from extra_playbooks/roles/container-engine/docker/defaults/main
+docker_rh_repo_base_url: {{{m.data.repositories.docker_yum.docker_rh_repo_base_url}}}
+docker_rh_repo_gpgkey: {{{m.data.repositories.docker_yum.docker_rh_repo_gpgkey}}}
+
+dockerproject_rh_repo_base_url: {{{m.data.repositories.docker_yum.dockerproject_rh_repo_base_url}}}
+dockerproject_rh_repo_gpgkey: {{{m.data.repositories.docker_yum.dockerproject_rh_repo_gpgkey}}}
+
+{%% if m.data.httpProxies.docker is defined %%}    
+# This will be used in docker proxy configuration  
+{%% if m.data.httpProxies.docker.http_proxy is defined %%}    
+docker_http_proxy: {{{m.data.httpProxies.docker.http_proxy}}}
+{%% endif %%}
+{%% if m.data.httpProxies.docker.https_proxy is defined %%}    
+docker_https_proxy: {{{m.data.httpProxies.docker.https_proxy}}}
+{%% endif %%}
+{%% if m.data.httpProxies.docker.no_proxy is defined %%}    
+docker_no_proxy: {{{m.data.httpProxies.docker.no_proxy}}}
+{%% endif %%}
+{%% endif %%}
+
+{%% if m.data.httpProxies.yum is defined %%}    
+# This will be used in yum proxy configuration  
+{%% if m.data.httpProxies.yum.http_proxy is defined %%}    
+yum_http_proxy: {{{m.data.httpProxies.yum.http_proxy}}}
+{%% endif %%}
+{%% if m.data.httpProxies.yum.https_proxy is defined %%}    
+yum_https_proxy: {{{m.data.httpProxies.yum.https_proxy}}}
+{%% endif %%}
+{%% if m.data.httpProxies.yum.no_proxy is defined %%}    
+yum_no_proxy: {{{m.data.httpProxies.yum.no_proxy}}}
+{%% endif %%}
+{%% endif %%}
+
+
+
+
+{%% if m.data.httpProxies.ansible is defined %%}    
+# This will be used by playbooks to fetch artifact using get_url
+proxy_env:
+{%% if m.data.httpProxies.ansible.http_proxy is defined %%}    
+  http_proxy: {{{m.data.httpProxies.ansible.http_proxy}}}
+{%% endif %%}
+{%% if m.data.httpProxies.ansible.https_proxy is defined %%}    
+  https_proxy: {{{m.data.httpProxies.ansible.https_proxy}}}
+{%% endif %%}
+{%% if m.data.httpProxies.ansible.no_proxy is defined %%}    
+  no_proxy: {{{m.data.httpProxies.ansible.no_proxy}}}
+{%% endif %%}
+{%% endif %%}
+

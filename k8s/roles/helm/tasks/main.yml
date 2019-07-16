@@ -30,6 +30,10 @@
       metadata:
         name: tiller
         namespace: kube-system
+  register: k8s_task_result
+  until: k8s_task_result is succeeded
+  retries: 60
+  delay: "5"
 
 - name: Apply Tiller RBAC definition.
   k8s:
@@ -47,6 +51,7 @@
         - kind: ServiceAccount
           name: tiller
           namespace: kube-system
+
     
 - name: Retrieve helm binary archive.
   unarchive:
@@ -64,7 +69,8 @@
   shell:  /usr/local/bin/helm init --service-account tiller
   register: helm_init_result
   changed_when: "'already installed' not in helm_init_result.stdout"
-
+  environment: "{{proxy_env|default({})}}"
+  
 #- debug: var=helm_init_result
 
 - name: Get Tiller's ClusterIP.

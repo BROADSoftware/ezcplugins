@@ -1,0 +1,65 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+# Ref: https://github.com/rpardini/docker-registry-proxy
+
+- name: Install python-docker-py ansible module required package
+  yum: name=python-docker-py state=present
+
+  
+- name: Create docker_proxy folders
+  file:
+    path: "{{item.path}}"
+    state: directory
+    owner: "{{item.owner}}"
+    group: "{{item.group}}"
+    mode: 0755
+  with_items:
+  - { path: /var/lib/docker_proxy, owner: root, group: root }  
+  - { path: /var/lib/docker_proxy/cache, owner: 100, group: 101 }
+  - { path: /var/lib/docker_proxy/certs, owner: root, group: root }
+  
+- name: Setup CA.
+  copy:
+    src: "{{docker_proxy_ca}}/{{item}}"
+    dest: "/var/lib/docker_proxy/certs/{{item}}"
+    owner: root
+    group: root
+    mode: 0644
+    force: no
+  with_items:
+  - ca.crt
+  - ca.key
+  - ca.srl
+  when: docker_proxy_ca is defined and docker_proxy_ca != 'new'
+  
+- name: Launch docker_proxy container
+  docker_container:
+    name: docker_proxy
+    image: rpardini/docker-registry-proxy:0.2.4
+    state: started
+    restart_policy: unless-stopped
+    ports:
+    - "0.0.0.0:3128:3128"
+    volumes:
+    - /var/lib/docker_proxy/cache:/docker_mirror_cache
+    - /var/lib/docker_proxy/certs:/ca
+    env:
+      REGISTRIES: "k8s.gcr.io gcr.io quay.io"
+      
+      
+  

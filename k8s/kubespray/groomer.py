@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import setDefaultInMap, appendPath,lookupHelper,ERROR
+from misc import setDefaultInMap, appendPath,lookupHelper,ERROR,lookupRepository,lookupHttpProxy
 import os
 
 K8S="k8s"
@@ -28,18 +28,28 @@ CONFIG_FILE = "configFile"
 CLUSTER = "cluster"
 DOCKER_CERTIFICATES = "docker_certificates"
 DISABLED = "disabled"
+CLUSTER_NAME="cluster_name"
+K9S_REPO_ID="k9s_repo_id"
 
 def groom(_plugin, model):
     setDefaultInMap(model[CLUSTER], K8S, {})
     setDefaultInMap(model[CLUSTER][K8S], KUBESPRAY, {})
     setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], DISABLED, False)
     setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], "basic_auth", False)
+    setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], K9S_REPO_ID, "latest")
     if model[CLUSTER][K8S][KUBESPRAY][DISABLED]:
         return False
     else:
+        lookupRepository(model, None, "docker_yum", model[CLUSTER][K8S][KUBESPRAY]['docker_yum_repo_id'])
+        if model[CLUSTER][K8S][KUBESPRAY][K9S_REPO_ID] is not None:
+            lookupRepository(model, "k9s", repoId = model[CLUSTER][K8S][KUBESPRAY][K9S_REPO_ID])
         lookupHelper(model, KUBESPRAY, helperId=model[CLUSTER][K8S][KUBESPRAY]["helper_id"])
+        lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["docker_proxy_id"] if "docker_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "docker")
+        lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["ansible_proxy_id"] if "ansible_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "ansible")
+        lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["root_proxy_id"] if "root_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "root")
+        lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["yumproxy_id"] if "yum_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "yum")
         model[DATA][ROLE_PATHS].add(appendPath(model[DATA][HELPERS][KUBESPRAY][FOLDER], "roles"))
-        model[DATA]["dnsNbrDots"] = model[CLUSTER]["domain"].count(".") + 1
+        model[DATA]["dnsNbrDots"] = model[CLUSTER][K8S][KUBESPRAY][CLUSTER_NAME].count(".") + 1
         certByName = {}
         if DOCKER_CERTIFICATES in model["config"]:
             for cert in model["config"][DOCKER_CERTIFICATES]:

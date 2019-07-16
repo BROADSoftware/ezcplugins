@@ -1,32 +1,8 @@
 
 - name: "Download kubectl binary"
   get_url:
-    url: "{{rancher_kubctl_url}}"
+    url: "{{kubctl_bin_url}}"
     dest: /usr/local/bin/kubectl
     owner: root
     group: root
     mode: 0755
-
-- name: Check k9s
-  stat:
-    path: /usr/local/bin/k9s
-  register: k9s
-        
-- name: "Download k9s archive"
-  unarchive:
-    src: "{{rancher_k9s_url}}"
-    dest: /tmp
-    remote_src: yes
-  when: not k9s.stat.exists
-
-- name: Set k9s in the target location
-  copy:
-    src: /tmp/k9s
-    dest: /usr/local/bin/k9s
-    owner: root
-    group: root
-    mode: 0755
-    remote_src: yes
-    
-
-    

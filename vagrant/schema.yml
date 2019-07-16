@@ -35,6 +35,7 @@ schema;node_list:
     mapping:
       "synced_folders":
         include: synced_folder_list
+      "default_router": { type: str, required: false }
 
 type: map
 mapping:
@@ -46,6 +47,7 @@ mapping:
       "yum_repo": { type: str, required: true, enum: ["public", "local", "untouched" ] }  # public: Set public repo  local: Set local one (Must be defined in config).  untouched: Preserve Vms original config
       "synced_folders":
         include: synced_folder_list
+      "default_router": { type: str, required: false }
   "roles": 
     type: seq
     required: true
@@ -56,6 +58,7 @@ mapping:
         "memory": { type: float, required: true}
         "synced_folders":
           include: synced_folder_list
+        "default_router": { type: str, required: false }
         "data_disks":
           type: seq 
           required: false

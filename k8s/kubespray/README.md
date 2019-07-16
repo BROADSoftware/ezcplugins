@@ -1,39 +1,52 @@
-# Build 
+# Kubspray follow up 
 
-- Tested with kubespray on this commit:
+All this files in `snippets/group_vars` are copied as is from `sample/local/group_vars`, except:
 
-```
-commit ccc3f89060b18b3532d6b054b15a7de10255671a (HEAD -> master, origin/master, origin/HEAD)
-Author: Egor <iam@aylium.net>
-Date:   Sun Oct 21 10:35:52 2018 +0300
+- all.yml, renamed to all.yml.200.jj2
+- k8s-cluster/k8s-cluster.yml renamed k8s-cluster/k8s-cluster.yml.200.jj2 and with some modification marked with EZCLUSTER
 
-    Add kube-router annotations (#3533)
-```
+# Proxy issue
 
-- last tagged version (2.7.0) was not working in my context.
+If proxy must be set, there is a problem as `http_proxy` set both docker's proxy and yum proxy.
 
-- Does not works with ansible 2.7. Use 2.6.3 (See release note on kubespray 2.7.0 release/tag)
+A quick fix is to replace `http_proxy` per `yum_http_proxy` in the following files:
 
+- roles/bootstrap-os/tasks/bootstrap-centos.yml
+- roles/container-engine/docker/tasks/main.yml
+- roles/container-engine/docker/templates/rh_docker.repo.j2
 
-# Access
+A forked version solving this issue and intended to be used with this plugin is located at:
 
-https://m1.kspray4:6443/api/v1/namespaces/kube-system/services/https:kubernetes-dashboard:/proxy/#!/login
+https://github.com/SergeAlexandre/kubespray/tree/bs2.10.4
 
-To get a token, on m1, as root (Loaged as root, not by sudo)
+USING THIS FORK IS MANDATORY IF YOU NEED PROXY SUPPORT (Air gapped installation)
 
-kubectl -n kube-system get secret
+# Proposal for http_proxy segregation
 
-kubectl -n kube-system describe secret namespace-controller-token-9w5j6
+## What would you like to be added:
 
+I suggest to replace the http_proxy variable by a more specific one, depending of the use case:
 
+docker_http_proxy, for the docker service configuration
+yum_http_proxy, for yum acces configuration.
+ansible_http_proxy, used in proxy_env for the usage of ansible playbook (Typically on get_url) at build time.
+Then we can have some default value to preserve compatibility:
 
-# Enable nodelocal dns cache
-enable_nodelocaldns: true
+docker_http_proxy: {{http_proxy}}
+yum_http_proxy: {{http_proxy}}
+ansible_http_proxy: {{http_proxy}}
+(Of course same for https_proxy and no_proxy)
 
-Was before:
-enable_nodelocaldns: False     # EZCLUSTER (Was true)
+If you agree on this, I would be happy to implement it, make some test on Centos and make a PR.
 
+(Another approach would be to completely remove yum proxy support from kubespray, considering yum 
+configuration is out of its scope and should be performed before, as part of the base OS setup).
 
+Please let me know what you think.
 
+## Why is this needed:
 
+Because there is some cases where these values need to be different. For example, I need to setup 
+the proxy in docker configuration (targeting a specific docker proxy-cache) while still using direct yum access
+on internally built yum repo. And may be a squid for usual (get_url) proxying.
 

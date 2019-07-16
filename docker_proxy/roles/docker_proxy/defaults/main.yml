@@ -15,14 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import lookupRepository,setDefaultInMap
 
+# May be 'new' for generating a new ca, or one of the subfolder(s) in files
+docker_proxy_ca: "ca1"
 
-def groom(_plugin, model):
-    setDefaultInMap(model["cluster"]["cerebro"], "disabled", False)
-    if model["cluster"]["cerebro"]["disabled"]:
-        return False
-    else:
-        lookupRepository(model, "cerebro")
-        return True
-    

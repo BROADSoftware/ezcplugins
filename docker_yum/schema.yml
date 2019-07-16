@@ -15,33 +15,23 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
+
+
 type: map
 mapping:
-  "repositories":
+  "docker":
+    required: true
     type: map
-    required: false
     mapping:
-      "docker": 
+      "users": 
         type: seq
-        required: false
         sequence:
-        - type: map
-          mapping:
-            "repo_id": { type: str, required: True }
-            "version": { type: str, required: True }
-            "dependencies": 
-              type: seq
-              required: true
-              sequence:
-              - type: str
-            "urls": 
-              type: seq
-              required: true
-              sequence:
-              - type: str
-            
-                                  
-    
-    
-    
-  
+        - type: str
+      "repo_id": { type: str, required: yes }
+      "disabled": { type: bool, required: false }
+      "version": { type: str, required: no }  # Default 'lastest'
+      "proxy_id": { type: str, required: no }
+       
+      
+      
+     
