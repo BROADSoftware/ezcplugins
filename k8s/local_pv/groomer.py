@@ -17,6 +17,9 @@
 
 from misc import ERROR,appendPath
 import os
+from sets import Set
+import re
+
 
 CLUSTER = "cluster"
 ROLES="roles"
@@ -28,12 +31,17 @@ SPLITS="splits"
 MOUNT="mount"
 SIZE="size"
 HOST_DIR="host_dir"
+LOCAL_PERSISTENT_VOLUMES="local_persistent_volumes"
+STORAGE_CLASSES="storage_classes"
+STORAGE_CLASS="storage_class"
 
 DATA="data"
 ROLE_BY_NAME="roleByName"
 DEVICE="device"
 LVM_SPLITTERS="lvmSplitters"
 BIND_MOUNTS="bindMounts"
+
+nameCheckRegex = re.compile('^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\\\\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$')
 
 
 def isA_subdirOfB_orAisB(A, B):
@@ -44,6 +52,13 @@ def isA_subdirOfB_orAisB(A, B):
 
 def groom(_plugin, model):
     # A first loop to check user input
+    storageClasses = Set()
+    
+    for sc in model[CLUSTER][K8S][LOCAL_PERSISTENT_VOLUMES][STORAGE_CLASSES]:
+        if nameCheckRegex.match(sc["name"]) is None:
+            ERROR("Invalid storage_class name '{}': DNS-1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character".format(sc["name"]))
+        storageClasses.add(sc["name"])
+    
     for role in model[CLUSTER][ROLES]:
         if DATA_DISKS in role:
             for disk in role[DATA_DISKS]:
@@ -51,6 +66,8 @@ def groom(_plugin, model):
                     pv = disk[K8S][PERSISTENT_VOLUMES]
                     if COUNT in pv and SPLITS in pv:
                         ERROR("Both 'count' and 'splits' are defined on a persistent volume {}!".format(pv[HOST_DIR]))
+                    if pv[STORAGE_CLASS] not in storageClasses:
+                        ERROR("Persistent_volumes.host_dir='{}': undefined storage_class '{}'".format(pv[HOST_DIR], pv[STORAGE_CLASS]))
                     if SPLITS in pv:
                         dsum = 0
                         for split in pv[SPLITS]:

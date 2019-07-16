@@ -1,4 +1,5 @@
 
 - name: Create Persistent Volumes
-  import_playbook: split.yml
+  import_playbook: local_pv/split.yml
+  import_playbook: local_pv/storage_classes.yml
      
