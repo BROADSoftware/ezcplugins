@@ -1,0 +1,13 @@
+     
+JSONPATH=""
+JSONPATH="${JSONPATH}{range .items[*]}"
+JSONPATH="${JSONPATH}{.spec.capacity.storage}"
+JSONPATH="${JSONPATH}{'\t'}{.spec.local.path}"
+JSONPATH="${JSONPATH}{'\t'}{.spec.nodeAffinity.required.nodeSelectorTerms[0].matchExpressions[0].values[0]}"
+JSONPATH="${JSONPATH}{'\t'}{.status.phase}"
+JSONPATH="${JSONPATH}{'\t'}{'\t'}{.spec.claimRef.namespace}/{.spec.claimRef.name}"
+JSONPATH="${JSONPATH}{'\n'}{end}"
+echo $JSONPATH
+
+kubectl get pv -o=jsonpath="${JSONPATH}" | sort +2 +1
+

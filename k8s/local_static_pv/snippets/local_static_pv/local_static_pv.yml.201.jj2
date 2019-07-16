@@ -1,0 +1,25 @@
+
+- hosts: kube-master[0]
+  tags: [ "local_static_pv" ]
+  vars:
+    storage_classes:
+    {{{m.data.localStaticStorageClasses|to_pretty_yaml|indent(4)}}}
+    helm_values:
+      common: 
+        namespace: kube-system
+{%% if m.data.pvMountFolders is defined and m.data.pvMountFolders|length > 0 %%}
+      classes:
+{%% for mf in m.data.pvMountFolders %%}
+      - name: {{{ mf.className }}}
+        hostDir: {{{ mf.hostDir }}}
+        volumeMode: Filesystem
+        blockCleanerCommand:
+        - "/scripts/shred.sh"
+        - "2"
+{%% endfor %%}        
+{%% endif %%}
+  roles:
+  - local_static_pv
+  
+  
+  

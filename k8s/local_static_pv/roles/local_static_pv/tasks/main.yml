@@ -37,9 +37,14 @@
 - name: Copy helm chart in working folder
   copy:
     src: "{{version}}/"
-    dest: "{{working_folder}}/"
-  register: xx
+    dest: "{{working_folder}}/provisionner"
+  notify:
+  - deploy_provisionner  
+
+- name: Copy our values
+  template:
+    src: myvalues.yaml.j2
+    dest: "{{working_folder}}/myvalues.yaml"
+  notify:
+  - deploy_provisionner  
   
-
-- debug: var=xx
-
