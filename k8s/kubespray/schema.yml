@@ -31,6 +31,8 @@ mapping:
           "helper_id": { type: str, required: True }
           "basic_auth": { type: bool, required: True }
           "admin_password": { type: str, required: False }
+          "default_not_ready_toleration_seconds": { type: int, required: False }       
+          "default_unreachable_toleration_seconds": { type: int, required: False }       
           "docker_certificates":
             type: seq
             required: false

@@ -37,7 +37,7 @@ NAME="name"
 DATA_DISK_REF="data_disk_ref"
 REF="ref"
 TYPE="type"
-LOCAL_STATIC_PV="local_static_pv"
+LOCAL_STATIC_PVS="local_static_pvs"
 PV_MOUNT_FOLDERS="pvMountFolders"
 
 DATA="data"
@@ -88,8 +88,8 @@ def groom(_plugin, model):
         role[LVM_SPLITTERS] = []
         role[BIND_MOUNTS] = []
         splitCount = 0
-        if K8S in role and LOCAL_STATIC_PV in role[K8S]:
-            for lpv in role[K8S][LOCAL_STATIC_PV]:
+        if K8S in role and LOCAL_STATIC_PVS in role[K8S]:
+            for lpv in role[K8S][LOCAL_STATIC_PVS]:
                 if lpv[STORAGE_CLASS] not in localSaticStorageClassByName:
                     ERROR("role['{}'].k8s.local_static_pv.host_dir['{}']': Undefined storage_class '{}'".format(role[NAME], lpv[HOST_DIR], lpv[STORAGE_CLASS]))
                 if lpv[STORAGE_CLASS] in storageClasses:

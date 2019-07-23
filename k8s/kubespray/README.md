@@ -50,3 +50,11 @@ Because there is some cases where these values need to be different. For example
 the proxy in docker configuration (targeting a specific docker proxy-cache) while still using direct yum access
 on internally built yum repo. And may be a squid for usual (get_url) proxying.
 
+# Location to know about
+
+- master:/etc/kubernetes
+
+
+- master:/etc/kubernetes/manifests
+Static pod configguration
+

@@ -49,7 +49,7 @@ mapping:
           type: map
           required: false
           mapping:
-            "local_static_pv":
+            "local_static_pvs":
               type: seq
               required: false
               sequence:
