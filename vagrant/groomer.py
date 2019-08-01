@@ -17,7 +17,7 @@
 
 
 import logging
-from misc import ERROR,setDefaultInMap,appendPath
+from misc import ERROR,setDefaultInMap,appendPath,resolveIps
 import copy
 
 loggerConfig = logging.getLogger("ezcluster.config")
@@ -48,6 +48,7 @@ def groomRoles(model):
 DEFAULT_ROUTER="default_router"
 
 def groomNodes(model):
+    resolveIps(model)
     model['data']['dataDisksByNode'] = {}
     for node in model['cluster']['nodes']:
         if not SYNCED_FOLDERS in node:
