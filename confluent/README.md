@@ -33,22 +33,19 @@ Date:   Mon Oct 22 18:09:45 2018 +0200
 ```
 
 Modifications are pushed to :
+
     https://github.com/mlahouar/cp-ansible
     branch : 5.2.X
     commit : 
-        commit 6472174f8b421eaa52005c0ba410da8eaf759c92
+        commit d53f0aa55bbd6a402fb22e636291c97216eff770
         Author: moncef lahouar <moncef.lahouar@gmail.com>
-        Date:   Mon May 27 14:56:26 2019 +0200
-        
-            Add sasl_plaintext support (broker)
-        
-        commit a90472e5d3d13ae75dbfc13c17a763ca3aa77f2d
-        Author: moncef lahouar <moncef.lahouar@gmail.com>
-        Date:   Mon May 20 16:59:30 2019 +0200
-        
-            Create zk log directory if set (zookeeper user don't have rights on /var/log for ex)
+        Date:   Tue Jul 2 14:57:07 2019 +0200
+
+                Add SASL_PLAINTEXT support to confluent
+
+
             
-## Howto
+## HowTo
 
 ### Enable security
 1. Define your security context on config file, ex : 

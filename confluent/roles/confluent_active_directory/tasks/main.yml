@@ -103,14 +103,14 @@
 - name: Create Kafka Service Keytab
   shell: |
     rm -rf /etc/security/keytabs/kafka.service.keytab
-    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e aes256-cts-hmac-sha1-96\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
-    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e aes128-cts-hmac-sha1-96\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
-    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e des3-cbc-sha1\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
-    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e arcfour-hmac\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
-    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e camellia256-cts-cmac\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
-    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e camellia128-cts-cmac\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
-    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e des-hmac-sha1\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
-    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e des-cbc-md5\n{{ password }}\nwrite_kt /etc/security/keytabs/{{ service_name }}.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e aes256-cts-hmac-sha1-96\n{{ password }}\nwrite_kt /etc/security/keytabs/kafka.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e aes128-cts-hmac-sha1-96\n{{ password }}\nwrite_kt /etc/security/keytabs/kafka.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e des3-cbc-sha1\n{{ password }}\nwrite_kt /etc/security/keytabs/kafka.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e arcfour-hmac\n{{ password }}\nwrite_kt /etc/security/keytabs/kafka.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e camellia256-cts-cmac\n{{ password }}\nwrite_kt /etc/security/keytabs/kafka.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e camellia128-cts-cmac\n{{ password }}\nwrite_kt /etc/security/keytabs/kafka.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e des-hmac-sha1\n{{ password }}\nwrite_kt /etc/security/keytabs/kafka.service.keytab" | ktutil
+    printf "%b" "addent -password -p {{ service_name }}/{{ ansible_fqdn }}@{{ realm }} -k 1 -e des-cbc-md5\n{{ password }}\nwrite_kt /etc/security/keytabs/kafka.service.keytab" | ktutil
   when: " 'kafka' in service_name "
 
 - name: Create Zookeeper Service Keytab

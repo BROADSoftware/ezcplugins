@@ -60,7 +60,18 @@
 {%% endif %%}
 
 
-{%% if m.data.confluent.security != 'none' %%}
+
+- hosts: broker
+  tasks:
+    - name: copy extra jars
+      get_url:
+        url: "{{ item }}"
+        dest: /usr/share/java/kafka
+        mode: '0444'
+      with_items: "{{ kafka.broker.extra_jars }}"
+      when: kafka.broker.extra_jars is defined
+
+{%% if m.cluster.confluent.zookeeper is defined and m.cluster.confluent.zookeeper.restart is defined and m.cluster.confluent.zookeeper.restart == true %%}
 
 - hosts: "zookeeper"
   serial: 1
@@ -72,8 +83,10 @@
     - name: reload systemd
       command: systemctl daemon-reload
     - pause:
-        seconds: 20
+        seconds: 30
+{%% endif %%}
 
+{%% if m.cluster.confluent.broker is defined and m.cluster.confluent.broker.restart is defined and m.cluster.confluent.broker.restart == true %%}
 - hosts: "broker"
   serial: 1
   tasks:
@@ -84,7 +97,7 @@
     - name: reload systemd
       command: systemctl daemon-reload
     - pause:
-        seconds: 20
+        seconds: 30
 
 - hosts: "broker"
   run_once: true
