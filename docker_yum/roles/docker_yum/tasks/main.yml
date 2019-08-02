@@ -11,6 +11,7 @@
     - "{{docker_versioned_pkg[docker_version]}}"
     - containerd.io
     state: present
+    enablerepo: "{{yum_enable_repo|default(omit)}}"
 
 - name: Create docker service systemd directory if it doesn't exist
   file:

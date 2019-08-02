@@ -18,7 +18,7 @@
 # Ref: https://github.com/rpardini/docker-registry-proxy
 
 - name: Install python-docker-py ansible module required package
-  yum: name=python-docker-py state=present
+  yum: name=python-docker-py state=present enablerepo={{yum_enable_repo|default(omit)}}
 
   
 - name: Create docker_proxy folders
