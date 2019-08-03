@@ -19,10 +19,12 @@ Vagrant.configure(2) do |config|
   config.vm.define "{{{ node.name}}}" do |node|
     node.vm.network "private_network", ip: "{{{node.ip}}}"
 {%% if node.default_router is defined  and node.default_router != None %%}
+{%% if node.default_router|lower != "none" %%}
  	# default router (https://www.vagrantup.com/docs/networking/public_network.html)
   	config.vm.provision "shell",
     	run: "always",
     	inline: "route add default gw {{{node.default_router}}}"
+{%% endif %%}
   	# delete default gw on eth0
   	config.vm.provision "shell",
     	run: "always",
