@@ -1,0 +1,12 @@
+provider "aws" {
+  region     = "{{{m.cluster.aws.region}}}"
+}
+
+
+data "aws_subnet" "reference_subnet" {
+  filter {
+    name   = "tag:Name"
+    values = ["{{{m.data.referenceSubnet}}}"]
+  }
+}
+

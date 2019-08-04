@@ -1,0 +1,98 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+schema;node_list:
+  type: seq
+  required: false
+  sequence:
+  - type: map
+    mapping:
+      "aws":
+        type: map
+        required: true
+        mapping:
+          "subnet": { type: str, required: true }
+
+type: map
+mapping:
+  "aws":
+    type: map
+    required: true
+    mapping:
+      "region": { type: str, required: true }
+      "security_groups": 
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "name":  { type: str, required: true }
+            "description":  { type: str, required: false }
+            tags:
+              type: map
+              required: false
+              mapping:
+                regex;(.*):
+                  type: str
+            inbound_rules:
+              type: seq
+              required: false
+              sequence:
+              - type: map
+                mapping:
+                  "protocol": { type: str, required: true } 
+                  "port": { type: str, required: false }   
+                  "from_port": { type: int, required: false }   
+                  "to_port": { type: int, required: false }   
+                  "source": { type: str, required: true }   
+            outbound_rules:
+              type: seq
+              required: false
+              sequence:
+              - type: map
+                mapping:
+                  "protocol": { type: str, required: true } 
+                  "port": { type: str, required: false }   
+                  "from_port": { type: int, required: false }   
+                  "to_port": { type: int, required: false }   
+                  "destination": { type: str, required: true }   
+
+  "roles": 
+    type: seq
+    required: true
+    sequence:
+    - type: map
+      mapping:
+        "aws":
+          type: map
+          required: true
+          mapping:
+            instance_type: { type: str, required: true }   
+            root_size: { type: int, required: true }   
+            security_group: { type: str, required: true }   
+        "data_disks":
+          type: seq 
+          required: false
+          sequence:
+          - type: map
+            mapping:
+              "size": { type: int, required: true }
+              "mount": { type: str, required: false }
+          
+          
+          
+  
