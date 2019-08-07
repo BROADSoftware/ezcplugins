@@ -26,6 +26,13 @@ schema;node_list:
         required: true
         mapping:
           "subnet": { type: str, required: true }
+          "tags":
+            type: map
+            required: false
+            mapping:
+              regex;(.*):
+                type: str
+          
 
 type: map
 mapping:
@@ -34,6 +41,7 @@ mapping:
     required: true
     mapping:
       "region": { type: str, required: true }
+      "key_pair": { type: str, required: false }   # Default: 'default'
       "security_groups": 
         type: seq
         required: false
@@ -54,10 +62,13 @@ mapping:
               sequence:
               - type: map
                 mapping:
+                  "description": { type: str, required: false }
                   "protocol": { type: str, required: true } 
-                  "port": { type: str, required: false }   
+                  "port": { type: any, required: false }   
                   "from_port": { type: int, required: false }   
                   "to_port": { type: int, required: false }   
+                  "icmp_type": { type: str, required: false }
+                  "icmp_code": { type: int, required: false }
                   "source": { type: str, required: true }   
             outbound_rules:
               type: seq
@@ -65,10 +76,13 @@ mapping:
               sequence:
               - type: map
                 mapping:
+                  "description": { type: str, required: false }
                   "protocol": { type: str, required: true } 
-                  "port": { type: str, required: false }   
+                  "port": { type: any, required: false }   
                   "from_port": { type: int, required: false }   
                   "to_port": { type: int, required: false }   
+                  "icmp_type": { type: str, required: false }
+                  "icmp_code": { type: int, required: false }
                   "destination": { type: str, required: true }   
 
   "roles": 
@@ -83,7 +97,14 @@ mapping:
           mapping:
             instance_type: { type: str, required: true }   
             root_size: { type: int, required: true }   
+            root_volume_type: { type: str, required: false }  # default: gp2   
             security_group: { type: str, required: true }   
+            "tags":
+              type: map
+              required: false
+              mapping:
+                regex;(.*):
+                  type: str
         "data_disks":
           type: seq 
           required: false

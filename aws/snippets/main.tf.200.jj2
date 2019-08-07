@@ -1,5 +1,6 @@
 provider "aws" {
   region     = "{{{m.cluster.aws.region}}}"
+  version	= "~> 2.22"
 }
 
 
@@ -10,3 +11,149 @@ data "aws_subnet" "reference_subnet" {
   }
 }
 
+{%% if m.data.needMyVpc %%}
+data "aws_vpc" "my_vpc" {
+  id = data.aws_subnet.reference_subnet.vpc_id
+}
+{%% endif %%}
+
+// -------------------------------------------- Security groups definition(s)
+
+{%% for esg in m.data.externalSecurityGroups %%}
+data "aws_security_group" "{{{esg}}}" {
+  filter {
+    name   = "tag:Name"
+    values = ["{{{esg}}}"]
+  }
+}
+{%% endfor %%}
+
+{%% for name, sg in m.data.securityGroupByName.iteritems() %%}
+resource "aws_security_group" "{{{sg.name}}}" {
+	name 	= "{{{sg.name}}}"
+{%% if sg.description is defined %%}
+	description = "{{{ sg.description }}}"
+{%% endif %%}
+	vpc_id	= data.aws_subnet.reference_subnet.vpc_id
+{%% if sg.tags is defined %%}	
+  	tags 	= {
+{%%- for name, value in sg.tags.iteritems() %%}  		
+    	{{{name}}} = "{{{value}}}"
+{%% endfor %%}
+  	}
+{%% endif %%}
+{%%  for ingress in sg.ingress %%}
+	ingress {
+		protocol = "{{{ ingress.protocol }}}"
+		from_port = {{{ ingress.from_port }}}
+		to_port = {{{ ingress.to_port }}}
+{%% if ingress.description is defined %%}
+		description = "{{{ ingress.description }}}"
+{%% endif %%}
+{%% if ingress.self is defined and ingress.self %%}
+		self = true
+{%% endif %%}
+{%% if ingress.cidr_block is defined %%}
+		cidr_blocks = ["{{{ ingress.cidr_block }}}"]
+{%% endif %%}
+{%% if ingress.security_group is defined %%}
+		security_groups = [{{{ ingress.security_group }}}]
+{%% endif %%}
+	} 
+{%% endfor %%} 
+{%%  for egress in sg.egress %%}
+	egress {
+		protocol = "{{{ egress.protocol }}}"
+		from_port = {{{ egress.from_port }}}
+		to_port = {{{ egress.to_port }}}
+{%% if egress.description is defined %%}
+		description = "{{{ egress.description }}}"
+{%% endif %%}
+{%% if egress.self is defined and egress.self %%}
+		self = true
+{%% endif %%}
+{%% if egress.cidr_block is defined %%}
+		cidr_blocks = ["{{{ egress.cidr_block }}}"]
+{%% endif %%}
+{%% if egress.security_group is defined %%}
+		security_groups = [{{{ egress.security_group }}}]
+{%% endif %%}
+	} 
+{%% endfor %%} 
+}
+
+{%% endfor %%} 
+
+
+// -------------------------------------------- Instance definition(s)
+
+locals {
+	instances = [
+{%% for node in m.cluster.nodes %%}
+		{
+			name 				= "{{{ node.fqdn }}}"
+			subnet_name 		= "{{{ node.aws.subnet }}}"
+			instance_type 		= "{{{m.data.roleByName[node.role].aws.instance_type }}}"
+			root_size 			= {{{ m.data.roleByName[node.role].aws.root_size }}}
+			root_volume_type 	= "{{{m.data.roleByName[node.role].aws.root_volume_type }}}"
+			security_group_id 	= {{{m.data.roleByName[node.role].aws.security_group_id }}}
+		},
+{%% endfor %%}	
+	]
+}
+			
+// -------------------------------------------- Following is static code
+
+
+data "aws_subnet" "by_index" {
+  count = length(local.instances)
+  filter {
+    name   = "tag:Name"
+    values = [local.instances[count.index].subnet_name]
+  }
+}
+
+// ------------------------- centos 7 latest
+data "aws_ami" "my_ami" {
+  most_recent = true
+  filter {
+    name   = "product-code"
+    values = ["aw0evgkw8e5c1q413zgy5pjce"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  owners = ["679593333241"] # Centos
+}
+
+
+resource "aws_instance" "inst" {
+  count                  = length(local.instances)
+  ami                    = data.aws_ami.my_ami.id
+  instance_type          = local.instances[count.index].instance_type
+  subnet_id              = data.aws_subnet.by_index[count.index].id
+  key_name               = "aws_id1"
+  vpc_security_group_ids = [local.instances[count.index].security_group_id]
+  tags = {
+    Name    = local.instances[count.index].name
+    // Cluster = "cl1"
+  }
+  volume_tags = {
+    Name    = local.instances[count.index].name
+    Node    = local.instances[count.index].name
+    // Cluster = "cl1"
+  }
+  user_data = <<-EOF
+              #!/bin/bash
+              hostnamectl set-hostname "${local.instances[count.index].name}"
+              systemctl restart network
+              EOF
+  root_block_device {
+    volume_size = local.instances[count.index].root_size
+    volume_type = "local.instances[count.index].root_volume_type"
+    delete_on_termination = true
+  }
+}
+
+			
