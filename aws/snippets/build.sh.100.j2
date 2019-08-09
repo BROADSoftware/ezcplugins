@@ -23,7 +23,7 @@ OPTS="$OPTS --vault-password-file {{ m.data.vaultPasswordFile }}"
 {% endif %}
 
 if terraform init; then
-	if terraform apply; then
+	if terraform apply -state=${MYDIR}/../terraform.tfstate; then
 		ansible-playbook ./main.yml $OPTS "$@"
 	else
 		echo "Terraform NOT applied"

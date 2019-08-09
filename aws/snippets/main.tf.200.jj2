@@ -3,23 +3,33 @@ provider "aws" {
   version	= "~> 2.22"
 }
 
-
+// ------------------------------------------------ Lookup existing ressources
 data "aws_subnet" "reference_subnet" {
   filter {
     name   = "tag:Name"
-    values = ["{{{m.data.referenceSubnet}}}"]
+    values = ["{{{m.data.aws.referenceSubnet}}}"]
   }
 }
 
-{%% if m.data.needMyVpc %%}
+data "aws_route53_zone" "forward" {
+  name = "{{{m.data.aws.route53.forward_domain}}}"
+  private_zone = true
+  vpc_id = data.aws_subnet.reference_subnet.vpc_id
+}
+
+data "aws_route53_zone" "reverse" {
+  name = "{{{m.data.aws.route53.reverse_domain}}}"
+  private_zone = true
+  vpc_id = data.aws_subnet.reference_subnet.vpc_id
+}
+
+{%% if m.data.aws.needMyVpc %%}
 data "aws_vpc" "my_vpc" {
   id = data.aws_subnet.reference_subnet.vpc_id
 }
 {%% endif %%}
 
-// -------------------------------------------- Security groups definition(s)
-
-{%% for esg in m.data.externalSecurityGroups %%}
+{%% for esg in m.data.aws.externalSecurityGroups %%}
 data "aws_security_group" "{{{esg}}}" {
   filter {
     name   = "tag:Name"
@@ -28,7 +38,9 @@ data "aws_security_group" "{{{esg}}}" {
 }
 {%% endfor %%}
 
-{%% for name, sg in m.data.securityGroupByName.iteritems() %%}
+// -------------------------------------------- Security groups definition(s)
+
+{%% for name, sg in m.data.aws.securityGroupByName.iteritems() %%}
 resource "aws_security_group" "{{{sg.name}}}" {
 	name 	= "{{{sg.name}}}"
 {%% if sg.description is defined %%}
@@ -87,6 +99,8 @@ resource "aws_security_group" "{{{sg.name}}}" {
 
 // -------------------------------------------- Instance definition(s)
 
+{## WARNING: Loop for data disks must occurs on the same node array here and in the groomer.groomNodes() function ##}
+ 
 locals {
 	instances = [
 {%% for node in m.cluster.nodes %%}
@@ -97,13 +111,27 @@ locals {
 			root_size 			= {{{ m.data.roleByName[node.role].aws.root_size }}}
 			root_volume_type 	= "{{{m.data.roleByName[node.role].aws.root_volume_type }}}"
 			security_group_id 	= {{{m.data.roleByName[node.role].aws.security_group_id }}}
+			key_name			= "{{{m.data.aws.keyPair}}}"
+			tags				= {
+{%%- for name, value in node.aws.tags.iteritems() %%}  		
+    								{{{name}}} = "{{{value}}}"
+{%% endfor %%}
+								}
+		},
+{%% endfor %%}	
+	]
+	data_disks = [
+{%% for disk in m.data.aws.dataDisks %%}
+		{
+			instance_index 	= {{{disk.instanceIndex}}}
+			size 			= {{{disk.size}}}
+			device 			= "{{{disk.device}}}"
 		},
 {%% endfor %%}	
 	]
 }
 			
 // -------------------------------------------- Following is static code
-
 
 data "aws_subnet" "by_index" {
   count = length(local.instances)
@@ -133,17 +161,10 @@ resource "aws_instance" "inst" {
   ami                    = data.aws_ami.my_ami.id
   instance_type          = local.instances[count.index].instance_type
   subnet_id              = data.aws_subnet.by_index[count.index].id
-  key_name               = "aws_id1"
+  key_name               = local.instances[count.index].key_name
   vpc_security_group_ids = [local.instances[count.index].security_group_id]
-  tags = {
-    Name    = local.instances[count.index].name
-    // Cluster = "cl1"
-  }
-  volume_tags = {
-    Name    = local.instances[count.index].name
-    Node    = local.instances[count.index].name
-    // Cluster = "cl1"
-  }
+  tags 					 = local.instances[count.index].tags
+  volume_tags 			 = local.instances[count.index].tags
   user_data = <<-EOF
               #!/bin/bash
               hostnamectl set-hostname "${local.instances[count.index].name}"
@@ -151,9 +172,47 @@ resource "aws_instance" "inst" {
               EOF
   root_block_device {
     volume_size = local.instances[count.index].root_size
-    volume_type = "local.instances[count.index].root_volume_type"
+    volume_type = local.instances[count.index].root_volume_type
     delete_on_termination = true
   }
+}
+
+resource "aws_route53_record" "forward" {
+  count = length(local.instances)
+  zone_id = data.aws_route53_zone.forward.id
+  name = local.instances[count.index].name
+  type = "A"
+  ttl = "300"
+  records = [aws_instance.inst[count.index].private_ip]
+}
+
+resource "aws_route53_record" "reverse" {
+  count = length(local.instances)
+  zone_id = data.aws_route53_zone.reverse.id
+  name = format("%s.%s.%s.%s.in-addr.arpa.",
+    split(".", aws_instance.inst[count.index].private_ip)[3],
+    split(".", aws_instance.inst[count.index].private_ip)[2],
+    split(".", aws_instance.inst[count.index].private_ip)[1],
+    split(".", aws_instance.inst[count.index].private_ip)[0]
+  )
+  type = "PTR"
+  ttl = "300"
+  records = [local.instances[count.index].name]
+}
+
+resource "aws_ebs_volume" "disks" {
+  count             = length(local.data_disks)
+  availability_zone = data.aws_subnet.by_index[local.data_disks[count.index].instance_index].availability_zone
+  size              = local.data_disks[count.index].size
+  // Must be same as instance tags. Otherwise, idempotency will fail. (Conflict between aws_ebs_volume.tags and aws_instance.volume_tags
+  tags				= local.instances[local.data_disks[count.index].instance_index].tags
+}
+
+resource "aws_volume_attachment" "attachments" {
+  count       = length(local.data_disks)
+  device_name = local.data_disks[count.index].device
+  volume_id   = aws_ebs_volume.disks[count.index].id
+  instance_id = aws_instance.inst[local.data_disks[count.index].instance_index].id
 }
 
 			

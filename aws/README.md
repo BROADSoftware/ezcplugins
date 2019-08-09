@@ -2,7 +2,7 @@
 
 ## Requirement:
 
-- terraform must be installed on the control node.
+- terraform must be installed on the control node. And credential configured to access appropriate AWS account
 
 - This plugin assume all VMs will be on a single VPC
 
@@ -10,7 +10,7 @@
 
 - Once VM are created, the control node must be able to access them using SSH. This can be achieved be setting up a VPN for VPC access. See below
 
-- A route53 zone bound to our VPC and named with our TO COMPLETE
+- A route53 root ('.') zone bound to our VPC.
 
 ### VPN access.
 

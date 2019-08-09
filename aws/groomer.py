@@ -20,12 +20,16 @@ import re
 
 from misc import ERROR,appendPath, setDefaultInMap
 
+# This is for centos image            
+DISK_DEVICE_FROM_IDX= ["/dev/xvdb", "/dev/xvdc", "/dev/xvdd", "/dev/xvde", "/dev/xvdf", "/dev/xvdg", "/dev/xvdh", "/dev/xvdi"]
+
 CLUSTER="cluster"
 DATA="data"
 CONFIG="config"
 AWS="aws"
 
 # In cluster definition
+ID="id"
 SUBNET="subnet"
 NODES="nodes"
 SECURITY_GROUPS="security_groups"
@@ -47,6 +51,12 @@ SECURITY_GROUP_ID="security_group_id"
 ROOT_VOLUME_TYPE="root_volume_type"
 ROLES="roles"     
 KEY_PAIR="key_pair"
+DATA_DISKS="data_disks"        
+ROLE="role"
+MOUNT="mount"
+SIZE="size"
+TAGS="tags"
+FQDN="fqdn"
 
 # In config definition
 AWS_KEY_PAIRS="aws_key_pairs"
@@ -62,15 +72,21 @@ NEED_MY_VPC="needMyVpc"
 ROLE_BY_NAME="roleByName"
 KEY_PAIR_BY_ID="keyPairById"
 DATA_KEY_PAIR="keyPair"
-
+DATA_DATA_DISKS="dataDisks"
+INSTANCE_INDEX="instanceIndex"
+            
 # In terraform layout
 INGRESS="ingress"
 EGRESS="egress"
 CIDR_BLOCK="cidr_block"
 SELF="self"
+DEVICE="device"
+
+TAG_NAME="Name"
+TAG_CLUSTER="Cluster"
+
 
 cidrCheck = re.compile("^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$")
-#cidrCheck = re.compile("^.*$")
 
 def isCidr(peer):
     if not peer[0].isdigit():
@@ -180,31 +196,38 @@ def computeTfSecurityGroupRule(model, rule, sgName, ruleIdx):
         tf[SELF] = True
     elif peer.upper() == "_VPC_":
         tf[CIDR_BLOCK] = "${data.aws_vpc.my_vpc.cidr_block}"
-        model[DATA][NEED_MY_VPC] = True
+        model[DATA][AWS][NEED_MY_VPC] = True
     elif isCidr(peer):
         tf[CIDR_BLOCK] = peer
     else:
         if peer == sgName:
             # This refers to ourself
             tf[SELF] = True
-        elif peer in model[DATA][SECURITY_GROUP_BY_NAME]:
+        elif peer in model[DATA][AWS][SECURITY_GROUP_BY_NAME]:
             # Should be a reference to another SG.
             tf[SECURITY_GROUP] = "aws_security_group." + peer + ".id"
         else:
-            model[DATA][EXTERNAL_SECURITY_GROUPS].add(peer)
+            model[DATA][AWS][EXTERNAL_SECURITY_GROUPS].add(peer)
             tf[SECURITY_GROUP] = "data.aws_security_group." + peer + ".id"
     
     return tf
+
+def addTags(root, newTags):
+    if not TAGS in root:
+        root[TAGS] = {}
+    for k, v in newTags.iteritems():
+        if k not in root[TAGS]:
+            root[TAGS][k] = v
         
 def groomSecurityGroups(model):
-    model[DATA][EXTERNAL_SECURITY_GROUPS] = Set()
-    model[DATA][SECURITY_GROUP_BY_NAME] = {}
-    model[DATA][NEED_MY_VPC] = False
-    # First, a loop to find all our defined SG
+    model[DATA][AWS][EXTERNAL_SECURITY_GROUPS] = Set()
+    model[DATA][AWS][SECURITY_GROUP_BY_NAME] = {}
+    model[DATA][AWS][NEED_MY_VPC] = False
     if SECURITY_GROUPS in model[CLUSTER][AWS]:
+        # First, a loop to find all our defined SG
         for sg in model[CLUSTER][AWS][SECURITY_GROUPS]:
-            model[DATA][SECURITY_GROUP_BY_NAME][sg[NAME]] = sg
-        # Now, loop again to find all external (Should be pre-existing)
+            model[DATA][AWS][SECURITY_GROUP_BY_NAME][sg[NAME]] = sg
+        # Now, loop again to groom
         for sg in model[CLUSTER][AWS][SECURITY_GROUPS]:
             sg[INGRESS] = []
             for idx, inbound in enumerate(sg[INBOUND_RULES]):
@@ -212,34 +235,68 @@ def groomSecurityGroups(model):
             sg[EGRESS] = []
             for idx, outbound in enumerate(sg[OUTBOUND_RULES]):
                 sg[EGRESS].append(computeTfSecurityGroupRule(model, outbound, sg[NAME], idx))
+            addTags(sg, { "Name": sg[NAME], "Cluster": model[CLUSTER][ID]})
+                    
+                    
+            
+                
+        
+# WARNING: Loop for data disks must occurs on the same node array here and in the main.tf template            
+def groomNodes(model):
+    model[DATA][AWS][DATA_DATA_DISKS] = []
+    for idx, node in enumerate(model[CLUSTER][NODES]):
+        role = model[DATA][ROLE_BY_NAME][node[ROLE]]
+        if DATA_DISKS in role:
+            for didx, disk in enumerate(role[DATA_DISKS]):
+                ddisk = {}
+                ddisk[INSTANCE_INDEX] = idx
+                ddisk[SIZE] = disk[SIZE]
+                disk[DEVICE] = DISK_DEVICE_FROM_IDX[didx]   # We also set device for definition in cluster part
+                ddisk[DEVICE] = disk[DEVICE]
+                model[DATA][AWS][DATA_DATA_DISKS].append(ddisk)
+        if TAGS in role[AWS]:
+            addTags(node[AWS], role[AWS][TAGS])
+        addTags(node[AWS], { "Name": node[FQDN], "Cluster": model[CLUSTER][ID]})
             
 def groomRoles(model):
     for _, role in model[DATA][ROLE_BY_NAME].iteritems():
-        if role[AWS][SECURITY_GROUP] in model[DATA][SECURITY_GROUP_BY_NAME]:
+        if role[AWS][SECURITY_GROUP] in model[DATA][AWS][SECURITY_GROUP_BY_NAME]:
             role[AWS][SECURITY_GROUP_ID] = "aws_security_group." + role[AWS][SECURITY_GROUP] + ".id"
         else:
-            model[DATA][EXTERNAL_SECURITY_GROUPS].add(role[AWS][SECURITY_GROUP])
+            model[DATA][AWS][EXTERNAL_SECURITY_GROUPS].add(role[AWS][SECURITY_GROUP])
             role[AWS][SECURITY_GROUP_ID] = "data.aws_security_group." + role[AWS][SECURITY_GROUP] + ".id"
         setDefaultInMap(role[AWS], ROOT_VOLUME_TYPE, "gp2")
-
-def groomConfig(model):
-    model[DATA][KEY_PAIR_BY_ID] = {}
-    for kp in model[CONFIG][AWS_KEY_PAIRS]:
-        model[DATA][KEY_PAIR_BY_ID][kp[KEY_PAIR_ID]]  = kp
+        if DATA_DISKS in role:
+            pass
     
 def lookupKeyPair(model, keyPairId):    
     for kp in model[CONFIG][AWS_KEY_PAIRS]:
         if kp[KEY_PAIR_ID] == keyPairId:
             return kp
     ERROR("Unable to find a key_pair_id == '{}' in configuration".format(keyPairId))
+    
+ROUTES53="routes53"
+ROUTE53_ID="route53_id"
+ROUTE53="route53"
+
+DATA_ROUTE53="route53"
+    
+def lookupRoute53(model, route53Id):
+    for r53 in model[CONFIG][ROUTES53]:
+        if r53[ROUTE53_ID] == route53Id:
+            return r53
+    ERROR("Unable to find a route53_id == '{}' in configuration".format(route53Id))
+        
                 
 def groom(_plugin, model):
-    groomConfig(model)
-    model[DATA][REFERENCE_SUBNET]= model[CLUSTER][NODES][0][AWS][SUBNET]
+    model[DATA][AWS] = {}
+    model[DATA][AWS][REFERENCE_SUBNET]= model[CLUSTER][NODES][0][AWS][SUBNET]
     setDefaultInMap(model[CLUSTER][AWS], KEY_PAIR, "default")
-    model[DATA][DATA_KEY_PAIR] = lookupKeyPair(model, model[CLUSTER][AWS][KEY_PAIR])
+    model[DATA][AWS][DATA_KEY_PAIR] = lookupKeyPair(model, model[CLUSTER][AWS][KEY_PAIR])[KEY_PAIR_NAME]
+    model[DATA][AWS][DATA_ROUTE53] = lookupRoute53(model, model[CLUSTER][AWS][ROUTE53])
     groomSecurityGroups(model)
     groomRoles(model)
+    groomNodes(model)
     model["data"]["buildScript"] = appendPath(model["data"]["targetFolder"], "build.sh")
     return True # Always enabled
 
