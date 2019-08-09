@@ -169,7 +169,7 @@ def groom(plugin, model):
                 if security != 'none':
                     setDefaultInMap(mymap[ZOOKEEPER], CONFIG, {})
                     mymap[ZOOKEEPER][CONFIG]["authProvider.1"] = "org.apache.zookeeper.server.auth.SASLAuthenticationProvider"
-                    mymap[ZOOKEEPER][CONFIG]["zookeeper.set.acl"] = "true"
+
 
                     zk_extra_args = ""
                     setDefaultInMap(mymap[ZOOKEEPER], ENVIRONMENT, {})
@@ -196,7 +196,7 @@ def groom(plugin, model):
 
                     mymap[KAFKA][BROKER][ENVIRONMENT][EXTRA_ARGS] = broker_extra_args
                     mymap[KAFKA][BROKER][CONFIG][SUPER_USERS] = "User:kafka_" + model[CLUSTER][ID]
-
+                    mymap[KAFKA][BROKER][CONFIG]["zookeeper.set.acl"] = "true"
 
 
                 # Remove empty keys
