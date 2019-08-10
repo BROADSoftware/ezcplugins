@@ -8,47 +8,45 @@
       timeout: 600
 
 - hosts: all
-  vars:
-    swap_by_node:
-      single4: 1
   roles:
-  - { role: swap_file, swap_file_name: /file.swp, swap_file_size_gb: "{{swap_by_node['single4']}}", tags: ["swap"] }
+  - { role: swap_file, tags: ["base", "swap"] }
+  - { role: disk_format, tags: ["base", "disks"] }
   tasks:
   - name: Install selinux-python
-    tags: ["selinux"]
+    tags: ["base", "selinux"]
     yum: pkg=libselinux-python state=present
 
-  - name: "SELinux set to {{{ m.cluster.aws.selinux }}}"
-    tags: ["selinux"]
-    selinux: state="{{{ m.cluster.aws.selinux }}}" policy="targeted"
+  - name: "SELinux set to {{{ m.cluster.selinux }}}"
+    tags: ["base", "selinux"]
+    selinux: state="{{{ m.cluster.selinux }}}" policy="targeted"
     register: selinux
   
   - name: Check if the domain '{{{m.cluster.domain}}}' is defined in /etc/resolv.conf
-    tags: ["resolv_conf"]
+    tags: ["base", "resolv_conf"]
     shell: grep "^search.*{{{m.cluster.domain}}}.*" /etc/resolv.conf
     register: domain_in_resolv
     failed_when: false
     changed_when: false
   
   - name: "Reboot if needed"
-    tags: ["selinux", "resolv_conf"]
+    tags: ["base", "selinux", "resolv_conf"]
     reboot:
       reboot_timeout: 600
     when: (selinux is defined and selinux.reboot_required) or (domain_in_resolv is defined and domain_in_resolv.rc != 0)
     
   - name: "Install EPEL"
-    tags: ["packages"]
+    tags: ["base", "packages"]
     yum: pkg=epel-release state=present
     
   - name: Install utilities misc packages
-    tags: ["packages"]
+    tags: ["base", "packages"]
     yum: pkg=htop,iotop,iftop,ntp,mlocate,sudo,net-tools,wget,bridge-utils,bind-utils  state=present
 
   - name: Enable ntpd
-    tags: ["packages"]
+    tags: ["base", "packages"]
     service: name=ntpd state=started enabled=yes
 
   - name: Remove postfix
-    tags: ["packages"]
+    tags: ["base", "packages"]
     service: name=postfix state=stopped enabled=no
   

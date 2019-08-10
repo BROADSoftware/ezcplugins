@@ -36,6 +36,7 @@ schema;node_list:
 
 type: map
 mapping:
+  "selinux": { type: str, required: true, enum: ["disabled", "enforcing", "permissive"] }
   "aws":
     type: map
     required: true
@@ -43,7 +44,6 @@ mapping:
       "region": { type: str, required: true }
       "key_pair": { type: str, required: false }   # Default: 'default'
       "route53": { type: str, required: true }
-      "selinux": { type: str, required: true, enum: ["disabled", "enforcing", "permissive"] }
       "security_groups": 
         type: seq
         required: false
@@ -116,6 +116,7 @@ mapping:
             mapping:
               "size": { type: int, required: true }
               "mount": { type: str, required: false }
+              "device": { type: str, required: false }   # Default to /dev/nvmeXn1 (gp2 case)
           
           
           

@@ -21,8 +21,10 @@ import os
 
 from misc import ERROR,appendPath, setDefaultInMap
 
-# This is for centos image            
-DISK_DEVICE_FROM_IDX= ["/dev/xvdb", "/dev/xvdc", "/dev/xvdd", "/dev/xvde", "/dev/xvdf", "/dev/xvdg", "/dev/xvdh", "/dev/xvdi"]
+# We need to provide devices for terraform/aws link. This will NOT be the devices used in the instance.
+TF_DISK_DEVICE_FROM_IDX= ["/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde", "/dev/sdf", "/dev/sdg", "/dev/sdh", "/dev/sdi"]
+# This is the naming for the devices in the instance, when all disk are 'gp2'. This will be used by default.
+GP2_DISK_DEVICE_FROM_IDX= ["/dev/nvme1n1", "/dev/nvme2n1", "/dev/nvme3n1", "/dev/nvme4n1", "/dev/nvme5n1", "/dev/nvme6n1", "/dev/nvme7n1", "/dev/nvme8n1"]
 
 CLUSTER="cluster"
 DATA="data"
@@ -254,12 +256,16 @@ def groomNodes(model):
                 ddisk = {}
                 ddisk[INSTANCE_INDEX] = idx
                 ddisk[SIZE] = disk[SIZE]
-                disk[DEVICE] = DISK_DEVICE_FROM_IDX[didx]   # We also set device for definition in cluster part
-                ddisk[DEVICE] = disk[DEVICE]
+                ddisk[DEVICE] = TF_DISK_DEVICE_FROM_IDX[didx]
                 model[DATA][AWS][DATA_DATA_DISKS].append(ddisk)
         if TAGS in role[AWS]:
             addTags(node[AWS], role[AWS][TAGS])
         addTags(node[AWS], { "Name": node[FQDN], "Cluster": model[CLUSTER][ID]})
+            
+            
+MOUNT="mount"
+DISK_TO_MOUNT_COUNT="disksToMountCount"
+
             
 def groomRoles(model):
     for _, role in model[DATA][ROLE_BY_NAME].iteritems():
@@ -269,8 +275,14 @@ def groomRoles(model):
             model[DATA][AWS][EXTERNAL_SECURITY_GROUPS].add(role[AWS][SECURITY_GROUP])
             role[AWS][SECURITY_GROUP_ID] = "data.aws_security_group." + role[AWS][SECURITY_GROUP] + ".id"
         setDefaultInMap(role[AWS], ROOT_VOLUME_TYPE, "gp2")
+        role[DISK_TO_MOUNT_COUNT] = 0
         if DATA_DISKS in role:
-            pass
+            for i in range(0, len(role[DATA_DISKS])):
+                if DEVICE not in role[DATA_DISKS][i]:
+                    role[DATA_DISKS][i][DEVICE] = GP2_DISK_DEVICE_FROM_IDX[i]   # Default to gp2 configuration
+                if MOUNT in role[DATA_DISKS][i]:
+                    role[DISK_TO_MOUNT_COUNT] += 1
+                
     
 def lookupKeyPair(model, keyPairId):    
     for kp in model[CONFIG][AWS_KEY_PAIRS]:

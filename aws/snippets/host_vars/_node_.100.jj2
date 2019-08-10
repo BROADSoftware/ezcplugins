@@ -1,0 +1,17 @@
+
+swap_file_size_mb: {{{ m.data.roleByName[m.node.role].swap_size * 1024 }}}
+
+
+{%% if m.data.roleByName[m.node.role].disksToMountCount > 0 -%%}
+disk_additional_disks:
+{%% for disk in m.data.roleByName[m.node.role].data_disks %%}
+{%% if disk.mount is defined %%}
+- disk: {{{disk.device}}}
+  fstype: xfs
+  mount_options: "defaults,noatime"
+  fsopts: ""
+  mount: {{{ disk.mount }}}
+{%% endif %%}
+{%% endfor %%}
+{%% endif %%}
+
