@@ -1,0 +1,21 @@
+
+
+- hosts: all
+  tasks:
+  - name: Install selinux-python
+    yum: pkg=libselinux-python state=present
+
+  - name: "SELinux set to {{{ m.cluster.aws.selinux }}}"
+    selinux: state="{{{ m.cluster.aws.selinux }}}" policy="targeted"
+    register: selinux
+  
+  - name: Check if the domain '{{{m.cluster.domain}}}' is defined in /etc/resolv.conf
+    shell: grep "^search.*{{{m.cluster.domain}}}.*" /etc/resolv.conf
+    register: domain_in_resolv
+    failed_when: false
+  
+  - name: "Reboot if needed"
+    reboot:
+      reboot_timeout: 600
+    when: selinux.reboot_required or domain_in_resolv.rc != 0
+    

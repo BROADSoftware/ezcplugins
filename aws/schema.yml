@@ -43,6 +43,7 @@ mapping:
       "region": { type: str, required: true }
       "key_pair": { type: str, required: false }   # Default: 'default'
       "route53": { type: str, required: true }
+      "selinux": { type: str, required: true, enum: ["disabled", "enforcing", "permissive"] }
       "security_groups": 
         type: seq
         required: false

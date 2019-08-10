@@ -17,6 +17,7 @@
 
 from sets import Set
 import re
+import os
 
 from misc import ERROR,appendPath, setDefaultInMap
 
@@ -57,6 +58,7 @@ MOUNT="mount"
 SIZE="size"
 TAGS="tags"
 FQDN="fqdn"
+PRIVATE_KEY_PATH="private_key_path"
 
 # In config definition
 AWS_KEY_PAIRS="aws_key_pairs"
@@ -74,6 +76,7 @@ KEY_PAIR_BY_ID="keyPairById"
 DATA_KEY_PAIR="keyPair"
 DATA_DATA_DISKS="dataDisks"
 INSTANCE_INDEX="instanceIndex"
+DATA_PRIVATE_KEY_PATH="privateKeyPath"        
             
 # In terraform layout
 INGRESS="ingress"
@@ -286,13 +289,17 @@ def lookupRoute53(model, route53Id):
         if r53[ROUTE53_ID] == route53Id:
             return r53
     ERROR("Unable to find a route53_id == '{}' in configuration".format(route53Id))
-        
+
                 
 def groom(_plugin, model):
     model[DATA][AWS] = {}
     model[DATA][AWS][REFERENCE_SUBNET]= model[CLUSTER][NODES][0][AWS][SUBNET]
     setDefaultInMap(model[CLUSTER][AWS], KEY_PAIR, "default")
-    model[DATA][AWS][DATA_KEY_PAIR] = lookupKeyPair(model, model[CLUSTER][AWS][KEY_PAIR])[KEY_PAIR_NAME]
+    kp = lookupKeyPair(model, model[CLUSTER][AWS][KEY_PAIR])
+    model[DATA][AWS][DATA_KEY_PAIR] = kp[KEY_PAIR_NAME]
+    if PRIVATE_KEY_PATH in kp:
+        # If path is relative, adjust to config file location
+        model[DATA][AWS][DATA_PRIVATE_KEY_PATH] = appendPath(os.path.dirname(model["data"]["configFile"]), kp[PRIVATE_KEY_PATH])
     model[DATA][AWS][DATA_ROUTE53] = lookupRoute53(model, model[CLUSTER][AWS][ROUTE53])
     groomSecurityGroups(model)
     groomRoles(model)
