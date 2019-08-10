@@ -108,7 +108,7 @@ locals {
 			name 				= "{{{ node.fqdn }}}"
 			subnet_name 		= "{{{ node.aws.subnet }}}"
 			instance_type 		= "{{{m.data.roleByName[node.role].aws.instance_type }}}"
-			root_size 			= {{{ m.data.roleByName[node.role].aws.root_size }}}
+			root_size 			= {{{ m.data.roleByName[node.role].root_size }}}
 			root_volume_type 	= "{{{m.data.roleByName[node.role].aws.root_volume_type }}}"
 			security_group_id 	= {{{m.data.roleByName[node.role].aws.security_group_id }}}
 			key_name			= "{{{m.data.aws.keyPair}}}"
@@ -168,7 +168,6 @@ resource "aws_instance" "inst" {
   user_data = <<-EOF
               #!/bin/bash
               hostnamectl set-hostname "${local.instances[count.index].name}"
-              systemctl restart network
               EOF
   root_block_device {
     volume_size = local.instances[count.index].root_size

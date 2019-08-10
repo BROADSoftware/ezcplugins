@@ -97,16 +97,17 @@ mapping:
           type: map
           required: true
           mapping:
-            instance_type: { type: str, required: true }   
-            root_size: { type: int, required: true }   
-            root_volume_type: { type: str, required: false }  # default: gp2   
-            security_group: { type: str, required: true }   
+            "instance_type": { type: str, required: true }   
+            "root_volume_type": { type: str, required: false }  # default: gp2   
+            "security_group": { type: str, required: true }   
             "tags":
               type: map
               required: false
               mapping:
                 regex;(.*):
                   type: str
+        "root_size": { type: int, required: true }   
+        "swap_size": { type: int, required: true }   
         "data_disks":
           type: seq 
           required: false

@@ -1,21 +1,54 @@
 
 
 - hosts: all
+  gather_facts: no
+  tasks:
+  - name: Wait for target instances to become reachable/usable
+    wait_for_connection:
+      timeout: 600
+
+- hosts: all
+  vars:
+    swap_by_node:
+      single4: 1
+  roles:
+  - { role: swap_file, swap_file_name: /file.swp, swap_file_size_gb: "{{swap_by_node['single4']}}", tags: ["swap"] }
   tasks:
   - name: Install selinux-python
+    tags: ["selinux"]
     yum: pkg=libselinux-python state=present
 
   - name: "SELinux set to {{{ m.cluster.aws.selinux }}}"
+    tags: ["selinux"]
     selinux: state="{{{ m.cluster.aws.selinux }}}" policy="targeted"
     register: selinux
   
   - name: Check if the domain '{{{m.cluster.domain}}}' is defined in /etc/resolv.conf
+    tags: ["resolv_conf"]
     shell: grep "^search.*{{{m.cluster.domain}}}.*" /etc/resolv.conf
     register: domain_in_resolv
     failed_when: false
+    changed_when: false
   
   - name: "Reboot if needed"
+    tags: ["selinux", "resolv_conf"]
     reboot:
       reboot_timeout: 600
-    when: selinux.reboot_required or domain_in_resolv.rc != 0
+    when: (selinux is defined and selinux.reboot_required) or (domain_in_resolv is defined and domain_in_resolv.rc != 0)
     
+  - name: "Install EPEL"
+    tags: ["packages"]
+    yum: pkg=epel-release state=present
+    
+  - name: Install utilities misc packages
+    tags: ["packages"]
+    yum: pkg=htop,iotop,iftop,ntp,mlocate,sudo,net-tools,wget,bridge-utils,bind-utils  state=present
+
+  - name: Enable ntpd
+    tags: ["packages"]
+    service: name=ntpd state=started enabled=yes
+
+  - name: Remove postfix
+    tags: ["packages"]
+    service: name=postfix state=stopped enabled=no
+  
