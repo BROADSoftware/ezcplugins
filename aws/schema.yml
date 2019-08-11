@@ -98,7 +98,7 @@ mapping:
           required: true
           mapping:
             "instance_type": { type: str, required: true }   
-            "root_volume_type": { type: str, required: false }  # default: gp2   
+            "root_type": { type: str, required: false, enum: ["standard", "gp2", "io1", "sc1", "st1"] }  # default: gp2   
             "security_group": { type: str, required: true }   
             "tags":
               type: map
@@ -117,6 +117,7 @@ mapping:
               "size": { type: int, required: true }
               "mount": { type: str, required: false }
               "device": { type: str, required: false }   # Default to /dev/nvmeXn1 (gp2 case)
+              "type": { type: str, required: false, enum: ["standard", "gp2", "io1", "sc1", "st1"] }  # default: gp2   
           
           
           

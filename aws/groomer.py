@@ -51,7 +51,7 @@ DESCRIPTION="description"
 SECURITY_GROUP="security_group"
 # Added to cluster definition
 SECURITY_GROUP_ID="security_group_id"
-ROOT_VOLUME_TYPE="root_volume_type"
+ROOT_TYPE="root_type"
 ROLES="roles"     
 KEY_PAIR="key_pair"
 DATA_DISKS="data_disks"        
@@ -61,6 +61,7 @@ SIZE="size"
 TAGS="tags"
 FQDN="fqdn"
 PRIVATE_KEY_PATH="private_key_path"
+TYPE="type"
 
 # In config definition
 AWS_KEY_PAIRS="aws_key_pairs"
@@ -252,10 +253,12 @@ def groomNodes(model):
     for idx, node in enumerate(model[CLUSTER][NODES]):
         role = model[DATA][ROLE_BY_NAME][node[ROLE]]
         if DATA_DISKS in role:
+            # This is for terraform manifest
             for didx, disk in enumerate(role[DATA_DISKS]):
                 ddisk = {}
                 ddisk[INSTANCE_INDEX] = idx
                 ddisk[SIZE] = disk[SIZE]
+                ddisk[TYPE] = disk[TYPE]
                 ddisk[DEVICE] = TF_DISK_DEVICE_FROM_IDX[didx]
                 model[DATA][AWS][DATA_DATA_DISKS].append(ddisk)
         if TAGS in role[AWS]:
@@ -274,7 +277,7 @@ def groomRoles(model):
         else:
             model[DATA][AWS][EXTERNAL_SECURITY_GROUPS].add(role[AWS][SECURITY_GROUP])
             role[AWS][SECURITY_GROUP_ID] = "data.aws_security_group." + role[AWS][SECURITY_GROUP] + ".id"
-        setDefaultInMap(role[AWS], ROOT_VOLUME_TYPE, "gp2")
+        setDefaultInMap(role[AWS], ROOT_TYPE, "gp2")
         role[DISK_TO_MOUNT_COUNT] = 0
         if DATA_DISKS in role:
             for i in range(0, len(role[DATA_DISKS])):
@@ -282,6 +285,7 @@ def groomRoles(model):
                     role[DATA_DISKS][i][DEVICE] = GP2_DISK_DEVICE_FROM_IDX[i]   # Default to gp2 configuration
                 if MOUNT in role[DATA_DISKS][i]:
                     role[DISK_TO_MOUNT_COUNT] += 1
+                setDefaultInMap(role[DATA_DISKS][i], TYPE, "gp2")
                 
     
 def lookupKeyPair(model, keyPairId):    

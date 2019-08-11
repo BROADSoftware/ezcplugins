@@ -109,7 +109,7 @@ locals {
 			subnet_name 		= "{{{ node.aws.subnet }}}"
 			instance_type 		= "{{{m.data.roleByName[node.role].aws.instance_type }}}"
 			root_size 			= {{{ m.data.roleByName[node.role].root_size }}}
-			root_volume_type 	= "{{{m.data.roleByName[node.role].aws.root_volume_type }}}"
+			root_type 			= "{{{m.data.roleByName[node.role].aws.root_type }}}"
 			security_group_id 	= {{{m.data.roleByName[node.role].aws.security_group_id }}}
 			key_name			= "{{{m.data.aws.keyPair}}}"
 			tags				= {
@@ -126,6 +126,7 @@ locals {
 			instance_index 	= {{{disk.instanceIndex}}}
 			size 			= {{{disk.size}}}
 			device 			= "{{{disk.device}}}"
+			type 			= "{{{disk.type}}}"
 		},
 {%% endfor %%}	
 	]
@@ -171,7 +172,7 @@ resource "aws_instance" "inst" {
               EOF
   root_block_device {
     volume_size = local.instances[count.index].root_size
-    volume_type = local.instances[count.index].root_volume_type
+    volume_type = local.instances[count.index].root_type
     delete_on_termination = true
   }
 }
@@ -203,6 +204,7 @@ resource "aws_ebs_volume" "disks" {
   count             = length(local.data_disks)
   availability_zone = data.aws_subnet.by_index[local.data_disks[count.index].instance_index].availability_zone
   size              = local.data_disks[count.index].size
+  type              = local.data_disks[count.index].type
   // Must be same as instance tags. Otherwise, idempotency will fail. (Conflict between aws_ebs_volume.tags and aws_instance.volume_tags
   tags				= local.instances[local.data_disks[count.index].instance_index].tags
 }
