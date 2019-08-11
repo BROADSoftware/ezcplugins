@@ -1,5 +1,9 @@
 #####################
 
+#Pb
+#https://github.com/transferwise/ansible-ebs-automatic-nvme-mapping
+#https://russell.ballestrini.net/aws-nvme-to-block-mapping/
+
 
 - name: Create filesystem
   filesystem:
