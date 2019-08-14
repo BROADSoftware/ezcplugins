@@ -35,3 +35,24 @@ Rules parameters:
   - A string, interpreted as a security group name (Already existing, or part of this definition. Beware of cyclic references).
   - A CIDR blocks
   
+  
+  
+## NVME
+  
+https://kevinclosson.net/2018/02/21/a-word-about-amazon-ebs-volumes-presented-as-nvme-devices-on-c5-m5-instance-types/
+
+https://russell.ballestrini.net/aws-nvme-to-block-mapping/
+
+https://github.com/AerisCloud/ansible-disk
+
+### Scratchpad
+
+ezcluster ../testebs.yml; ansible-playbook ./main.yml --tags hostname,selinux,resolv_conf,packages
+
+
+yum install nvme-cli
+
+Nitro:
+ssh -i "aws_id1.pem" ec2-user@ip-172-30-2-253.ec2.internal
+
+

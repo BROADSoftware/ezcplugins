@@ -18,13 +18,12 @@
 from sets import Set
 import re
 import os
+import copy
 
 from misc import ERROR,appendPath, setDefaultInMap
 
-# We need to provide devices for terraform/aws link. This will NOT be the devices used in the instance.
-TF_DISK_DEVICE_FROM_IDX= ["/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde", "/dev/sdf", "/dev/sdg", "/dev/sdh", "/dev/sdi"]
-# This is the naming for the devices in the instance, when all disk are 'gp2'. This will be used by default.
-GP2_DISK_DEVICE_FROM_IDX= ["/dev/nvme1n1", "/dev/nvme2n1", "/dev/nvme3n1", "/dev/nvme4n1", "/dev/nvme5n1", "/dev/nvme6n1", "/dev/nvme7n1", "/dev/nvme8n1"]
+#TDISK_DEVICE_FROM_IDX= ["/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde", "/dev/sdf", "/dev/sdg", "/dev/sdh", "/dev/sdi"]
+DISK_DEVICE_FROM_IDX= ["/dev/xvdb", "/dev/xvdc", "/dev/xvdd", "/dev/xvde", "/dev/xvdf", "/dev/xvdg", "/dev/xvdh", "/dev/xvdi"]
 
 CLUSTER="cluster"
 DATA="data"
@@ -62,12 +61,19 @@ TAGS="tags"
 FQDN="fqdn"
 PRIVATE_KEY_PATH="private_key_path"
 TYPE="type"
+ROUTES53="routes53"
+ROUTE53="route53"
+SUBNETS="subnets"                
+MOUNT="mount"
+DEVICE_AWS="device_aws"
+DEVICE_HOST="device_host"            
 
 # In config definition
 AWS_KEY_PAIRS="aws_key_pairs"
 KEY_PAIR_ID="key_pair_id"
 KEY_PAIR_NAME="key_pair_name"
 PRIVATE_KEY_PATH="private_key_path"
+ROUTE53_ID="route53_id"
 
 # In data part
 REFERENCE_SUBNET="referenceSubnet"
@@ -80,6 +86,10 @@ DATA_KEY_PAIR="keyPair"
 DATA_DATA_DISKS="dataDisks"
 INSTANCE_INDEX="instanceIndex"
 DATA_PRIVATE_KEY_PATH="privateKeyPath"        
+DATA_ROUTE53="route53"
+DISK_TO_MOUNT_COUNT="disksToMountCount"
+DATA_DISK_BY_NODE="dataDiskByNode"
+INDEX="index"            
             
 # In terraform layout
 INGRESS="ingress"
@@ -87,6 +97,7 @@ EGRESS="egress"
 CIDR_BLOCK="cidr_block"
 SELF="self"
 DEVICE="device"
+TERRA_NAME="terraName"
 
 TAG_NAME="Name"
 TAG_CLUSTER="Cluster"
@@ -244,32 +255,36 @@ def groomSecurityGroups(model):
             addTags(sg, { "Name": sg[NAME], "Cluster": model[CLUSTER][ID]})
                     
                     
-            
-                
+        
+def terraName(n):
+    return n.replace('.', "_")        
+
         
 # WARNING: Loop for data disks must occurs on the same node array here and in the main.tf template            
 def groomNodes(model):
-    model[DATA][AWS][DATA_DATA_DISKS] = []
-    for idx, node in enumerate(model[CLUSTER][NODES]):
+    # model[DATA][AWS][DATA_DATA_DISKS] = []
+    model[DATA][AWS][DATA_DISK_BY_NODE] = {}
+    model[DATA][AWS][SUBNETS] = []
+    subnets = Set()
+    for node in model[CLUSTER][NODES]:
+        node[TERRA_NAME] = terraName(node[NAME])
+        # Replace subnet by a map name, terrName
+        subnet = { NAME: node[AWS][SUBNET], TERRA_NAME: terraName(node[AWS][SUBNET]) }
+        node[AWS][SUBNET] = subnet
+        if subnet[NAME] not in subnets:
+            subnets.add(subnet[NAME])
+            model[DATA][AWS][SUBNETS].append(subnet)
         role = model[DATA][ROLE_BY_NAME][node[ROLE]]
-        if DATA_DISKS in role:
-            # This is for terraform manifest
-            for didx, disk in enumerate(role[DATA_DISKS]):
-                ddisk = {}
-                ddisk[INSTANCE_INDEX] = idx
-                ddisk[SIZE] = disk[SIZE]
-                ddisk[TYPE] = disk[TYPE]
-                ddisk[DEVICE] = TF_DISK_DEVICE_FROM_IDX[didx]
-                model[DATA][AWS][DATA_DATA_DISKS].append(ddisk)
         if TAGS in role[AWS]:
             addTags(node[AWS], role[AWS][TAGS])
         addTags(node[AWS], { "Name": node[FQDN], "Cluster": model[CLUSTER][ID]})
-            
-            
-MOUNT="mount"
-DISK_TO_MOUNT_COUNT="disksToMountCount"
-
-            
+        # Handle dataDisks
+        if DATA_DISKS in role and len(role[DATA_DISKS]) > 0:
+            dataDisks = copy.deepcopy(role[DATA_DISKS])
+            for d in dataDisks:
+                d[TERRA_NAME] = "{}_{}".format(node[TERRA_NAME], d[INDEX])
+            model[DATA][AWS][DATA_DISK_BY_NODE][node[NAME]] = dataDisks
+      
 def groomRoles(model):
     for _, role in model[DATA][ROLE_BY_NAME].iteritems():
         if role[AWS][SECURITY_GROUP] in model[DATA][AWS][SECURITY_GROUP_BY_NAME]:
@@ -281,8 +296,10 @@ def groomRoles(model):
         role[DISK_TO_MOUNT_COUNT] = 0
         if DATA_DISKS in role:
             for i in range(0, len(role[DATA_DISKS])):
-                if DEVICE not in role[DATA_DISKS][i]:
-                    role[DATA_DISKS][i][DEVICE] = GP2_DISK_DEVICE_FROM_IDX[i]   # Default to gp2 configuration
+                role[DATA_DISKS][i][INDEX] = i
+                setDefaultInMap(role[DATA_DISKS][i], DEVICE, DISK_DEVICE_FROM_IDX[i])
+                setDefaultInMap(role[DATA_DISKS][i], DEVICE_AWS, role[DATA_DISKS][i][DEVICE])
+                setDefaultInMap(role[DATA_DISKS][i], DEVICE_HOST, role[DATA_DISKS][i][DEVICE])
                 if MOUNT in role[DATA_DISKS][i]:
                     role[DISK_TO_MOUNT_COUNT] += 1
                 setDefaultInMap(role[DATA_DISKS][i], TYPE, "gp2")
@@ -294,11 +311,6 @@ def lookupKeyPair(model, keyPairId):
             return kp
     ERROR("Unable to find a key_pair_id == '{}' in configuration".format(keyPairId))
     
-ROUTES53="routes53"
-ROUTE53_ID="route53_id"
-ROUTE53="route53"
-
-DATA_ROUTE53="route53"
     
 def lookupRoute53(model, route53Id):
     for r53 in model[CONFIG][ROUTES53]:
@@ -309,7 +321,7 @@ def lookupRoute53(model, route53Id):
                 
 def groom(_plugin, model):
     model[DATA][AWS] = {}
-    model[DATA][AWS][REFERENCE_SUBNET]= model[CLUSTER][NODES][0][AWS][SUBNET]
+    #model[DATA][AWS][REFERENCE_SUBNET]= model[CLUSTER][NODES][0][AWS][SUBNET]
     setDefaultInMap(model[CLUSTER][AWS], KEY_PAIR, "default")
     kp = lookupKeyPair(model, model[CLUSTER][AWS][KEY_PAIR])
     model[DATA][AWS][DATA_KEY_PAIR] = kp[KEY_PAIR_NAME]

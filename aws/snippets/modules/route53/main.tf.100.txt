@@ -1,0 +1,21 @@
+
+resource "aws_route53_record" "forward" {
+  zone_id = var.forward_zone_id
+  name = var.fqdn
+  type = "A"
+  ttl = "300"
+  records = [var.private_ip]
+}
+
+resource "aws_route53_record" "reverse" {
+  zone_id = var.reverse_zone_id
+  name = format("%s.%s.%s.%s.in-addr.arpa.",
+    split(".", var.private_ip)[3],
+    split(".", var.private_ip)[2],
+    split(".", var.private_ip)[1],
+    split(".", var.private_ip)[0]
+  )
+  type = "PTR"
+  ttl = "300"
+  records = [var.fqdn]
+}

@@ -4,14 +4,29 @@
   gather_facts: no
   tasks:
   - name: Wait for target instances to become reachable/usable
+    tags: [ "always" ]
     wait_for_connection:
       timeout: 600
 
-- hosts: all
+- name: First step of base configuration
+  hosts: all
   roles:
   - { role: swap_file, tags: ["base", "swap"] }
-  - { role: disk_format, tags: ["base", "disks"] }
   tasks:
+  - name: Set hostname
+    tags: ["base", "hostname"]
+    hostname: 
+      name: "{{hostname}}"
+    register: hostname
+
+  - name: copy ebsnvme-id for aws nvme devices 
+    copy: src=files/ebsnvme-id dest=/sbin/ebsnvme-id  mode=0755 owner=root group=root
+    register: ebsnvme
+        
+  - name: copy udev rules for aws nvme devices 
+    copy: src=files/70-ec2-nvme-devices.rules dest=/etc/udev/rules.d/70-ec2-nvme-devices.rules mode=0644  mode=0755 owner=root group=root
+    register: udev
+      
   - name: Install selinux-python
     tags: ["base", "selinux"]
     yum: pkg=libselinux-python state=present
@@ -27,12 +42,12 @@
     register: domain_in_resolv
     failed_when: false
     changed_when: false
-  
+    
   - name: "Reboot if needed"
     tags: ["base", "selinux", "resolv_conf"]
     reboot:
       reboot_timeout: 600
-    when: (selinux is defined and selinux.reboot_required) or (domain_in_resolv is defined and domain_in_resolv.rc != 0)
+    when: (selinux is defined and selinux.reboot_required) or (domain_in_resolv is defined and domain_in_resolv.rc != 0) or (hostname is defined and hostname.changed) or (ebsnvme is defined and ebsnvme.changed) or (udev is defined and udev.changed)
     
   - name: "Install EPEL"
     tags: ["base", "packages"]
@@ -49,4 +64,10 @@
   - name: Remove postfix
     tags: ["base", "packages"]
     service: name=postfix state=stopped enabled=no
+    
+- name: Second step of base configuration
+  hosts: all
+  roles:
+  - { role: disk_format, tags: ["base", "disks"] }    
+    
   

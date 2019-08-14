@@ -1,0 +1,16 @@
+
+variable "forward_zone_id" {
+	type = string
+}
+
+variable "reverse_zone_id" {
+	type = string
+}
+
+variable "fqdn" {
+	type = string
+}
+
+variable "private_ip" {
+	type = string
+}

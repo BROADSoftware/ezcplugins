@@ -116,7 +116,9 @@ mapping:
             mapping:
               "size": { type: int, required: true }
               "mount": { type: str, required: false }
-              "device": { type: str, required: false }   # Default to /dev/nvmeXn1 (gp2 case)
+              "device": { type: str, required: false }      # Default to TODO   
+              "device_aws": { type: str, required: false }  # default to "device"   
+              "device_host": { type: str, required: false } # default to "device"  
               "type": { type: str, required: false, enum: ["standard", "gp2", "io1", "sc1", "st1"] }  # default: gp2   
           
           
