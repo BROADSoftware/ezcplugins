@@ -1,20 +1,22 @@
 # AWS plugin
 
+This plugin is intended to deploy cluster-based application on AWS cloud.
+
+It will try to recreate a 'stable' environement, with controlled and well knownn instance name and IP. To achieve this, all instances are declared in private route53 zones.
+  
+This plugin create all instance with a Centos 7.X image. Note than all other plugins of ezcluster expect the same base OS.
+
 ## Requirement:
 
-- terraform must be installed on the control node. And credential configured to access appropriate AWS account
+- AWS cli, Ansible and Terraform must be installed on the control node. And credential configured to access appropriate AWS account
 
-- This plugin assume all VMs will be on a single VPC
+- This plugin assume all instance will be on a single VPC. A VPC can host several clusters.
 
-- A VPC can host several clusters
+- Once VM are created, the control node must be able to access them using SSH. This can be achieved be setting up a VPN for VPC access.  For example, the one in AWS marketplace from [openvpn](https://aws.amazon.com/marketplace/pp/B00MI40CAE/ref=mkt_wir_openvpn_byol) (Free for up to 2 connected devices). 
 
-- Once VM are created, the control node must be able to access them using SSH. This can be achieved be setting up a VPN for VPC access. See below
+- Two route53 zones must be defined and bound to the used VPC. One for forward resolution and one for the reverse. (vpcX and XXX.XXX.in-addr.arpa)
 
-- A route53 root ('.') zone bound to our VPC.
-
-### VPN access.
-
-There is several solution to fullfil this need. For example, [openvpn](https://aws.amazon.com/marketplace/pp/B00MI40CAE/ref=mkt_wir_openvpn_byol) (Free for up to 2 connected devices). 
+- All subnet referenced in the cluster definition file must be tagged with a name 
 
 ## Security group parameters
 
@@ -29,30 +31,22 @@ Rules parameters:
 - from_port, to_port: Allow port range definition. Exclusive from "port"
 
 - source/destination: May be:
-  - "_ANY_"
-  - "_VPC_"
-  - "_SELF_"
+
+  - "_ANY_": Access is granted for whatever address 
+  - "_VPC_": Access is granted for all this VPC.
+  - "_SELF_": Access is granted for all intances defined in this security group.
   - A string, interpreted as a security group name (Already existing, or part of this definition. Beware of cyclic references).
   - A CIDR blocks
   
-  
-  
 ## NVME
+
+There is a well known problem with EBS NVME device mapping on 'nitro' based instance. This problem has been solved on Amazon AMI instances be a specific script and a set of UDEV rules.
+
+This plugin implements this feature all created instance, thus solving this issue (hopefully). 
+
+Some links on this subject:
   
-https://kevinclosson.net/2018/02/21/a-word-about-amazon-ebs-volumes-presented-as-nvme-devices-on-c5-m5-instance-types/
-
-https://russell.ballestrini.net/aws-nvme-to-block-mapping/
-
-https://github.com/AerisCloud/ansible-disk
-
-### Scratchpad
-
-ezcluster ../testebs.yml; ansible-playbook ./main.yml --tags hostname,selinux,resolv_conf,packages
-
-
-yum install nvme-cli
-
-Nitro:
-ssh -i "aws_id1.pem" ec2-user@ip-172-30-2-253.ec2.internal
-
+- https://kevinclosson.net/2018/02/21/a-word-about-amazon-ebs-volumes-presented-as-nvme-devices-on-c5-m5-instance-types/
+- https://russell.ballestrini.net/aws-nvme-to-block-mapping/
+- https://github.com/AerisCloud/ansible-disk
 
