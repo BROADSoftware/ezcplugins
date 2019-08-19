@@ -1,8 +1,8 @@
 
 # -------------------------------------- EZCLUSTER ADD ON
 
-access_ip: "{{ ansible_host }}" 
-ip: "{{ ansible_host }}"
+access_ip: "{{ ezcluster_ip }}" 
+ip: "{{ ezcluster_ip }}"
 
 # Override values from extra_playbooks/roles/container-engine/docker/defaults/main
 docker_rh_repo_base_url: {{{m.data.repositories.docker_yum.docker_rh_repo_base_url}}}

@@ -136,8 +136,8 @@ def groom(_plugin, model):
                     requiredSize = 0
                     splitter = {}
                     role[LVM_SPLITTERS].append(splitter)
-                    splitter["physical_volumes"] = [ "/dev/{}".format(ddisk[DEVICE]) ]
-                    splitter["vg_name"] = "vg{}".format(ddisk[DEVICE]) 
+                    splitter["physical_volumes"] = [ (ddisk[DEVICE] if ddisk[DEVICE].startswith("/dev") else "/dev/{}".format(ddisk[DEVICE])) ]
+                    splitter["vg_name"] =  "vg{}".format( ddisk[DEVICE][5:] if ddisk[DEVICE].startswith("/dev/")  else ddisk[DEVICE] ) 
                     splitter["logical_volumes"] = []
                     for split in ddisk[SPLITS]:
                         splitter["logical_volumes"].append(split)

@@ -1,9 +1,9 @@
 
+ezcluster_ip: "{{ ansible_default_ipv4.address }}"
 
-hostname: {{{m.node.fqdn}}}
+hostname: {{{m.node.hostname}}}
 
 swap_file_size_mb: {{{ m.data.roleByName[m.node.role].swap_size * 1024 }}}
-
 
 {%% if m.data.roleByName[m.node.role].disksToMountCount > 0 -%%}
 disk_additional_disks:

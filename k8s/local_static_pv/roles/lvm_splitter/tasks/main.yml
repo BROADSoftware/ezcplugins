@@ -1,4 +1,8 @@
 
+
+- name: Install required LMV packages
+  yum: pkg=lvm2 state=present
+
 - name: Ensure mount points exists
   file:
     path: "{{item.mount}}"

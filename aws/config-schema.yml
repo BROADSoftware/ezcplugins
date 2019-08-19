@@ -19,7 +19,7 @@ type: map
 mapping:
   "aws_key_pairs":
     type: seq
-    required: true
+    required: false
     sequence:
     - type: map
       mapping:
@@ -29,7 +29,7 @@ mapping:
   
   "routes53":
     type: seq
-    required: true
+    required: false
     sequence:
     - type: map
       mapping:

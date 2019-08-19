@@ -17,15 +17,15 @@
     tags: ["base", "hostname"]
     hostname: 
       name: "{{hostname}}"
-    register: hostname
+    register: hostname_result
 
   - name: copy ebsnvme-id for aws nvme devices 
     copy: src=files/ebsnvme-id dest=/sbin/ebsnvme-id  mode=0755 owner=root group=root
-    register: ebsnvme
+    register: ebsnvme_result
         
   - name: copy udev rules for aws nvme devices 
     copy: src=files/70-ec2-nvme-devices.rules dest=/etc/udev/rules.d/70-ec2-nvme-devices.rules mode=0644  mode=0755 owner=root group=root
-    register: udev
+    register: udev_result
       
   - name: Install selinux-python
     tags: ["base", "selinux"]
@@ -34,8 +34,14 @@
   - name: "SELinux set to {{{ m.cluster.selinux }}}"
     tags: ["base", "selinux"]
     selinux: state="{{{ m.cluster.selinux }}}" policy="targeted"
-    register: selinux
+    register: selinux_result
+
+  - name: "Hook dhcp-client: Ensure /etc/dhcp/dhclient-exit-hooks.d exists"
+    file: path=/etc/dhcp/dhclient-exit-hooks.d state=directory 
   
+  - name: "Hook dhcp-client: Setup hook"
+    template: src=templates/ezcluster-dhclient-exit-hoot.sh dest=/etc/dhcp/dhclient-exit-hooks.d/ezcluster-dhclient-exit-hoot.sh mode=0755 owner=root group=root
+    
   - name: Check if the domain '{{{m.cluster.domain}}}' is defined in /etc/resolv.conf
     tags: ["base", "resolv_conf"]
     shell: grep "^search.*{{{m.cluster.domain}}}.*" /etc/resolv.conf
@@ -47,7 +53,7 @@
     tags: ["base", "selinux", "resolv_conf"]
     reboot:
       reboot_timeout: 600
-    when: (selinux is defined and selinux.reboot_required) or (domain_in_resolv is defined and domain_in_resolv.rc != 0) or (hostname is defined and hostname.changed) or (ebsnvme is defined and ebsnvme.changed) or (udev is defined and udev.changed)
+    when: (selinux_result is defined and selinux_result.reboot_required) or (domain_in_resolv is defined and domain_in_resolv.rc != 0) or (hostname_result is defined and hostname_result.changed) or (ebsnvme_result is defined and ebsnvme_result.changed) or (udev_result is defined and udev_result.changed)
     
   - name: "Install EPEL"
     tags: ["base", "packages"]
