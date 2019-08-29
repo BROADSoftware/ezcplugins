@@ -1,0 +1,19 @@
+---
+
+- stat: path=/etc/alternatives/keytool
+  register: keytool
+
+
+- name: Deploy certificates in tmp folder
+  copy:
+    src: "{{ ssl_certificate }}"
+    dest: /tmp/ssl_ldap_certificate.cer
+    mode: 0644
+  when: keytool.stat.exists
+
+## if the first command is true (i.e. cert is already listed), then will not do the second prt after the double pipe.
+- name: Install ROOT certs in default JRE keystore
+  shell: /etc/alternatives/keytool -list -noprompt -storepass changeit -alias ssl_ldap_certificate -keystore /etc/alternatives/jre/lib/security/cacerts || /etc/alternatives/keytool -import -trustcacerts -noprompt -storepass 'changeit' -alias ssl_ldap_certificate -file /tmp/ssl_ldap_certificate.cer -keystore /etc/alternatives/jre/lib/security/cacerts
+  when: keytool.stat.exists
+  register: result
+  changed_when: not "trustedCertEntry" in result.stdout
