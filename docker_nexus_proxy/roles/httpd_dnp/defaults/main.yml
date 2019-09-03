@@ -1,0 +1,6 @@
+
+
+httpd_ndp_cacert_location: /etc/ssl/httpd
+
+# May be 'new' for generating a new ca, or one of the subfolder(s) in files
+httpd_ndp_ca: ca1

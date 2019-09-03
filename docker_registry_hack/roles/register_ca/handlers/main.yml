@@ -1,0 +1,26 @@
+---
+
+# WARNING Centos/RHEL specifics
+- name: Update trust store  
+  listen: update_trust_store
+  shell: update-ca-trust extract
+  
+- name: Docker | reload docker
+  listen: restart_docker
+  service:
+    name: docker
+    state: restarted
+  notify:
+  - wait_docker
+  when: "'docker.service' in ansible_facts.services"
+
+- name: Docker | wait for docker
+  listen: wait_docker
+  command: "/bin/docker images"
+  register: docker_ready
+  retries: 20
+  delay: 1
+  until: docker_ready.rc == 0
+  when: "'docker.service' in ansible_facts.services"
+
+    

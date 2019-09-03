@@ -1,9 +1,0 @@
----
-
-# WARNING Centos/RHEL specifics
-- name: Update trust store  
-  listen: update_trust_store
-  shell: update-ca-trust extract
-  
-  
-  

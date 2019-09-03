@@ -1,0 +1,23 @@
+
+{%% if m.cluster.docker_registry_hack.etc_hosts_entries is defined and  m.cluster.docker_registry_hack.etc_hosts_entries|length > 0 %%}
+- hosts: all
+  tasks:
+  - blockinfile:
+      path: /etc/hosts
+      marker: "# Ansible/ezcluster host hacking {mark}"      
+      content: |
+        {{ item.ip }} {{ item.aliases }}
+    with_items:
+{%% for entry in m.cluster.docker_registry_hack.etc_hosts_entries %%}
+    - { ip: {{{ entry.ip }}}, aliases: {{{entry.aliases}}} }
+{%% endfor %%}
+{%% endif %%}
+
+
+{%% if m.cluster.docker_registry_hack.registry_ca_urls is defined and  m.cluster.docker_registry_hack.registry_ca_urls|length > 0 %%}
+- hosts: all
+  roles:
+  - { role: register_ca, register_ca_urls: "{{{m.cluster.docker_registry_hack.registry_ca_urls}}}" }  
+{%% endif %%}
+
+    

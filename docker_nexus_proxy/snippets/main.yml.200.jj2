@@ -1,0 +1,75 @@
+
+
+- hosts: all
+  tags: [ "nexus" ]
+  tasks:
+  - name: install openjdk8
+    yum: pkg=java-1.8.0-openjdk state=present
+  - name: install rsync
+    yum: pkg=rsync state=present
+      
+- hosts: all
+  vars: 
+    nexus_version: '3.18.1-01'
+    nexus_download_url: "http://10.0.2.2/repo/misc/"
+    nexus_timezone: 'UTC'
+    nexus_default_port: 8081
+    nexus_default_context_path: '/'
+    nexus_admin_password: 'admin'
+    #nexus_default_admin_password: 'admin'
+    nexus_anonymous_access: true
+    nexus_docker_bearer_token_realm: true
+    nexus_config_docker: true
+    nexus_repos_docker_proxy:
+#    - name: "docker-hosted"
+#      v1_enabled: False
+    - name: "dockerhub-proxy"
+      v1_enabled: False
+      index_type: "HUB"
+      remote_url: "https://registry-1.docker.io"
+      use_nexus_certificates_to_access_index: false
+      force_basic_auth: false
+    - name: "dockergcr-proxy"
+      v1_enabled: False
+      index_type: "REGISTRY"
+      remote_url: "https://gcr.io/"
+      use_nexus_certificates_to_access_index: false
+      force_basic_auth: false
+    - name: "dockerk8sgcr-proxy"
+      v1_enabled: False
+      index_type: "REGISTRY"
+      remote_url: "https://k8s.gcr.io"
+      use_nexus_certificates_to_access_index: false
+      force_basic_auth: false
+
+    nexus_repos_docker_group:
+    - name: "dockerall"
+      http_port: "8082"
+      v1_enabled: False
+      force_basic_auth: false
+      member_repos:
+      - "dockerhub-proxy"
+      - "dockergcr-proxy"
+      - "dockerk8sgcr-proxy"
+      - "docker-hosted"
+    
+    nexus_with_http_proxy: true
+    nexus_http_proxy_host: "squid2"
+    nexus_http_proxy_port: 3128
+    nexus_http_proxy_username: ""
+    nexus_http_proxy_password: ""
+    
+    nexus_with_https_proxy: true
+    nexus_https_proxy_host: "squid2"
+    nexus_https_proxy_port: 3128
+    nexus_https_proxy_username: ""
+    nexus_https_proxy_password: ""
+    nexus_proxy_exclude_hosts:
+    - "localhost"
+    - "127.*"
+    - "[::1]"
+    
+  roles:
+  - { role: nexus3-oss, tags: [ "nexus" ] }
+  - { role: httpd_dnp, tags: [ "httpd" ] }
+    

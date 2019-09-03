@@ -1,6 +1,7 @@
 
-
 {%% if  m.data.httpProxies.docker is defined and m.data.httpProxies.docker.proxy_ca_url is defined %%}
+- hosts: all
+  roles:
   - { role: register_ca, register_ca_urls: [ "{{{m.data.httpProxies.docker.proxy_ca_url}}}" ] }  
 {%% endif %%}
 
