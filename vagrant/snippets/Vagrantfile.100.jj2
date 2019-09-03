@@ -21,12 +21,12 @@ Vagrant.configure(2) do |config|
 {%% if node.default_router is defined  and node.default_router != None %%}
 {%% if node.default_router|lower != "none" %%}
  	# default router (https://www.vagrantup.com/docs/networking/public_network.html)
-  	config.vm.provision "shell",
+  	node.vm.provision "shell",
     	run: "always",
     	inline: "route add default gw {{{node.default_router}}}"
 {%% endif %%}
   	# delete default gw on eth0
-  	config.vm.provision "shell",
+  	node.vm.provision "shell",
     	run: "always",
     	inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
 {%% endif %%}

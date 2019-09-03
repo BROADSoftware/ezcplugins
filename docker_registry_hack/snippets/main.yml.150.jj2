@@ -9,7 +9,7 @@
         {{ item.ip }} {{ item.aliases }}
     with_items:
 {%% for entry in m.cluster.docker_registry_hack.etc_hosts_entries %%}
-    - { ip: {{{ entry.ip }}}, aliases: {{{entry.aliases}}} }
+    - { ip: {{{ entry.ip }}}, aliases: "{{{entry.aliases}}}" }
 {%% endfor %%}
 {%% endif %%}
 

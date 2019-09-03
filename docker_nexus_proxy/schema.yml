@@ -18,22 +18,15 @@
 
 type: map
 mapping:
-  "docker_registry_hack":
+  "docker_nexus_proxy":
     type: map
     required: True
     mapping:
       "disabled": { type: bool, required: false }
-      "etc_hosts_entries":
-        type: seq
-        required: false
-        sequence:
-        - type: map
-          mapping:
-            "ip": { type: str, required: True }
-            "aliases": { type: str, required: false }  # Default: "{{ansible_hostname}} quay.io gcr.io k8s.gcr.io registry-1.docker.io auth.docker.io"
-      "registry_ca_urls":
-        type: seq
-        required: false
-        sequence:
-        - type: str
+      "nexus_version": { type: str, required: true }
+      "nexus_download_folder_url": { type: str, required: true }
+      "nexus_default_port": { type: int, required: false }    # Default: 8081
+      "nexus_admin_password": { type: str, required: true }
+      "nexus_internal_docker_port": { type: int, required: false }  # Default: 8082
+      "next_proxy_id": { type: str, required: false }
 

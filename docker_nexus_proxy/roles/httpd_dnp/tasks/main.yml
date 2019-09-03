@@ -78,8 +78,8 @@
 - name: Configure HTTPS Proxy redirection
   lineinfile:
     path: /etc/httpd/conf.d/ssl.conf
-    line: "  ProxyPass / http://localhost:8082/"
-    regex: '^[\s]+ProxyPass[\s]+/[\s]+http://localhost:8082/'
+    line: "  ProxyPass / http://localhost:{{nexus_internal_docker_port}}/"
+    regex: '^[\s]+ProxyPass[\s]+/[\s]+http://localhost:{{nexus_internal_docker_port}}/'
     state: present
     insertafter: "^<VirtualHost"
   notify:
