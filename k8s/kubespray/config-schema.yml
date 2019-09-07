@@ -57,6 +57,18 @@ mapping:
             "repo_id": { type: str, required: True }
             "version": { type: str, required: True }
             "k9s_tgz_url": { type: str, required: True }
+      "kubespray_files": 
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "repo_id": { type: str, required: True }
+            "kubeadm_download_url": { type: str, required: True }
+            "hyperkube_download_url": { type: str, required: True }
+            "etcd_download_url": { type: str, required: True }
+            "cni_download_url": { type: str, required: True }
+            "calicoctl_download_url": { type: str, required: True }
             
                                   
             

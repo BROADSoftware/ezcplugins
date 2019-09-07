@@ -80,23 +80,23 @@
       dest: ./config
       flat: yes
     tags: [ "config" ]      
-{%% if m.data.httpProxies.root is defined %%}
-  - name: Add proxy config to root environment
+{%% if m.data.httpProxies.master_root is defined %%}
+  - name: Add proxy config to root environment on master node(s)
     blockinfile:
       path: /root/.bashrc
       marker: "# {mark} ANSIBLE MANAGED BLOCK FOR HTTP_PROXY"
       create: yes
       block: |
-{%% if m.data.httpProxies.root.http_proxy is defined %%}
-        export http_proxy={{{m.data.httpProxies.root.http_proxy}}}
+{%% if m.data.httpProxies.master_root.http_proxy is defined %%}
+        export http_proxy={{{m.data.httpProxies.master_root.http_proxy}}}
 {%% endif %%}
-{%% if m.data.httpProxies.root.https_proxy is defined %%}
-        export https_proxy={{{m.data.httpProxies.root.https_proxy}}}
+{%% if m.data.httpProxies.master_root.https_proxy is defined %%}
+        export https_proxy={{{m.data.httpProxies.master_root.https_proxy}}}
 {%% endif %%}
-{%% if m.data.httpProxies.root.no_proxy is defined %%}
-        export no_proxy={{{m.data.httpProxies.root.no_proxy}}}
+{%% if m.data.httpProxies.master_root.no_proxy is defined %%}
+        export no_proxy={{{m.data.httpProxies.master_root.no_proxy}}}
 {%% endif %%}
-    tags: [ "proxy", "http_proxy", "root_http_proxy" ]      
+    tags: [ "proxy", "http_proxy", "master_root_http_proxy" ]      
 {%% endif %%}    
 {%% if m.data.repositories.k9s is defined %%}    
   roles:

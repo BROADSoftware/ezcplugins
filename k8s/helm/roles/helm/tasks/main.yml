@@ -69,7 +69,7 @@
   shell:  /usr/local/bin/helm init --service-account tiller
   register: helm_init_result
   changed_when: "'already installed' not in helm_init_result.stdout"
-  environment: "{{proxy_env|default({})}}"
+  environment: "{{helm_proxy_env|default({})}}"
   
 #- debug: var=helm_init_result
 

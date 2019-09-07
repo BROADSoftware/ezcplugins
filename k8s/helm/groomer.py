@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import setDefaultInMap,lookupRepository
+from misc import setDefaultInMap,lookupRepository,lookupHttpProxy
 
 CLUSTER = "cluster"
 K8S="k8s"
@@ -30,4 +30,5 @@ def groom(_plugin, model):
         return False
     else:
         lookupRepository(model, HELM, repoId=model[CLUSTER][K8S][HELM]["repo_id"])
+        lookupHttpProxy(model, model[CLUSTER][K8S][HELM]["proxy_id"] if "proxy_id" in model[CLUSTER][K8S][HELM] else None, "helm")
         return True

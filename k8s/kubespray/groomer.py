@@ -30,6 +30,7 @@ DOCKER_CERTIFICATES = "docker_certificates"
 DISABLED = "disabled"
 CLUSTER_NAME="cluster_name"
 K9S_REPO_ID="k9s_repo_id"
+FILES_REPO_ID="files_repo_id"
 
 def groom(_plugin, model):
     setDefaultInMap(model[CLUSTER], K8S, {})
@@ -45,9 +46,10 @@ def groom(_plugin, model):
             lookupRepository(model, "k9s", repoId = model[CLUSTER][K8S][KUBESPRAY][K9S_REPO_ID])
         lookupHelper(model, KUBESPRAY, helperId=model[CLUSTER][K8S][KUBESPRAY]["helper_id"])
         lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["docker_proxy_id"] if "docker_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "docker")
-        lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["ansible_proxy_id"] if "ansible_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "ansible")
-        lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["root_proxy_id"] if "root_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "root")
+        lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["master_root_proxy_id"] if "master_root_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "master_root")
         lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["yumproxy_id"] if "yum_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "yum")
+        if FILES_REPO_ID in model[CLUSTER][K8S][KUBESPRAY]:
+            lookupRepository(model, "kubespray_files", repoId=model[CLUSTER][K8S][KUBESPRAY][FILES_REPO_ID])
         model[DATA][ROLE_PATHS].add(appendPath(model[DATA][HELPERS][KUBESPRAY][FOLDER], "roles"))
         model[DATA]["dnsNbrDots"] = model[CLUSTER][K8S][KUBESPRAY][CLUSTER_NAME].count(".") + 1
         certByName = {}

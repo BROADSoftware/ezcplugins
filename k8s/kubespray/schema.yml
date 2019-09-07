@@ -39,10 +39,10 @@ mapping:
             sequence:
             -  type: str
           "docker_yum_repo_id":  { type: str, required: True }
-          "yum_proxy_id":  { type: str, required: False }
-          "docker_proxy_id":  { type: str, required: False }
-          "ansible_proxy_id":  { type: str, required: False }
-          "root_proxy_id":  { type: str, required: False }
+          "yum_proxy_id":  { type: str, required: False }   # Will be set in yum_http_proxy variable, which will be set in several yum task in kubespray (See README)
+          "docker_proxy_id":  { type: str, required: False }  # Will be set in docker_http_proxy variable, which will be set by kubespray in docker configuration in /etc/systemd/system/docker.service.d/http-proxy.conf
+          "master_root_proxy_id":  { type: str, required: False }  # This is a proxy conf which will be set in the /root/.bashrc of all kube_master
+          "files_repo_id":  { type: str, required: False }    # Use kubespray default 
           "k9s_repo_id":  { type: str, required: False }    # Default: latest. 
           
   "roles":

@@ -2,6 +2,19 @@
 
 - hosts: kube-master[0]
   tags: [ "helm" ]
+{%% if m.data.httpProxies is defined and m.data.httpProxies.helm is defined %%}
+  vars:
+    helm_proxy_env:
+{%% if m.data.httpProxies.helm.http_proxy is defined %%}    
+      http_proxy: {{{m.data.httpProxies.helm.http_proxy}}}
+{%% endif %%}
+{%% if m.data.httpProxies.helm.https_proxy is defined %%}    
+      https_proxy: {{{m.data.httpProxies.helm.https_proxy}}}
+{%% endif %%}
+{%% if m.data.httpProxies.helm.no_proxy is defined %%}    
+      no_proxy: {{{m.data.httpProxies.helm.no_proxy}}}
+{%% endif %%}    
+{%% endif %%}
   roles:
   - { role: helm, helm_archive_url: {{{ m.data.repositories.helm.url }}} }
       

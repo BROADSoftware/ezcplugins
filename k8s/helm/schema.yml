@@ -28,3 +28,5 @@ mapping:
         mapping:
           "disabled": { type: bool, required: False }
           "repo_id": { type: str, required: true }    
+          "proxy_id": { type: str, required: false }    
+          
