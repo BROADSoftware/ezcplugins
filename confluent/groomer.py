@@ -54,7 +54,8 @@ ENVIRONMENT="environment"
 EXTRA_ARGS="EXTRA_ARGS"
 CONTEXT="context"
 SUPER_USERS="super.users"
-
+SSL_CERTIFICATE="ssl_certificate"
+CONFIG_FILE="configFile"
 def groom(plugin, model):
     setDefaultInMap(model[CLUSTER][CONFLUENT], DISABLED, False)
     if model[CLUSTER][CONFLUENT][DISABLED]:
@@ -83,13 +84,11 @@ def groom(plugin, model):
         # Get security context
         if SECURITY in model[CLUSTER][CONFLUENT]:
             if CONTEXT in model[CLUSTER][CONFLUENT][SECURITY]:
-                model[CLUSTER][CONFLUENT][SECURITY_CONTEXT] = model[CLUSTER][CONFLUENT][SECURITY][CONTEXT] # TODO : review
+                model[CLUSTER][CONFLUENT][SECURITY_CONTEXT] = model[CLUSTER][CONFLUENT][SECURITY][CONTEXT]
                 lookupSecurityContext(model, CONFLUENT)
 
                 if "mit_kdc" in model[DATA][SECURITY_CONTEXTS][CONFLUENT] and "active_directory" in model[DATA][SECURITY_CONTEXTS][CONFLUENT]:
                     ERROR("Invalid context '{}.{}.{}' definition:  mit_kdc and active_directory are both defined, please keep only one !".format(SECURITY_CONTEXTS, CONFLUENT, model[DATA][SECURITY_CONTEXTS][CONFLUENT][NAME]))
-
-
 
                 if "mit_kdc" in model[DATA][SECURITY_CONTEXTS][CONFLUENT]:
                     security = "mit_kdc"
@@ -99,6 +98,9 @@ def groom(plugin, model):
 
                 if security == 'none':
                     ERROR("Invalid context '{}.{}.{}' definition:  mit_kdc or active_directory should be defined".format(SECURITY_CONTEXTS, CONFLUENT, model[DATA][SECURITY_CONTEXTS][CONFLUENT][NAME]))
+
+                if SSL_CERTIFICATE in model[DATA][SECURITY_CONTEXTS][CONFLUENT][security]:
+                    model[DATA][SECURITY_CONTEXTS][CONFLUENT][security][SSL_CERTIFICATE] = appendPath(os.path.dirname(model[DATA][CONFIG_FILE]), model[DATA][SECURITY_CONTEXTS][CONFLUENT][security][SSL_CERTIFICATE])
 
         # Merge confluent vars from cluster definition file (cluster.confluent)
         # Get broker vars
@@ -133,7 +135,7 @@ def groom(plugin, model):
                 mymap[KAFKA][BROKER] = {}
                 mymap[ZOOKEEPER] = {}
 
-                if BROKER in cp_node[GROUPS]:
+                if GROUPS in role and BROKER in role[GROUPS] or GROUPS in cp_node and BROKER in cp_node[GROUPS]:
                     broker_id += 1
                     # Add broker id
                     mymap[KAFKA][BROKER][ID] = broker_id
@@ -169,7 +171,7 @@ def groom(plugin, model):
                 if security != 'none':
                     setDefaultInMap(mymap[ZOOKEEPER], CONFIG, {})
                     mymap[ZOOKEEPER][CONFIG]["authProvider.1"] = "org.apache.zookeeper.server.auth.SASLAuthenticationProvider"
-                    mymap[ZOOKEEPER][CONFIG]["zookeeper.set.acl"] = "true"
+
 
                     zk_extra_args = ""
                     setDefaultInMap(mymap[ZOOKEEPER], ENVIRONMENT, {})
@@ -196,7 +198,7 @@ def groom(plugin, model):
 
                     mymap[KAFKA][BROKER][ENVIRONMENT][EXTRA_ARGS] = broker_extra_args
                     mymap[KAFKA][BROKER][CONFIG][SUPER_USERS] = "User:kafka_" + model[CLUSTER][ID]
-
+                    mymap[KAFKA][BROKER][CONFIG]["zookeeper.set.acl"] = "true"
 
 
                 # Remove empty keys
