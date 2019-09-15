@@ -25,7 +25,7 @@ def groom(_plugin, model):
     else:
         if 'etc_hosts_entries' in model["cluster"]["docker_registry_hack"]:
             for entry in model["cluster"]["docker_registry_hack"]["etc_hosts_entries"]:
-                entry["ip"] = resolveDns(entry["ip"])
+                entry["target_ip"] = resolveDns(entry["target_ip"])
                 if "aliases" not in entry:
                     entry['aliases'] = "quay.io gcr.io k8s.gcr.io registry-1.docker.io auth.docker.io"
         return True

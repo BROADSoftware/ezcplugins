@@ -29,7 +29,7 @@ mapping:
         sequence:
         - type: map
           mapping:
-            "ip": { type: str, required: True }
+            "target_ip": { type: str, required: True }
             "aliases": { type: str, required: false }  # Default: "{{ansible_hostname}} quay.io gcr.io k8s.gcr.io registry-1.docker.io auth.docker.io"
       "registry_ca_urls":
         type: seq

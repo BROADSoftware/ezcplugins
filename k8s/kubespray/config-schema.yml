@@ -69,7 +69,7 @@ mapping:
             "etcd_download_url": { type: str, required: True }
             "cni_download_url": { type: str, required: True }
             "calicoctl_download_url": { type: str, required: True }
-            
+            "crictl_download_url": { type: str, required: False } # Not present kubespray < v2.11.0
                                   
             
             

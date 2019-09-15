@@ -6,10 +6,10 @@
       path: /etc/hosts
       marker: "# Ansible/ezcluster host hacking {mark}"      
       content: |
-        {{ item.ip }} {{ item.aliases }}
+        {{ item.target_ip }} {{ item.aliases }}
     with_items:
 {%% for entry in m.cluster.docker_registry_hack.etc_hosts_entries %%}
-    - { ip: {{{ entry.ip }}}, aliases: "{{{entry.aliases}}}" }
+    - { target_ip: {{{ entry.target_ip }}}, aliases: "{{{entry.aliases}}}" }
 {%% endfor %%}
 {%% endif %%}
 
