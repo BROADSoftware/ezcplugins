@@ -1,6 +1,6 @@
 
 - hosts: kube-master[0]
-  tags: [ "local_static_pv" ]
+  tags: [ "local_static_pv", "local_static_pvs" ]
   vars:
     storage_classes:
     {{{m.data.localStaticStorageClasses|to_pretty_yaml|indent(4)}}}
@@ -19,7 +19,7 @@
 {%% endfor %%}        
 {%% endif %%}
   roles:
-  - local_static_pv
+  - { role: "local_static_pv", version: "{{{m.cluster.k8s.local_static_pvs.version}}}" } 
   
   
   

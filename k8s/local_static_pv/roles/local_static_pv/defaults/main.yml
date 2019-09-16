@@ -16,7 +16,7 @@
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
 
-version: v2.3.2
+#version: v2.3.2
 
 working_folder: /tmp/helm/local_static_pv
 

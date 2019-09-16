@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import ERROR,appendPath
+from misc import ERROR,appendPath,setDefaultInMap
 import os
 import re
 from sets import Set
@@ -38,6 +38,7 @@ DATA_DISK_REF="data_disk_ref"
 REF="ref"
 TYPE="type"
 LOCAL_STATIC_PVS="local_static_pvs"
+DISABLED = "disabled"
 PV_MOUNT_FOLDERS="pvMountFolders"
 
 DATA="data"
@@ -61,10 +62,15 @@ def invalidSourceError(role, lpv, index):
     ERROR("role['{}'].k8s.local_static_pv.host_dir['{}'][{}]': A source must be defined with 'folder' and 'count' attribute OR 'data_disk_ref' and 'splits' attributes".format(role[NAME], lpv[HOST_DIR], index))
 
 def groom(_plugin, model):
+    setDefaultInMap(model[CLUSTER], K8S, {})
+    setDefaultInMap(model[CLUSTER][K8S], LOCAL_STATIC_PVS, {})
+    setDefaultInMap(model[CLUSTER][K8S][LOCAL_STATIC_PVS], DISABLED, False)
+    if model[CLUSTER][K8S][LOCAL_STATIC_PVS][DISABLED]:
+        return False
     # Lookup interesting storage classes
     localSaticStorageClassByName = {}
     model[DATA][LOCAL_STATIC_STORAGE_CLASSES] = []
-    for sc in model[CLUSTER][K8S][STORAGE_CLASSES]:
+    for sc in model[CLUSTER][K8S][LOCAL_STATIC_PVS][STORAGE_CLASSES]:
         if nameCheckRegex.match(sc["name"]) is None:
             ERROR("Invalid storage_class name '{}': DNS-1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character".format(sc["name"]))
         if sc[TYPE] == SC_TYPE_LOCAL_STATIC:

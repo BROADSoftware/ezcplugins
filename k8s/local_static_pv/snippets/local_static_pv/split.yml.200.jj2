@@ -4,7 +4,7 @@
 {%% if role.lvmSplitters|length > 0 or role.bindMounts|length > 0 %%}
 
 - hosts: {{{ role.name }}}
-  tags: [ "persistent_volumes" ]
+  tags: [ "persistent_volumes", "local_static_pv", "local_static_pvs" ]
   vars:
 {%% if role.lvmSplitters|length > 0 %%}
     splitters:
