@@ -33,6 +33,7 @@ mapping:
           "admin_password": { type: str, required: False }
           "default_not_ready_toleration_seconds": { type: int, required: False }       
           "default_unreachable_toleration_seconds": { type: int, required: False }       
+          "metrics_server": { type: bool, required: false }    # Default to true
           "docker_certificates":
             type: seq
             required: false
