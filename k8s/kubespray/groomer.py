@@ -32,6 +32,8 @@ CLUSTER_NAME="cluster_name"
 K9S_REPO_ID="k9s_repo_id"
 FILES_REPO_ID="files_repo_id"
 METRICS_SERVER="metrics_server"
+AUDIT="audit"
+POD_SECURITY_POLICIES="pod_security_policies"
 
 def groom(_plugin, model):
     setDefaultInMap(model[CLUSTER], K8S, {})
@@ -40,6 +42,8 @@ def groom(_plugin, model):
     setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], "basic_auth", False)
     setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], K9S_REPO_ID, "latest")
     setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], METRICS_SERVER, True)
+    setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], AUDIT, False)
+    setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], POD_SECURITY_POLICIES, False)
     if model[CLUSTER][K8S][KUBESPRAY][DISABLED]:
         return False
     else:

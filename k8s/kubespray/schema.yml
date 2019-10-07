@@ -34,6 +34,8 @@ mapping:
           "default_not_ready_toleration_seconds": { type: int, required: False }       
           "default_unreachable_toleration_seconds": { type: int, required: False }       
           "metrics_server": { type: bool, required: false }    # Default to true
+          "audit": { type: bool, required: false }    # Default to false
+          "pod_security_policies": { type: bool, required: false }    # Default to false
           "docker_certificates":
             type: seq
             required: false
