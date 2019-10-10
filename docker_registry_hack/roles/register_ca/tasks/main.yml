@@ -17,6 +17,7 @@
   get_url:
     url: "{{item.url}}"
     dest: "/etc/pki/ca-trust/source/anchors/{{item.file}}.crt"       
+    validate_certs: false
   notify: 
   - update_trust_store
   - restart_docker
