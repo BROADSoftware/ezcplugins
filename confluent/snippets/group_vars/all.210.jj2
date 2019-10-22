@@ -1,7 +1,15 @@
 
 {%% if m.data.confluent.security != 'none' %%}
 
+    {%% if m.data.security_contexts.confluent.ssl is defined %%}
+
+security_mode: 'sasl_ssl'
+
+    {%% else %%}
+
 security_mode: 'sasl_plaintext'
+
+    {%% endif %%}
 
 {%% else %%}
 

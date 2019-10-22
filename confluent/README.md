@@ -37,11 +37,13 @@ Modifications are pushed to :
     https://github.com/mlahouar/cp-ansible
     branch : 5.2.X
     commit : 
-        commit d53f0aa55bbd6a402fb22e636291c97216eff770
+        commit 6b762eff130ad262a7a62ab39a665ad01762c80b
         Author: moncef lahouar <moncef.lahouar@gmail.com>
-        Date:   Tue Jul 2 14:57:07 2019 +0200
+        Date:   Tue Oct 22 10:50:18 2019 +0200
+        
+            Add SASL_SSL conf files
+        
 
-                Add SASL_PLAINTEXT support to confluent
 
 
             
@@ -61,6 +63,13 @@ Modifications are pushed to :
             admin:
               login: 'admin/admin'
               password: 'AdminPassword'
+          ssl:
+            key_password: 'confluent1'
+            keystore_password: 'confluent2'
+            truststore_password: 'confluent3'
+            ca_key_file: ../common/ca/CARoot.key
+            ca_key_pass: 'confluent'
+            ca_crt_file: ../common/ca/CARoot.crt
         - name: 'cib'
           active_directory:
             realm: 'ML.COM'

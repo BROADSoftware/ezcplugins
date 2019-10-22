@@ -84,7 +84,16 @@ mapping:
                   mapping:
                     "login": { type: str, required: True }
                     "password": { type: str, required: True }
-
+            "ssl":
+              type: map
+              required: false
+              mapping:
+                "key_password": { type: str, required: True }
+                "keystore_password": { type: str, required: True }
+                "truststore_password": { type: str, required: True }
+                "ca_key_file": { type: str, required: True }
+                "ca_key_pass": { type: str, required: True }
+                "ca_crt_file": { type: str, required: True }
             "active_directory":
               type: map
               required: false

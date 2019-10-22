@@ -77,7 +77,18 @@
 
 {%% endif %%}
 
-
+{%% if m.data.security_contexts.confluent.ssl is defined %%}
+- hosts: broker
+  vars:
+    key_password: {{{ m.data.security_contexts.confluent.ssl.key_password }}}
+    keystore_password: {{{ m.data.security_contexts.confluent.ssl.keystore_password }}}
+    truststore_password: {{{ m.data.security_contexts.confluent.ssl.truststore_password }}}
+    ca_key_file: {{{ m.data.security_contexts.confluent.ssl.ca_key_file }}}
+    ca_key_pass: {{{ m.data.security_contexts.confluent.ssl.ca_key_pass }}}
+    ca_crt_file: {{{ m.data.security_contexts.confluent.ssl.ca_crt_file }}}
+  roles:
+    - broker_ssl_generation
+{%% endif %%}
 
 - hosts: broker
   tasks:

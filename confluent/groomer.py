@@ -55,7 +55,11 @@ EXTRA_ARGS="EXTRA_ARGS"
 CONTEXT="context"
 SUPER_USERS="super.users"
 SSL_CERTIFICATE="ssl_certificate"
+SSL="ssl"
 CONFIG_FILE="configFile"
+CA_KEY_FILE="ca_key_file"
+CA_KEY_PASS="ca_key_pass"
+CA_CRT_FILE="ca_crt_file"
 def groom(plugin, model):
     setDefaultInMap(model[CLUSTER][CONFLUENT], DISABLED, False)
     if model[CLUSTER][CONFLUENT][DISABLED]:
@@ -101,6 +105,10 @@ def groom(plugin, model):
 
                 if SSL_CERTIFICATE in model[DATA][SECURITY_CONTEXTS][CONFLUENT][security]:
                     model[DATA][SECURITY_CONTEXTS][CONFLUENT][security][SSL_CERTIFICATE] = appendPath(os.path.dirname(model[DATA][CONFIG_FILE]), model[DATA][SECURITY_CONTEXTS][CONFLUENT][security][SSL_CERTIFICATE])
+
+                if SSL in model[DATA][SECURITY_CONTEXTS][CONFLUENT]:
+                    model[DATA][SECURITY_CONTEXTS][CONFLUENT][SSL][CA_KEY_FILE] = appendPath(os.path.dirname(model[DATA][CONFIG_FILE]), model[DATA][SECURITY_CONTEXTS][CONFLUENT][SSL][CA_KEY_FILE])
+                    model[DATA][SECURITY_CONTEXTS][CONFLUENT][SSL][CA_CRT_FILE] = appendPath(os.path.dirname(model[DATA][CONFIG_FILE]), model[DATA][SECURITY_CONTEXTS][CONFLUENT][SSL][CA_CRT_FILE])
 
         # Merge confluent vars from cluster definition file (cluster.confluent)
         # Get broker vars
@@ -200,6 +208,12 @@ def groom(plugin, model):
                     mymap[KAFKA][BROKER][CONFIG][SUPER_USERS] = "User:kafka_" + model[CLUSTER][ID]
                     mymap[KAFKA][BROKER][CONFIG]["zookeeper.set.acl"] = "true"
 
+                    if SSL in model[DATA][SECURITY_CONTEXTS][CONFLUENT]:
+                        mymap[KAFKA][BROKER][CONFIG]["ssl.keystore.location"] = "/var/private/ssl/server.keystore.jks"
+                        mymap[KAFKA][BROKER][CONFIG]["ssl.keystore.password"] = model[DATA][SECURITY_CONTEXTS][CONFLUENT][SSL]["keystore_password"]
+                        mymap[KAFKA][BROKER][CONFIG]["ssl.key.password"] = model[DATA][SECURITY_CONTEXTS][CONFLUENT][SSL]["key_password"]
+                        mymap[KAFKA][BROKER][CONFIG]["ssl.truststore.location"] = "/var/private/ssl/server.truststore.jks"
+                        mymap[KAFKA][BROKER][CONFIG]["ssl.truststore.password"] = model[DATA][SECURITY_CONTEXTS][CONFLUENT][SSL]["truststore_password"]
 
                 # Remove empty keys
                 mymap[KAFKA] = dict( [(k,v) for k,v in mymap[KAFKA].items() if len(v)>0])
