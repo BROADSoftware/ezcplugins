@@ -1,5 +1,13 @@
 
 - hosts: all
+  gather_facts: no
+  tasks:
+  - name: Wait for target instances to become reachable/usable
+    tags: [ "always" ]
+    wait_for_connection:
+      timeout: 600
+
+- hosts: all
   roles:
   - { role: etc_hosts, tags: [ "base", "etc_hosts" ] }
 {%% if m.cluster.vagrant.yum_repo == "local" %%}
