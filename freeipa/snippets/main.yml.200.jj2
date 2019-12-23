@@ -1,0 +1,15 @@
+
+
+{%% if m.data.freeipa.filesToCopy is defined %%}
+- name: Copy certificates file
+  hosts: ipaserver
+  tasks:
+  - copy:
+      src={{item.src}}
+      dest={{item.dest}}
+    with_items: {{{ m.data.freeipa.filesToCopy }}}
+{%% endif %%}
+
+
+- import_playbook: {{{ m.data.helpers.freeipa.folder }}}/playbooks/install-server.yml
+
