@@ -33,6 +33,15 @@ SRC="src"
 DEST="dest"
 EXTERNAL_CERT_FILES="externalCertFiles"
 
+USERS="users"
+UPDATE_PASSWORD="update_password"
+FIRSTNAME="firstname"
+LASTNAME="lastname"
+CN="cn"
+DISPLAYNAME="displayname"
+INITALS="initials"
+
+
 def groom(_plugin, model):
     setDefaultInMap(model[CLUSTER], FREEIPA, {})
     setDefaultInMap(model[CLUSTER][FREEIPA], DISABLED, False)
@@ -44,6 +53,7 @@ def groom(_plugin, model):
         model[DATA][ROLE_PATHS].add(appendPath(model[DATA][HELPERS][FREEIPA][FOLDER], "roles"))
         if CERT_FILES in model[CLUSTER][FREEIPA] and len(model[CLUSTER][FREEIPA][CERT_FILES]) > 0:
             # NB: ipaserver_external_cert_files_from_controller does not works! (Missing basename in the copy). Will handle ourself before
+            # In fact, was unable to transfer root authority from one install to another. A new CA is generated on each freeipa build.
             model[DATA][FREEIPA][FILES_TO_COPY] = []
             model[DATA][FREEIPA][EXTERNAL_CERT_FILES] = []
             for fn in model[CLUSTER][FREEIPA][CERT_FILES]:
@@ -54,5 +64,15 @@ def groom(_plugin, model):
                 fc[DEST] = os.path.join("/root/", os.path.basename(fc[SRC]))
                 model[DATA][FREEIPA][FILES_TO_COPY].append(fc)
                 model[DATA][FREEIPA][EXTERNAL_CERT_FILES].append(fc[DEST])
+        if USERS in model[CLUSTER][FREEIPA]:
+            for user in model[CLUSTER][FREEIPA][USERS]:
+                setDefaultInMap(user, UPDATE_PASSWORD, "on_create")
+                # We better provide some default here than letting freeipa doing it. This for better control, and for updating (freeipi does not modify them once set).
+                n = "{} {}".format(user[FIRSTNAME], user[LASTNAME])
+                setDefaultInMap(user, CN, n)
+                setDefaultInMap(user, DISPLAYNAME, n)
+                setDefaultInMap(user, INITALS, (user[FIRSTNAME][0] + user[LASTNAME][0]).upper())
+                
+                
         return True
 

@@ -36,4 +36,35 @@ mapping:
         required: false
         sequence:
         - type: str
+      "users":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "uid": { type: str, required: true }
+            "firstname": { type: str, required: true }
+            "lastname": { type: str, required: true }
+            "cn": { type: str, required: false }
+            "homedir": { type: str, required: false }
+            "shell": { type: str, required: false }
+            "email": { type: str, required: false }
+            "password": { type: str, required: false }
+            "uidnumber": { type: int, required: false }
+            "gidnumber": { type: int, required: false }
+            "update_password": { type: str, required: false, enum: ["always", "on_create"] }
+      "groups":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "name": { type: str, required: true }
+            "description": { type: str, required: false }
+            "users": 
+              type: seq
+              required: false
+              sequence:
+              - type: str
+            
       
