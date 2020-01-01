@@ -1,6 +1,6 @@
 
 
-- hosts: kube-master[0]
+- hosts: kube-master[0]:rancher[0]
   tags: [ "metallb" ]
   vars:
     metallb:

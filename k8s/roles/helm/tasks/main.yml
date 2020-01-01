@@ -1,0 +1,24 @@
+- name: Check helm
+  stat:
+    path: /usr/local/bin/helm
+  register: helm
+        
+- name: "Download helm archive"
+  unarchive:
+    src: "{{helm_tgz_url}}"
+    dest: /tmp
+    remote_src: yes
+  when: not helm.stat.exists
+
+- name: Set helm in the target location
+  copy:
+    src: /tmp/linux-amd64/helm
+    dest: /usr/local/bin/helm
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: yes
+  when: not helm.stat.exists
+    
+
+    

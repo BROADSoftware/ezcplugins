@@ -30,8 +30,8 @@ mapping:
             "repo_id": { type: str, required: True }
             "docker_rh_repo_base_url": { type: str, required: True }
             "docker_rh_repo_gpgkey": { type: str, required: True }
-            "dockerproject_rh_repo_base_url": { type: str, required: True }
-            "dockerproject_rh_repo_gpgkey": { type: str, required: True }
+            "dockerproject_rh_repo_base_url": { type: str, required: False }
+            "dockerproject_rh_repo_gpgkey": { type: str, required: False }
             
                                   
     

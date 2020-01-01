@@ -13,6 +13,17 @@ services:
     snapshot: true
     creation: 6h
     retention: 24h
-
+    
+network:
+  plugin: canal
+  options:
+    canal_iface: eth1
+    canal_flannel_backend_type: vxlan
+        
+# Required for external TLS termination with ingress-nginx v0.22+
+ingress:
+  provider: nginx
+  options:
+    use-forwarded-headers: "true"
 
 

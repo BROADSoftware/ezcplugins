@@ -6,9 +6,6 @@
     docker_rh_repo_base_url: {{{ m.data.repositories.docker_yum.docker_rh_repo_base_url }}}
     docker_rh_repo_gpgkey: {{{ m.data.repositories.docker_yum.docker_rh_repo_gpgkey }}}
 
-    dockerproject_rh_repo_base_url: {{{ m.data.repositories.docker_yum.dockerproject_rh_repo_base_url }}}
-    dockerproject_rh_repo_gpgkey: {{{ m.data.repositories.docker_yum.dockerproject_rh_repo_gpgkey }}}
-    
     docker_version: "{{{m.cluster.docker.version}}}"
 
 {%% if m.data.httpProxies.docker is defined %%}    

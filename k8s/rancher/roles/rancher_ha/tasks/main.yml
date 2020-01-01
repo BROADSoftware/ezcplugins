@@ -80,7 +80,6 @@
   - name: "Create .kube folder"
     file: path={{ item.home + '/.kube'}}     state=directory owner={{item.login}}
     with_items: "{{kubectl_users}}"
-    
       
   - name: copy kubectl config file
     shell: cp /tmp/kube_config_rancher-config.yml {{ item.home + '/.kube/config' }}

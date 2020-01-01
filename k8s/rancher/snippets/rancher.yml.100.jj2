@@ -1,7 +1,9 @@
 
 - hosts: rancher[0]
   roles:
-  - { role: "kubectl", tags: [ "kubectl" ] }
+  - { role: "kubectl", tags: [ "kubectl", "client" ] }
+  - { role: "k9s", tags: [ "k9s", "client" ] }
+  - { role: "helm", tags: [ "helm", "client" ] }
 
 - hosts: rancher
   vars:
@@ -13,9 +15,21 @@
   tags: [ "rancher" ]
   roles:
   - rancher_ha
-  
-- hosts: rancher[0]
-  roles:
-  - { role: "helm", tags: [ "helm" ] }
+#  
 
-  
+- hosts:  rancher[0]
+  tasks:
+  - name: "Copy config file locally"
+    fetch:
+      src: /root/.kube/config
+      dest: ./config
+      flat: yes
+    tags: [ "rancher", "config" ]        
+    
+
+- hosts:  rancher[0]
+  vars: 
+    # v0.11 introduced breaking changes. So we need some old stuff for rancher < 2.4 (Current version: 2.3.3)
+    cert_manager_version: "0.10.1"
+  roles:
+  - { role: "cert_manager", tags: [ "cert_manager", "cert-manager" ] }

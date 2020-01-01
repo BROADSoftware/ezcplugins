@@ -1,5 +1,5 @@
 
-rancher_rke_url: https://github.com/rancher/rke/releases/download/v0.2.4/rke_linux-amd64
+rancher_rke_url: https://github.com/rancher/rke/releases/download/v1.0.0/rke_linux-amd64
 
 # Must not be root on centos/RHEL
 # https://rancher.com/docs/rke/latest/en/troubleshooting/ssh-connectivity-errors/
