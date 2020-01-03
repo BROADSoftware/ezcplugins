@@ -13,12 +13,22 @@ services:
     snapshot: true
     creation: 6h
     retention: 24h
-    
+
+{% if rancher_network == "canal" %}    
 network:
   plugin: canal
   options:
-    canal_iface: eth1
+    canal_iface: {{ rancher_interface }}
     canal_flannel_backend_type: vxlan
+{% endif %}
+    
+{% if rancher_network == "flannel" %}    
+network:
+  plugin: flannel
+  options:
+    flannel_iface: {{ rancher_interface }}
+    flannel_backend_type: vxlan    
+{% endif %}
         
 # Required for external TLS termination with ingress-nginx v0.22+
 ingress:

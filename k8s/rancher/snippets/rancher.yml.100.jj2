@@ -12,10 +12,11 @@
     - address: {{{ node.fqdn }}}
       internal_address: {{{ node.fqdn }}}
 {%%- endfor %%}  
+    rancher_network: {{{ m.cluster.k8s.rancher.network }}}
+    rancher_interface: {{{ m.cluster.k8s.rancher.interface }}}
   tags: [ "rancher" ]
   roles:
   - rancher_ha
-#  
 
 - hosts:  rancher[0]
   tasks:

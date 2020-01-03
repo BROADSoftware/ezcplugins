@@ -14,3 +14,5 @@ rancher_user: rancher
 #- address: n3.rancher2
 #  internal_address: n3.rancher2
   
+#rancher_network: "canal"    # "canal" or "flannel"
+#rancher_interface: "eth0"

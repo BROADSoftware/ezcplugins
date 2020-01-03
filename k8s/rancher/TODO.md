@@ -1,5 +1,5 @@
 
 
 - make k9s/helm/kubctl version configurable
-- make ceert-manager version configurable
-- make network provider configurable. And interface
+- make cert-manager version configurable
+- make rke version configurable
