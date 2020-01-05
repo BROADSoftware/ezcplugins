@@ -15,11 +15,9 @@
 {%% endif %%}
 
 
-{%% if m.cluster.docker_registry_hack.registry_ca_urls is defined and  m.cluster.docker_registry_hack.registry_ca_urls|length > 0 %%}
 - hosts: all
   tags: [ "docker_registry_hack", "register_ca" ]
   roles:
-  - { role: register_ca, register_ca_urls: "{{{m.cluster.docker_registry_hack.registry_ca_urls}}}" }  
-{%% endif %%}
+  - { role: register_ca, register_ca_urls: "{{{m.cluster.docker_registry_hack.registry_ca_urls|default([])}}}", register_ca_paths: "{{{m.cluster.docker_registry_hack.registry_ca_paths|default([])}}}" }  
 
     

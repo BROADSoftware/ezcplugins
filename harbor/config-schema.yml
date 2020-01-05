@@ -16,29 +16,21 @@
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
 
+
 type: map
 mapping:
-  "docker_registry_hack":
+  "repositories":
     type: map
-    required: True
+    required: false
     mapping:
-      "disabled": { type: bool, required: false }
-      "etc_hosts_entries":
+      "harbor": 
         type: seq
         required: false
         sequence:
         - type: map
           mapping:
-            "target_ip": { type: str, required: True }
-            "aliases": { type: str, required: false }  # Default: "{{ansible_hostname}} quay.io gcr.io k8s.gcr.io registry-1.docker.io auth.docker.io"
-      "registry_ca_urls":
-        type: seq
-        required: false
-        sequence:
-        - type: str
-      "registry_ca_paths":
-        type: seq
-        required: false
-        sequence:
-        - type: str
-
+            "repo_id": { type: str, required: True }
+            "version": { type: str, required: True }
+            "harbor_tgz_url": { type: str, required: True }
+            
+            

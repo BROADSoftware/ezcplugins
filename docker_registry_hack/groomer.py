@@ -16,17 +16,37 @@
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
 
-from misc import setDefaultInMap,resolveDns
+from misc import setDefaultInMap,resolveDns,appendPath,ERROR
+import os
+
+CLUSTER = "cluster"
+DOCKER_REGISTRY_HACK = "docker_registry_hack"
+DISABLED = "disabled"
+ALIASES = "aliases"
+ETC_HOST_ENTRIES = "etc_hosts_entries"
+TARGET_IP = "target_ip"
+REGISTRY_CA_PATHS = "registry_ca_paths"
+DATA="data"
+SOURCE_FILE_DIR="sourceFileDir"
+
 
 def groom(_plugin, model):
-    setDefaultInMap(model["cluster"]["docker_registry_hack"], "disabled", False)
-    if model["cluster"]["docker_registry_hack"]["disabled"]:
+    setDefaultInMap(model[CLUSTER][DOCKER_REGISTRY_HACK], DISABLED, False)
+    if model[CLUSTER][DOCKER_REGISTRY_HACK][DISABLED]:
         return False
     else:
-        if 'etc_hosts_entries' in model["cluster"]["docker_registry_hack"]:
-            for entry in model["cluster"]["docker_registry_hack"]["etc_hosts_entries"]:
-                entry["target_ip"] = resolveDns(entry["target_ip"])
-                if "aliases" not in entry:
-                    entry['aliases'] = "quay.io gcr.io k8s.gcr.io registry-1.docker.io auth.docker.io"
+        if ETC_HOST_ENTRIES in model[CLUSTER][DOCKER_REGISTRY_HACK]:
+            for entry in model[CLUSTER][DOCKER_REGISTRY_HACK][ETC_HOST_ENTRIES]:
+                entry[TARGET_IP] = resolveDns(entry[TARGET_IP])
+                if ALIASES not in entry:
+                    entry[ALIASES] = "quay.io gcr.io k8s.gcr.io registry-1.docker.io auth.docker.io"
+        if REGISTRY_CA_PATHS in model[CLUSTER][DOCKER_REGISTRY_HACK]:
+            for idx, p in  enumerate(model[CLUSTER][DOCKER_REGISTRY_HACK][REGISTRY_CA_PATHS]):
+                model[CLUSTER][DOCKER_REGISTRY_HACK][REGISTRY_CA_PATHS][idx] = appendPath(model[DATA][SOURCE_FILE_DIR], p)
+                if not os.path.isfile( model[CLUSTER][DOCKER_REGISTRY_HACK][REGISTRY_CA_PATHS][idx]):
+                    ERROR("Unable to find '{}'!".format( model[CLUSTER][DOCKER_REGISTRY_HACK][REGISTRY_CA_PATHS][idx]))
         return True
     
+
+
+
