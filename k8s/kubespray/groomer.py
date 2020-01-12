@@ -30,6 +30,7 @@ DOCKER_CERTIFICATES = "docker_certificates"
 DISABLED = "disabled"
 CLUSTER_NAME="cluster_name"
 K9S_REPO_ID="k9s_repo_id"
+HELM_REPO_ID="helm_repo_id"
 FILES_REPO_ID="files_repo_id"
 METRICS_SERVER="metrics_server"
 AUDIT="audit"
@@ -40,7 +41,6 @@ def groom(_plugin, model):
     setDefaultInMap(model[CLUSTER][K8S], KUBESPRAY, {})
     setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], DISABLED, False)
     setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], "basic_auth", False)
-    setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], K9S_REPO_ID, "latest")
     setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], METRICS_SERVER, True)
     setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], AUDIT, False)
     setDefaultInMap(model[CLUSTER][K8S][KUBESPRAY], POD_SECURITY_POLICIES, False)
@@ -48,8 +48,10 @@ def groom(_plugin, model):
         return False
     else:
         lookupRepository(model, None, "docker_yum", model[CLUSTER][K8S][KUBESPRAY]['docker_yum_repo_id'])
-        if model[CLUSTER][K8S][KUBESPRAY][K9S_REPO_ID] is not None:
+        if K9S_REPO_ID in model[CLUSTER][K8S][KUBESPRAY]:
             lookupRepository(model, "k9s", repoId = model[CLUSTER][K8S][KUBESPRAY][K9S_REPO_ID])
+        if HELM_REPO_ID in model[CLUSTER][K8S][KUBESPRAY]:
+            lookupRepository(model, "helm", repoId = model[CLUSTER][K8S][KUBESPRAY][HELM_REPO_ID])
         lookupHelper(model, KUBESPRAY, helperId=model[CLUSTER][K8S][KUBESPRAY]["helper_id"])
         lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["docker_proxy_id"] if "docker_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "docker")
         lookupHttpProxy(model, model[CLUSTER][K8S][KUBESPRAY]["master_root_proxy_id"] if "master_root_proxy_id" in model[CLUSTER][K8S][KUBESPRAY] else None, "master_root")

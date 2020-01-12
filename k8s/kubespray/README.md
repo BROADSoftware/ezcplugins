@@ -56,5 +56,13 @@ on internally built yum repo. And may be a squid for usual (get_url) proxying.
 
 
 - master:/etc/kubernetes/manifests
-Static pod configguration
+Static pod configuration
+
+# PB Dashboard
+
+Dashboard v1 is not being maintained and will not work with newer versions of K8S. v2 will be updated and new beta will be released once #4377 is merged.
+
+Ref:
+https://github.com/kubernetes/dashboard/issues/4401
+
 

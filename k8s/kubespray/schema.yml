@@ -47,6 +47,7 @@ mapping:
           "master_root_proxy_id":  { type: str, required: False }  # This is a proxy conf which will be set in the /root/.bashrc of all kube_master
           "files_repo_id":  { type: str, required: False }    # Use kubespray default 
           "k9s_repo_id":  { type: str, required: False }    # Default: latest. 
+          "helm_repo_id":  { type: str, required: False }    # Default: latest. 
           
   "roles":
     type: seq

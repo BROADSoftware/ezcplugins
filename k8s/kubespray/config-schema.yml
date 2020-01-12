@@ -57,6 +57,15 @@ mapping:
             "repo_id": { type: str, required: True }
             "version": { type: str, required: True }
             "k9s_tgz_url": { type: str, required: True }
+      "helm": 
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "repo_id": { type: str, required: True }
+            "version": { type: str, required: False }
+            "helm_tgz_url": { type: str, required: True }
       "kubespray_files": 
         type: seq
         required: false

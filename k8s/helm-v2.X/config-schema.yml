@@ -21,7 +21,7 @@ mapping:
     type: map
     required: false
     mapping:
-      "helm": 
+      "helm2": 
         type: seq
         required: false
         sequence:
