@@ -39,10 +39,19 @@ yum_no_proxy: {{{m.data.httpProxies.yum.no_proxy}}}
 
 {%% if m.data.repositories.kubespray_files is defined %%}
 kubeadm_download_url: "{{{m.data.repositories.kubespray_files.kubeadm_download_url}}}"
+{%% if m.data.repositories.kubespray_files.hyperkube_download_url is defined %%}
 hyperkube_download_url: "{{{m.data.repositories.kubespray_files.hyperkube_download_url}}}"
+{%% endif %%}
+{%% if m.data.repositories.kubespray_files.kubectl_download_url is defined %%}
+kubectl_download_url: "{{{m.data.repositories.kubespray_files.kubectl_download_url}}}"
+{%% endif %%}
+{%% if m.data.repositories.kubespray_files.kubelet_download_url is defined %%}
+kubelet_download_url: "{{{m.data.repositories.kubespray_files.kubelet_download_url}}}"
+{%% endif %%}
 etcd_download_url: "{{{m.data.repositories.kubespray_files.etcd_download_url}}}"
 cni_download_url: "{{{m.data.repositories.kubespray_files.cni_download_url}}}"
 calicoctl_download_url: "{{{m.data.repositories.kubespray_files.calicoctl_download_url}}}"
+crictl_download_url: "{{{m.data.repositories.kubespray_files.crictl_download_url}}}"
 {%% endif %%}
 
 # NB: To patch existing cluster, edit /etc/kubernetes/manifests/kube-apiserver.yaml on each master node

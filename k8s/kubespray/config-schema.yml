@@ -74,7 +74,9 @@ mapping:
           mapping:
             "repo_id": { type: str, required: True }
             "kubeadm_download_url": { type: str, required: True }
-            "hyperkube_download_url": { type: str, required: True }
+            "kubelet_download_url": { type: str, required: False }   # Depend of kubespray version
+            "kubectl_download_url": { type: str, required: False }   # Depend of kubespray version
+            "hyperkube_download_url": { type: str, required: False } # Depend of kubespray version
             "etcd_download_url": { type: str, required: True }
             "cni_download_url": { type: str, required: True }
             "calicoctl_download_url": { type: str, required: True }
