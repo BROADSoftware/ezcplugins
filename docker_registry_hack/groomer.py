@@ -39,7 +39,7 @@ def groom(_plugin, model):
             for entry in model[CLUSTER][DOCKER_REGISTRY_HACK][ETC_HOST_ENTRIES]:
                 entry[TARGET_IP] = resolveDns(entry[TARGET_IP])
                 if ALIASES not in entry:
-                    entry[ALIASES] = "quay.io gcr.io k8s.gcr.io registry-1.docker.io auth.docker.io"
+                    entry[ALIASES] = "quay.io gcr.io k8s.gcr.io registry-1.docker.io"
         if REGISTRY_CA_PATHS in model[CLUSTER][DOCKER_REGISTRY_HACK]:
             for idx, p in  enumerate(model[CLUSTER][DOCKER_REGISTRY_HACK][REGISTRY_CA_PATHS]):
                 model[CLUSTER][DOCKER_REGISTRY_HACK][REGISTRY_CA_PATHS][idx] = appendPath(model[DATA][SOURCE_FILE_DIR], p)

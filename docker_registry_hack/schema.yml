@@ -30,7 +30,7 @@ mapping:
         - type: map
           mapping:
             "target_ip": { type: str, required: True }
-            "aliases": { type: str, required: false }  # Default: "{{ansible_hostname}} quay.io gcr.io k8s.gcr.io registry-1.docker.io auth.docker.io"
+            "aliases": { type: str, required: false }  # Default: "quay.io gcr.io k8s.gcr.io registry-1.docker.io"
       "registry_ca_urls":
         type: seq
         required: false
