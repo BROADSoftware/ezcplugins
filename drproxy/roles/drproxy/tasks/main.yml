@@ -1,0 +1,46 @@
+
+
+- name: Install required package
+  yum:
+    pkg: python-docker-py
+    state: present
+
+- name: Ensure certificate folder
+  file:
+    state: directory
+    path: /etc/drproxy/certs
+    owner: root
+    mode: 0755
+
+- name: Copy certificate file
+  copy:
+    src: "{{item.src}}"
+    dest: "{{item.dest}}"
+  with_items:
+  - { src: "{{drproxy_cert_file}}", dest: "/etc/drproxy/certs/tls.crt" }
+  - { src: "{{drproxy_key_file}}", dest: "/etc/drproxy/certs/tls.key" }
+  - { src: "{{drproxy_root_ca_file}}", dest: "/etc/drproxy/certs/rootca.crt" }
+
+- name: Install drproxy
+  docker_container:
+    name: drproxy
+    image: "{{drproxy_image}}"
+    state: started
+    restart_policy: always
+    pull: yes
+    ports:
+    - "443:1443"
+    volumes:
+    - "/etc/drproxy/certs:/certs"
+    env:
+      DRX_REGISTRY: "{{drproxy_registry}}"
+      DRX_PATH: "{{drproxy_path}}"
+      DRX_ADDR: ":1443"
+      DRX_CERTFILE: "/certs/tls.crt"
+      DRX_KEYFILE: "/certs/tls.key"
+      DRX_ROOTCAFILE: "/certs/rootca.crt"
+      
+      
+    
+    
+    

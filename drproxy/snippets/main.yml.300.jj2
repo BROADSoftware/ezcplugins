@@ -1,0 +1,14 @@
+- hosts: all
+  tags: [ "drproxy" ]
+  vars: 
+    drproxy_image: {{{ m.cluster.drproxy.image }}} 
+    drproxy_registry: {{{ m.cluster.drproxy.registry }}} 
+    drproxy_path: {{{ m.cluster.drproxy.path }}} 
+    drproxy_cert_file: {{{ m.cluster.drproxy.cert_file }}} 
+    drproxy_key_file: {{{ m.cluster.drproxy.key_file }}} 
+    drproxy_root_ca_file: {{{ m.cluster.drproxy.root_ca_file }}} 
+  
+  roles:
+  - drproxy
+
+    
