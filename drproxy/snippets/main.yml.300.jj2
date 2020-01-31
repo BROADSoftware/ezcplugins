@@ -1,4 +1,4 @@
-- hosts: all
+- hosts: drproxy
   tags: [ "drproxy" ]
   vars: 
     drproxy_image: {{{ m.cluster.drproxy.image }}} 

@@ -1,5 +1,5 @@
 
-- hosts: all
+- hosts: harbor
   vars:
     harbor_ssl_cert_src: {{{m.cluster.harbor.ssl_cert_src}}}
     harbor_ssl_key_src: {{{m.cluster.harbor.ssl_key_src}}}
