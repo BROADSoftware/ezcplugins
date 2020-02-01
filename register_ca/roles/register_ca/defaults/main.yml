@@ -1,0 +1,10 @@
+
+
+#register_ca_urls: 
+#- src: 'http://dregistry1/rootCA.crt'
+#  name: 'dregistry1.crt'
+#register_ca_paths:
+#- src: '/Users/sa/dev/g5/git/ezciac/certificates/CA/ca1.crt'
+#  name: 'ca1_broadsoftware_com.crt' 
+  
+  

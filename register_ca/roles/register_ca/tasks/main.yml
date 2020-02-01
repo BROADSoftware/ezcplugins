@@ -1,0 +1,30 @@
+
+- name: Populate service facts (To check if docker is installed)
+  service_facts:
+  
+#- debug: var=ansible_facts.services
+
+# WARNING Centos/RHEL specifics
+- name: Fetch CA certificate from urls
+  get_url:
+    url: "{{item.src}}"
+    dest: "/etc/pki/ca-trust/source/anchors/{{item.name}}"       
+    validate_certs: false
+  notify: 
+  - update_trust_store
+  - restart_docker
+  when: register_ca_urls is defined 
+  with_items: "{{register_ca_urls}}"
+  
+# WARNING Centos/RHEL specifics
+- name: Fetch CA certificate from local path
+  copy:
+    src: "{{item.src}}"
+    dest: "/etc/pki/ca-trust/source/anchors/{{item.name}}"       
+  notify: 
+  - update_trust_store
+  - restart_docker
+  when: register_ca_paths is defined 
+  with_items: "{{register_ca_paths}}"
+  
+  

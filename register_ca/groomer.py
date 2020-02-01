@@ -16,26 +16,31 @@
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
 
-from misc import setDefaultInMap,resolveDns
+from misc import setDefaultInMap,resolveDns,appendPath,ERROR
+import os
 
 CLUSTER = "cluster"
-DOCKER_REGISTRY_HACK = "docker_registry_hack"
+REGISTER_CA = "register_ca"
 DISABLED = "disabled"
-ALIASES = "aliases"
-ETC_HOST_ENTRIES = "etc_hosts_entries"
-TARGET_IP = "target_ip"
+DATA="data"
+SOURCE_FILE_DIR="sourceFileDir"
+SRC="src"
+NAME="name"
+PATHS="paths"
+URLS="urls"
+FROM_PATHS="from_paths"
 
 
 def groom(_plugin, model):
-    setDefaultInMap(model[CLUSTER][DOCKER_REGISTRY_HACK], DISABLED, False)
-    if model[CLUSTER][DOCKER_REGISTRY_HACK][DISABLED]:
+    setDefaultInMap(model[CLUSTER][REGISTER_CA], DISABLED, False)
+    if model[CLUSTER][REGISTER_CA][DISABLED]:
         return False
     else:
-        if ETC_HOST_ENTRIES in model[CLUSTER][DOCKER_REGISTRY_HACK]:
-            for entry in model[CLUSTER][DOCKER_REGISTRY_HACK][ETC_HOST_ENTRIES]:
-                entry[TARGET_IP] = resolveDns(entry[TARGET_IP])
-                if ALIASES not in entry:
-                    entry[ALIASES] = "quay.io gcr.io k8s.gcr.io registry-1.docker.io"
+        if FROM_PATHS in model[CLUSTER][REGISTER_CA]:
+            for idx, p in  enumerate(model[CLUSTER][REGISTER_CA][FROM_PATHS]):
+                model[CLUSTER][REGISTER_CA][FROM_PATHS][idx][SRC] = appendPath(model[DATA][SOURCE_FILE_DIR], p[SRC])
+                if not os.path.isfile(model[CLUSTER][REGISTER_CA][FROM_PATHS][idx][SRC]):
+                    ERROR("Unable to find '{}'!".format( model[CLUSTER][REGISTER_CA][FROM_PATHS][idx][SRC]))
         return True
     
 

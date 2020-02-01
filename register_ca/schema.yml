@@ -18,17 +18,26 @@
 
 type: map
 mapping:
-  "docker_registry_hack":
+  "register_ca":
     type: map
     required: True
     mapping:
       "disabled": { type: bool, required: false }
-      "etc_hosts_entries":
+      "from_paths":
         type: seq
         required: false
         sequence:
         - type: map
           mapping:
-            "target_ip": { type: str, required: True }
-            "aliases": { type: str, required: false }  # Default: "quay.io gcr.io k8s.gcr.io registry-1.docker.io"
-
+            "src": { type: str, required: True }
+            "name": { type: str, required: True }
+      "from_urls":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "src": { type: str, required: True }
+            "name": { type: str, required: True }
+  
+  
