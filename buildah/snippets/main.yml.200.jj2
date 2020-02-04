@@ -1,0 +1,8 @@
+
+
+- hosts: buildah
+  vars:
+    buildah_users: {{{ m.cluster.buildah.users }}}
+  roles:
+  - buildah
+  

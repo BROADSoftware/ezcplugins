@@ -1,0 +1,30 @@
+
+
+- name: Install packages
+  yum:
+    name: 
+    - buildah
+    - podman
+    - skopeo
+    - slirp4netns
+    state: present
+    #enablerepo: "*"
+
+- name: Configure sysctl
+  sysctl:
+    name: user.max_user_namespaces
+    value: 15000
+    state: present
+    reload: yes
+
+- name: Setup uid/gid mapping
+  template:
+    src: "{{item}}.j2"
+    dest: "/etc/{{item}}"
+    owner: root
+    group: root
+    mode: 0644
+  with_items:
+  - subuid
+  - subgid
+        
