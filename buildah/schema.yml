@@ -23,6 +23,7 @@ mapping:
     required: true
     mapping:
       disabled: { type: bool, required: false }
+      enablerepo: { type: str, required: false }
       users: 
         type: seq
         required: true

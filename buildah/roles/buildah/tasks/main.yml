@@ -8,7 +8,7 @@
     - skopeo
     - slirp4netns
     state: present
-    #enablerepo: "*"
+    enablerepo: "{{buildah_enable_repo | default(omit)}}"
 
 - name: Configure sysctl
   sysctl:
