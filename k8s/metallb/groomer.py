@@ -41,6 +41,10 @@ def groom(_plugin, model):
     if model[CLUSTER][K8S][METALLB][DISABLED]:
         return False
     else:
+        if DASHBOARD_IP in model[CLUSTER][K8S][METALLB]:
+            model[CLUSTER][K8S][METALLB][DASHBOARD_IP] = resolveDnsAndCheck(model[CLUSTER][K8S][METALLB][DASHBOARD_IP])
+            dashboard_ip =  ipaddress.ip_address(u"" + model[CLUSTER][K8S][METALLB][DASHBOARD_IP])
+        dashboardInRange = False
         for rangeip in model[CLUSTER][K8S][METALLB][EXTERNAL_IP_RANGES]:
             rangeip[FIRST] = resolveDnsAndCheck(rangeip[FIRST])
             rangeip[LAST] = resolveDnsAndCheck(rangeip[LAST])
@@ -48,9 +52,8 @@ def groom(_plugin, model):
             last_ip = ipaddress.ip_address(u"" + rangeip[LAST])
             if not last_ip > first_ip:
                 ERROR("Invalid metallb.external_ip_range (first >= last)")
-        if DASHBOARD_IP in model[CLUSTER][K8S][METALLB]:
-            model[CLUSTER][K8S][METALLB][DASHBOARD_IP] = resolveDnsAndCheck(model[CLUSTER][K8S][METALLB][DASHBOARD_IP])
-            db_ip =  ipaddress.ip_address(u"" + model[CLUSTER][K8S][METALLB][DASHBOARD_IP])
-            if db_ip < first_ip or db_ip > last_ip:
-                ERROR("metallb.dashboard_ip is not included in metallb.external_ip_range")
+            if dashboard_ip >= first_ip and dashboard_ip <= last_ip:
+                dashboardInRange = True
+        if not dashboardInRange:
+            ERROR("metallb.dashboard_ip is not included in metallb.external_ip_range")
         return True
