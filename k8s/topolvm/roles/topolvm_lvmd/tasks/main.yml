@@ -1,0 +1,61 @@
+# Copyright (C) 2020 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+- name: Install required LMV packages
+  yum: pkg=lvm2 state=present
+
+- name: Create volume group
+  lvg:
+    vg: "{{topolvm_lvmd_vg_name}}"
+    pvs: "{{topolvm_lvmd_physical_volumes|join(',')}}"
+
+- name: Ensure /opt/sbin exists
+  file:
+    state: directory
+    path: /opt/sbin
+    mode: 0755
+    owner: root
+    group: root
+    
+- name: Install the lvmd binary
+  unarchive:
+    src: "{{topolvm_lvmd_tgz_url}}"    
+    dest: /opt/sbin
+    remote_src: yes
+
+- name: Create lvmd service
+  template:
+    src: lvmd.service.j2
+    dest: /usr/lib/systemd/system/lvmd.service
+    owner: root
+    group: root
+    mode: 0644
+    backup: no
+  notify:
+  - reload_service_file      
+  - restart_lvmd
+
+# ------------------------------------ Service activate and start   
+- meta: flush_handlers
+   
+- name: Enable lvmd services
+  service:
+    name: lvmd
+    enabled: yes
+    state: started        
+          
