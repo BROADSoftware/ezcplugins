@@ -48,7 +48,7 @@ def groom(_plugin, model):
     else:
         setDefaultInMap(model[CLUSTER][K8S][TOPOLVM], FSTYPE, "xfs")
         setDefaultInMap(model[CLUSTER][K8S][TOPOLVM], SPARE_SIZE, 10)
-        setDefaultInMap(model[CLUSTER][K8S][TOPOLVM], STORAGE_CLASS, "topolvm")
+        setDefaultInMap(model[CLUSTER][K8S][TOPOLVM], STORAGE_CLASS, "topolvm-provisioner")
         lookupRepository(model, None, "topolvm", model[CLUSTER][K8S][TOPOLVM][REPO_ID])
         setDefaultInMap(model[DATA][K8S][TOPOLVM], DEVICES_BY_NODES, {})
         setDefaultInMap(model[DATA][K8S][TOPOLVM], SIZE_BY_NODE, {})

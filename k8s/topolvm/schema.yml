@@ -29,7 +29,7 @@ mapping:
           "disabled": { type: bool, required: False }
           "repo_id": { type: str, required: true }
           "data_disk_ref": { type: str, required: true }
-          "storage_class": { type: str, required: false }  # Default to 'topolvm'
+          "storage_class": { type: str, required: false }  # Default to 'topolvm-provisioner'
           "fstype": { type: str, required: false, enum: [ "ext4", "xfs", "btrfs"] }  # default to xfs
           "spare_size": { type: int, required: false }      # Default 10
 

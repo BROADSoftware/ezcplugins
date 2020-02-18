@@ -22,6 +22,13 @@
   shell: "{{topolvm_kubectl}} label --overwrite ns kube-system topolvm.cybozu.com/webhook=ignore"
   changed_when: false
   run_once: true
+
+- name: Add a label on topolvm nodes to select them for daemonset
+  shell: "{{topolvm_kubectl}} label nodes {{item}} --overwrite topology.topolvm.cybozu.com=true"
+  with_items: "{{groups['_topolvm_']}}"
+  register: result
+  run_once: true
+  changed_when: result.stdout_lines[0].find('not labeled') == -1
   
 - name: Fetch topolvm manifests
   get_url:
@@ -35,8 +42,66 @@
   - scheduler
   - mutatingwebhooks
   - controller
-  - node
+  #- node
   run_once: true
+
+- name: Kustomize node.yaml
+  include_role: 
+    name: kustompatch
+  vars:
+    kustompatch_src_url: "{{topolvm_manifest_urls['node']}}"
+    kustompatch_dest: /tmp/node.yaml
+    kustompatch_working_folder: /tmp/knode
+    kustompatch_patch:
+      apiVersion: apps/v1
+      kind: DaemonSet
+      metadata:
+        namespace: topolvm-system
+        name: node
+      spec:
+        template:
+          spec:
+            nodeSelector:
+              topology.topolvm.cybozu.com: "true"
+    
+#
+#- name: "Kustomize node.yaml: Ensure working folder"
+#  file:
+#    state: directory
+#    path: /tmp/knode
+#
+#- name: "Kustomize node.yaml: Fetch node.yaml manifests"
+#  get_url:
+#    url: "{{topolvm_manifest_urls['node']}}"
+#    dest: "/tmp/knode/node.yaml"
+#
+#- name: "Kustomize node.yaml: Setup kustomization file"
+#  copy:
+#    content:
+#      resources:
+#      - node.yaml
+#      patchesStrategicMerge:
+#      - nodeSelector.yaml          
+#    dest: /tmp/knode/kustomization.yaml
+#
+#- name: "Kustomize node.yaml: Setup nodeSelector patch file"
+#  copy:
+#    content:
+#      apiVersion: apps/v1
+#      kind: DaemonSet
+#      metadata:
+#        namespace: topolvm-system
+#        name: node
+#      spec:
+#        template:
+#          spec:
+#            nodeSelector:
+#              topology.topolvm.cybozu.com: "true"
+#    dest: /tmp/knode/nodeSelector.yaml
+#
+#- name: "Kustomize node.yaml: Generated patche node.yaml file"
+#  shell: "{{topolvm_kubectl}} kustomize /tmp/knode >/tmp/node.yaml"
+#  changed_when: false
   
 # NB: We may need to take some time between applying manifests. And give another chance with retry
 - name: Apply topolvm namespace manifests

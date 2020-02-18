@@ -27,7 +27,6 @@
 
     topolvm_storage_class: {{{ m.cluster.k8s.topolvm.storage_class }}}
     topolvm_storage_fstype: {{{ m.cluster.k8s.topolvm.fstype }}}
-
       
   roles:
   - topolvm_master  
