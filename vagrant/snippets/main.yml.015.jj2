@@ -7,6 +7,11 @@
     wait_for_connection:
       timeout: 600
 
+# We need to grep facts, as json caching reference node by short name (Without taking cluster in account) thus leading missmatcches 
+- hosts: all
+  tasks:
+  - gather_facts:
+
 - hosts: all
   roles:
   - { role: etc_hosts, tags: [ "base", "etc_hosts" ] }
