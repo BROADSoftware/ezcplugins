@@ -52,7 +52,7 @@ mapping:
           "service_addresses_cidr": { type: str, required: False } # Default in template
           "pods_subnet_cidr": { type: str, required: False } # Default in template
           "network_node_prefix": { type: int, required: False } # Default in template
-          
+          "kube_version": { type: str, required: false } # Default in template
   "roles":
     type: seq
     required: true
