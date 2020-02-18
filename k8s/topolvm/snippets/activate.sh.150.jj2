@@ -1,4 +1,5 @@
 
 
 alias gpv="$MYDIR/gpv.sh"
+alias ncp="$MYDIR/ncp.sh"
 
