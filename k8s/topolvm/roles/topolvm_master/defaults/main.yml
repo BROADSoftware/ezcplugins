@@ -19,6 +19,9 @@
 # Value fine for kubespray clusters
 topolvm_kubectl: /usr/local/bin/kubectl
 
+# Will allow removal
+topolvm_state: present
+
 #topolvm_manifest_urls:
 #  namespace: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/namespace.yaml
 #  crd: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/crd.yaml

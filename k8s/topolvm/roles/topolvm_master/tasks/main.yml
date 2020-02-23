@@ -20,16 +20,40 @@
 
 - name: Protect system namespaces from TopoLVM webhook
   shell: "{{topolvm_kubectl}} label --overwrite ns kube-system topolvm.cybozu.com/webhook=ignore"
-  changed_when: false
+  register: result
   run_once: true
+  changed_when: result.stdout_lines[0].find('not labeled') == -1
+  when: topolvm_state == 'present'
 
+- name: Unprotect system namespaces from TopoLVM webhook
+  shell: "{{topolvm_kubectl}} label --overwrite ns kube-system topolvm.cybozu.com/webhook-"
+  register: result
+  run_once: true
+  changed_when: result.stdout_lines[0].find('not found') == -1
+  when: topolvm_state == 'absent'
+  
+#- debug: var=result
+#  when: topolvm_state == 'absent'
+  
 - name: Add a label on topolvm nodes to select them for daemonset
   shell: "{{topolvm_kubectl}} label nodes {{item}} --overwrite topology.topolvm.cybozu.com=true"
   with_items: "{{groups['_topolvm_']}}"
   register: result
   run_once: true
   changed_when: result.stdout_lines[0].find('not labeled') == -1
-  
+  when: topolvm_state == 'present'
+
+- name: Remove label on topolvm nodes to select them for daemonset
+  shell: "{{topolvm_kubectl}} label nodes {{item}} --overwrite topology.topolvm.cybozu.com-"
+  with_items: "{{groups['_topolvm_']}}"
+  register: result
+  run_once: true
+  changed_when: result.stdout_lines[0].find('not found') == -1
+  when: topolvm_state == 'absent'
+
+#- debug: var=result
+#  when: topolvm_state == 'absent'
+
 - name: Fetch topolvm manifests
   get_url:
     url: "{{topolvm_manifest_urls[item]}}"
@@ -64,49 +88,11 @@
             nodeSelector:
               topology.topolvm.cybozu.com: "true"
     
-#
-#- name: "Kustomize node.yaml: Ensure working folder"
-#  file:
-#    state: directory
-#    path: /tmp/knode
-#
-#- name: "Kustomize node.yaml: Fetch node.yaml manifests"
-#  get_url:
-#    url: "{{topolvm_manifest_urls['node']}}"
-#    dest: "/tmp/knode/node.yaml"
-#
-#- name: "Kustomize node.yaml: Setup kustomization file"
-#  copy:
-#    content:
-#      resources:
-#      - node.yaml
-#      patchesStrategicMerge:
-#      - nodeSelector.yaml          
-#    dest: /tmp/knode/kustomization.yaml
-#
-#- name: "Kustomize node.yaml: Setup nodeSelector patch file"
-#  copy:
-#    content:
-#      apiVersion: apps/v1
-#      kind: DaemonSet
-#      metadata:
-#        namespace: topolvm-system
-#        name: node
-#      spec:
-#        template:
-#          spec:
-#            nodeSelector:
-#              topology.topolvm.cybozu.com: "true"
-#    dest: /tmp/knode/nodeSelector.yaml
-#
-#- name: "Kustomize node.yaml: Generated patche node.yaml file"
-#  shell: "{{topolvm_kubectl}} kustomize /tmp/knode >/tmp/node.yaml"
-#  changed_when: false
   
 # NB: We may need to take some time between applying manifests. And give another chance with retry
 - name: Apply topolvm namespace manifests
   k8s:
-    state: present
+    state: "{{topolvm_state}}"
     src: "/tmp/namespace.yaml"
   run_once: true
   register: result
@@ -116,7 +102,7 @@
 
 - name: Apply topolvm crd manifests
   k8s:
-    state: present
+    state: "{{topolvm_state}}"
     src: "/tmp/crd.yaml"
   run_once: true
   register: result
@@ -126,7 +112,7 @@
 
 - name: Apply topolvm psp manifests
   k8s:
-    state: present
+    state: "{{topolvm_state}}"
     src: "/tmp/psp.yaml"
   run_once: true
   register: result
@@ -136,7 +122,7 @@
 
 - name: Apply topolvm certificates manifests
   k8s:
-    state: present
+    state: "{{topolvm_state}}"
     src: "/tmp/certificates.yaml"
   run_once: true
   register: result
@@ -146,7 +132,7 @@
 
 - name: Apply topolvm scheduler manifests
   k8s:
-    state: present
+    state: "{{topolvm_state}}"
     src: "/tmp/scheduler.yaml"
   run_once: true
   register: result
@@ -156,7 +142,7 @@
 
 - name: Apply topolvm mutatingwebhooks manifests
   k8s:
-    state: present
+    state: "{{topolvm_state}}"
     src: "/tmp/mutatingwebhooks.yaml"
   run_once: true
   register: result
@@ -166,7 +152,7 @@
 
 - name: Apply topolvm controller manifests
   k8s:
-    state: present
+    state: "{{topolvm_state}}"
     src: "/tmp/controller.yaml"
   run_once: true
   register: result
@@ -176,7 +162,7 @@
 
 - name: Apply topolvm node manifests
   k8s:
-    state: present
+    state: "{{topolvm_state}}"
     src: "/tmp/node.yaml"
   run_once: true
   register: result
@@ -191,19 +177,23 @@
     mode: 0755
     owner: root
     group: root
+  when: topolvm_state == 'present'
 
 - name: Copy scheduler extension configuration file
   get_url:
     url: "{{topolvm_manifest_urls['schedulerconfig']}}"
     dest: "/etc/kubernetes/scheduler/scheduler-config.yaml"  
+  when: topolvm_state == 'present'
   
 - name: Copy scheduler extension policy file
   get_url:
     url: "{{topolvm_manifest_urls['schedulerpolicy']}}"
     dest: "/etc/kubernetes/scheduler/scheduler-policy.cfg"  
+  when: topolvm_state == 'present'
 
 - name: Configure kube-scheduler (1/3)
   lineinfile:
+    state: "{{topolvm_state}}"
     path: /etc/kubernetes/manifests/kube-scheduler.yaml
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
@@ -214,6 +204,7 @@
       
 - name: Configure kube-scheduler (2/3)
   lineinfile:
+    state: "{{topolvm_state}}"
     path: /etc/kubernetes/manifests/kube-scheduler.yaml
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
@@ -224,16 +215,23 @@
 
 - name: Configure kube-scheduler (2/3)
   lineinfile:
+    state: "{{topolvm_state}}"
     path: /etc/kubernetes/manifests/kube-scheduler.yaml
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
     insertafter: '^.*leader-elect'
   with_items:
   - { line: '    - --config=/var/lib/scheduler/scheduler-config.yaml', regexp: '^.*config=/var/lib/scheduler/scheduler-config\.yaml' }
+
+- name: Remove scheduler folder
+  file:
+    state: "{{topolvm_state}}"
+    path: /etc/kubernetes/scheduler
+  when: topolvm_state == 'absent'
         
-- name: Create storage class
+- name: Apply storage class
   k8s:
-    state: present
+    state: "{{topolvm_state}}"
     definition: 
       kind: StorageClass
       apiVersion: storage.k8s.io/v1
