@@ -38,7 +38,7 @@ ES_CONFIG="es_config"
 NODE_MASTER="node.master"
 NODE_DATA="node.data"
 VARS="vars"
-ES_INSTANCE_NAME="es_instance_name"
+NODE_BY_NAME="nodeByName"
 _ELASTICSEARCH_="_elasticsearch_"
 NODES="nodes"
 GROUP_BY_NAME="groupByName"
@@ -60,7 +60,10 @@ def groom(plugin, model):
     lookupRepository(model, ELASTICSEARCH)
     lookupHelper(model, ELASTICSEARCH)
     model[DATA][ROLE_PATHS].add(model[DATA][HELPERS][ELASTICSEARCH][FOLDER])
-    f = os.path.join(plugin.path, "default.yml")
+    if model[DATA][REPOSITORIES][ELASTICSEARCH][VERSION].startswith('6'):
+        f = os.path.join(plugin.path, "default_v6.yml")
+    else:
+        f = os.path.join(plugin.path, "default.yml")
     if os.path.exists(f):
         base = yaml.load(open(f))
     else:
@@ -74,53 +77,67 @@ def groom(plugin, model):
     - parent role
     - es_node """
     for role in model[CLUSTER][ROLES]:
-        if ELASTICSEARCH in role and NODES in role[ELASTICSEARCH]:
-            index = -1
-            for esnode in role[ELASTICSEARCH][NODES]:
-                index += 1
+        if ELASTICSEARCH in role:
+            # Get global value
+            global_conf = {}
+            if ELASTICSEARCH in model[CLUSTER] and PLAYBOOK_VARS in model[CLUSTER][ELASTICSEARCH]:
+                if not isinstance(model[CLUSTER][ELASTICSEARCH][PLAYBOOK_VARS], dict):
+                    ERROR("Invalid global '{}.{}' definition:  not a dictionary".format(ELASTICSEARCH, PLAYBOOK_VARS))
+                else:
+                    global_conf = schemaMerge(global_conf, model[CLUSTER][ELASTICSEARCH][PLAYBOOK_VARS])
+
+            # Get the role specific value
+            role_conf = {}
+            if PLAYBOOK_VARS in role[ELASTICSEARCH]:
+                if not isinstance(role[ELASTICSEARCH][PLAYBOOK_VARS], dict):
+                    ERROR("Invalid role definition ('{}'):  '{}.{}' is not a dictionary".format(role[NAME], ELASTICSEARCH,PLAYBOOK_VARS))
+                else:
+                    role_conf = schemaMerge(role_conf, role[ELASTICSEARCH][PLAYBOOK_VARS])
+
+            for es_node in role[NODES]:
                 mymap = copy.deepcopy(base)
                 # Add repository info.  There is two reasons to use a package url:
                 # - It will be faster if the repo is local
-                # - Seems yum install is bugged on current role:  
+                # - Seems yum install is bugged on current role:
                 #     TASK [ansible-elasticsearch : RedHat - Install Elasticsearch] **************************************************************************************************
-                #     fatal: [w2]: FAILED! => {"msg": "The conditional check 'redhat_elasticsearch_install_from_repo.rc == 0' failed. The error was: error while evaluating conditional (redhat_elasticsearch_install_from_repo.rc == 0): 'dict object' has no attribute 'rc'"}  
+                #     fatal: [w2]: FAILED! => {"msg": "The conditional check 'redhat_elasticsearch_install_from_repo.rc == 0' failed. The error was: error while evaluating conditional (redhat_elasticsearch_install_from_repo.rc == 0): 'dict object' has no attribute 'rc'"}
                 mymap["es_custom_package_url"] = model[DATA][REPOSITORIES][ELASTICSEARCH]["elasticsearch_package_url"]
                 mymap["es_use_repository"] = False
-                # Add global value
-                if ELASTICSEARCH in model[CLUSTER] and PLAYBOOK_VARS in model[CLUSTER][ELASTICSEARCH]:
-                    if not isinstance(model[CLUSTER][ELASTICSEARCH][PLAYBOOK_VARS], dict):
-                        ERROR("Invalid global '{}.{}' definition:  not a dictionary".format(ELASTICSEARCH, PLAYBOOK_VARS))
-                    else:
-                        mymap = schemaMerge(mymap, model[CLUSTER][ELASTICSEARCH][PLAYBOOK_VARS])
-                # Add the role specific value
-                if PLAYBOOK_VARS in role[ELASTICSEARCH]:
-                    if not isinstance(role[ELASTICSEARCH][PLAYBOOK_VARS], dict):
-                        ERROR("Invalid role definition ('{}'):  '{}.{}' is not a dictionary".format(role[NAME], ELASTICSEARCH,PLAYBOOK_VARS))
-                    else:
-                        mymap = schemaMerge(mymap, role[ELASTICSEARCH][PLAYBOOK_VARS])
-                # And get the es_node specific value
-                if not isinstance(esnode, dict):
-                    ERROR("Invalid node definition in role '{}':  item#{} is not a dictionary".format(role[NAME], index))
-                else:
-                    mymap = schemaMerge(mymap, esnode)
+                # Add global conf
+                mymap = schemaMerge(mymap, global_conf)
+                # Add role conf
+                mymap = schemaMerge(mymap, role_conf)
+
                 if not ES_CONFIG in mymap or not NODE_MASTER in mymap[ES_CONFIG]:
                     ERROR("Invalid es_node definition in role '{}, item#{}: es_config.'node.master' must be defined".format(role[NAME], index))
                 if not ES_CONFIG in mymap or not NODE_DATA in mymap[ES_CONFIG]:
                     ERROR("Invalid es_node definition in role '{}, item#{}: es_config.'node.data' must be defined".format(role[NAME], index))
-                if not ES_INSTANCE_NAME in mymap:
-                    ERROR("Invalid es_node definition in role '{}, item#{}: es_instance_name must be defined".format(role[NAME], index))
+
+                # Add node specific conf
+                if ELASTICSEARCH in es_node and PLAYBOOK_VARS in es_node[ELASTICSEARCH]:
+                    if not isinstance(es_node[ELASTICSEARCH][PLAYBOOK_VARS], dict):
+                        ERROR("Invalid role definition ('{}'):  '{}.{}.{}' is not a dictionary".format(role[NAME], es_node[NAME], ELASTICSEARCH, PLAYBOOK_VARS))
+                    else:
+                        if ES_CONFIG in es_node[ELASTICSEARCH][PLAYBOOK_VARS] and NODE_MASTER in es_node[ELASTICSEARCH][PLAYBOOK_VARS][ES_CONFIG]:
+                            ERROR("Invalid es_node specific conf definition in role '{}, item#{}: es_config.'node.master' should not be defined on the node specific conf".format(role[NAME], es_node[NAME]))
+                        if ES_CONFIG in es_node[ELASTICSEARCH][PLAYBOOK_VARS] and NODE_DATA in es_node[ELASTICSEARCH][PLAYBOOK_VARS][ES_CONFIG]:
+                            ERROR("Invalid es_node specific conf definition in role '{}, item#{}: es_config.'node.data' should not be defined on the node specific conf".format(role[NAME], es_node[NAME]))
+                        mymap = schemaMerge(mymap, es_node[ELASTICSEARCH][PLAYBOOK_VARS])
+
                 mymap[ES_VERSION] = model[DATA][REPOSITORIES][ELASTICSEARCH][VERSION]
                 mymap[ES_MAJOR_VERSION] = mymap[ES_VERSION][:2] + "X"
-                esn = {}
-                esn[ROLE] = role[NAME]
-                esn[VARS] = mymap
-                model[DATA][ESNODES].append(esn)
+                model[DATA][NODE_BY_NAME][es_node[NAME]][PLAYBOOK_VARS] = mymap
+
+            esn = {}
+            esn[ROLE] = role[NAME]
+            esn[VARS] = schemaMerge(global_conf, role_conf)
+            model[DATA][ESNODES].append(esn)
     # We must arrange for master nodes to be deployed first.
     model[DATA][ESNODES].sort(key=keyFromEsNode, reverse=False)   
     # We need to define an ansible group "_elasticsearch_" hosting all nodes with elasticsearch installed
     elasticGroup = []
     for role in model[CLUSTER][ROLES]:
-        if ELASTICSEARCH in role and NODES in role[ELASTICSEARCH]:
+        if ELASTICSEARCH in role:
             for node in role[NODES]:
                 elasticGroup.append(node[NAME])
     model[DATA][GROUP_BY_NAME][_ELASTICSEARCH_] = elasticGroup
@@ -128,6 +145,6 @@ def groom(plugin, model):
 
 
 def keyFromEsNode(esNode):
-    return "0" if esNode[VARS][ES_CONFIG][NODE_MASTER] else "1"       
+    return "0" if esNode[VARS][ES_CONFIG][NODE_MASTER] else "1"
         
             

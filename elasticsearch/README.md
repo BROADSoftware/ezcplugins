@@ -7,13 +7,17 @@ cd .../nih; mkdir ansible-elasticsearch; cd ansible-elasticsearch; git clone htt
 tested with the following commit:
 
 ```
-commit 437a92a7ff6c375f8964fd720b73bfc45135c8d0 (HEAD -> master, origin/master, origin/HEAD)
-Merge: 47c7afa d338849
-Author: Michael Russell <Crazybus@users.noreply.github.com>
-Date:   Thu Oct 11 17:29:03 2018 +0100
+commit 5924b0d3b2269ac8a2e1c311c6574017b84a86ab
+Merge: 0e1a723 e299582
+Author: Julien Mailleret <julien.mailleret@elastic.co>
+Date:   Tue Jan 21 21:06:16 2020 +0100
 
-    Merge pull request #487 from lazouz/idempotent-check-mode
-
-    add idempotence in check mode for plugins
+    Merge pull request #667 from elastic/dependabot/bundler/rubyzip-2.0.0
+    
+    Bump rubyzip from 1.2.2 to 2.0.0
 
 ```
+
+
+##Notes :
+* Starting with ansible-elasticsearch:7.1.1, installing more than one instance of Elasticsearch on the same host is no longer supported --> This plugin require ansible-elasticsearch with versions >= 7.1.1.

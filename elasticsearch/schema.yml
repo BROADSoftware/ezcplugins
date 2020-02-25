@@ -16,6 +16,18 @@
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
 
+schema;node_list:
+  type: seq
+  required: false
+  sequence:
+    - type: map
+      mapping:
+        "elasticsearch":
+          type: map
+          mapping:
+            "playbook_vars":
+              type: any
+
 type: map
 mapping:
   "elasticsearch":
@@ -38,9 +50,3 @@ mapping:
           mapping: 
             "playbook_vars":
               type: any
-            "nodes":
-              type: seq
-              required: false
-              sequence:
-              - type: any
-#    
