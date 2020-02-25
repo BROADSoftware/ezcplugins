@@ -1,0 +1,5 @@
+
+{%% if m.data.k8s.topolvm.deviceByNode[m.node.name] is defined %%}
+topolvm_lvmd_physical_volumes: {{{ m.data.k8s.topolvm.deviceByNode[m.node.name]  }}}
+{%% endif %%}
+

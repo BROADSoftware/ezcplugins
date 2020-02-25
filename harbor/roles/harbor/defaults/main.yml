@@ -1,0 +1,28 @@
+
+harbor_scheme: "https"  # http or https
+harbor_install_dir: /opt
+harbor_ssl_cert: "{{harbor_install_dir}}/harbor/ssl/ssl.crt"
+harbor_ssl_key: "{{harbor_install_dir}}/harbor/ssl/ssl.key"
+
+harbor_api_url: "{{harbor_scheme}}://{{harbor_hostname}}/api"
+
+#harbor_installer_with: "{% for e in harbor_extras %} {{ '--with-%s'|format(e) }} {% endfor %}"
+
+harbor_installer_with:  " {{ harbor_with_notary | ternary('--with-notary', '') }} {{ harbor_with_clair | ternary('--with-clair', '') }} {{ harbor_with_chartmuseum | ternary('--with-chartmuseum', '') }}"
+
+# harbor_clair: false
+# harbor_notary: false
+# harbor_chart_museum: false
+
+# Must be defined for harbor_scheme == "https"
+#harbor_ssl_cert_src:
+#harbor_ssl_key_src:
+
+# harbor_version: 1.10.0-rc2
+# harbor_url: "http://10.0.2.2/repo/k8s/harbor/harbor-offline-installer-v{{ harbor_version }}.tgz"
+
+#harbor_hostname: "{{ ansible_fqdn }}"
+#harbor_admin_password: admin
+#harbor_db_password: root123
+
+

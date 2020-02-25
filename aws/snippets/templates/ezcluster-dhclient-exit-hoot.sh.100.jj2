@@ -1,0 +1,9 @@
+
+
+
+
+case "$reason" in
+	BOUND|RENEW|REBIND|REBOOT)
+    	sed -i -e "s/^search.*/search {{{m.cluster.domain}}}/" /etc/resolv.conf
+    ;;
+esac

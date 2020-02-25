@@ -1,0 +1,32 @@
+
+
+- hosts: docker
+  tags: [ "docker" ]
+  tasks:
+  - name: Add docker dependencies
+    yum: pkg={%% for pkg in m.data.repositories.docker_pkg.dependencies %%}{%% if not loop.first %%},{%% endif %%}{{{pkg}}}{%% endfor %%}
+  
+  - name: Install docker
+    yum: pkg={%% for url in m.data.repositories.docker_pkg.urls %%}{%% if not loop.first %%},{%% endif %%}{{{url}}}{%% endfor %%}
+ 
+  - name: Start and enable docker services
+    service:
+      name: docker
+      enabled: yes
+      state: started        
+
+# Alternate (But still unsafe) solution:
+# sudo setfacl -m user:username:rw /var/run/docker.sock
+
+{%% if m.cluster.docker.users is defined and m.cluster.docker.users|length > 0 %%}
+  - name: "Add some user(s) to docker group (WARNING: This grant full sudo access)"
+    user:
+      name: "{{ item }}"
+      groups: docker
+      append: yes
+    with_items:  
+{%% for user in m.cluster.docker.users %%}
+     - {{{ user }}}
+{%% endfor %%}  
+{%% endif %%}
+

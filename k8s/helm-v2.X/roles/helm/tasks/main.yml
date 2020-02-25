@@ -1,0 +1,103 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+# thanks to https://github.com/geerlingguy/ansible-for-devops/blob/master/kubernetes/examples/helm.yml
+
+- name: Install k8s ansible module required package
+  yum: name=python2-openshift state=present
+
+- name: Create Tiller Service account.
+  k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: tiller
+        namespace: kube-system
+  register: k8s_task_result
+  until: k8s_task_result is succeeded
+  retries: 60
+  delay: "5"
+
+- name: Apply Tiller RBAC definition.
+  k8s:
+    state: present
+    definition: 
+      apiVersion: rbac.authorization.k8s.io/v1
+      kind: ClusterRoleBinding
+      metadata:
+        name: tiller
+      roleRef:
+        apiGroup: rbac.authorization.k8s.io
+        kind: ClusterRole
+        name: cluster-admin
+      subjects:
+        - kind: ServiceAccount
+          name: tiller
+          namespace: kube-system
+
+    
+- name: Retrieve helm binary archive.
+  unarchive:
+    src: "{{ helm_archive_url }}"
+    dest: /tmp
+    creates: /usr/local/bin/helm
+    remote_src: yes
+
+- name: Move helm binary into place.
+  shell: cp /tmp/linux-amd64/helm /usr/local/bin/helm
+  args:
+    creates: /usr/local/bin/helm
+        
+- name: Set up Helm and Tiller.
+  shell:  /usr/local/bin/helm init --service-account tiller
+  register: helm_init_result
+  changed_when: "'already installed' not in helm_init_result.stdout"
+  environment: "{{helm_proxy_env|default({})}}"
+  
+#- debug: var=helm_init_result
+
+- name: Get Tiller's ClusterIP.
+  k8s:
+    api_version: v1
+    kind: Service
+    name: tiller-deploy
+    namespace: kube-system
+  register: tiller_service
+
+- name: Set the Helm host and port.
+  set_fact:
+    helm_host: "{{ tiller_service.result.spec.clusterIP }}"
+    helm_port: "{{ tiller_service.result.spec.ports[0].port }}"
+    
+- name: Wait for Tiller to become responsive.
+  wait_for:
+    host: '{{ helm_host }}'
+    port: '{{ helm_port }}'
+    state: started
+    
+#- name: List installed Helm charts.
+#  command: /usr/local/bin/helm list
+#  environment:
+#    HELM_HOST: '{{ helm_host }}:{{ helm_port }}'
+#  register: helm_list_results
+#  changed_when: False
+#
+#- debug: var=helm_list_results
+

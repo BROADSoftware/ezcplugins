@@ -1,0 +1,15 @@
+
+
+docker_rh_repo_base_url: 'https://download.docker.com/linux/centos/7/$basearch/stable'
+docker_rh_repo_gpgkey: 'https://download.docker.com/linux/centos/gpg'
+
+dockerproject_rh_repo_base_url: 'https://yum.dockerproject.org/repo/main/centos/7'
+dockerproject_rh_repo_gpgkey: 'https://yum.dockerproject.org/gpg'
+
+# May be set to 'latest'
+#docker_version: '18.09'
+#docker_selinux_version: '17.03'
+
+#docker_http_proxy: http://myproxy
+#docker_https_proxy: https://myproxy
+#docker_no_proxy: ""

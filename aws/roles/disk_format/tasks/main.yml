@@ -1,0 +1,43 @@
+#####################
+
+# Simplified, by removing partitionning.
+
+- name: Create filesystem
+  filesystem:
+    dev: '{{ item.disk }}'
+    force: '{{ item.force|d(omit) }}'
+    fstype: '{{ item.fstype }}'
+    opts: '{{ item.fsopts|d(omit) }}'
+  with_items: "{{disk_additional_disks|default([])}}"
+  when: disk_additional_disks is defined  
+
+- name: "Ensure the mount directory exists"
+  file: >
+    path={{ item.mount }}
+    owner={{ disk_user | default('root') }}
+    group={{ disk_group | default('root') }}
+    state=directory
+  with_items: "{{disk_additional_disks|default([])}}"
+  when: disk_additional_disks is defined  
+
+- name: Get UUID for partition
+  command: blkid -s UUID -o value "{{ item.disk }}"
+  register: disk_blkid
+  with_items: "{{disk_additional_disks|default([])}}"
+  when: disk_additional_disks is defined  
+  changed_when: False
+
+- name: "Mount additional disk"
+  mount:
+    name: '{{ item.0.mount }}'
+    fstype: '{{ item.0.fstype }}'
+    opts: '{{ item.0.mount_options|d(omit) }}'
+    passno: '0'
+    src: 'UUID={{ item.1.stdout }}'
+    state: '{{ item.0.mount_state|d("mounted") }}'
+  when: disk_additional_disks is defined  
+  with_together:
+    - '{{ disk_additional_disks|default([]) }}'
+    - '{{ disk_blkid.results }}'
+
+    

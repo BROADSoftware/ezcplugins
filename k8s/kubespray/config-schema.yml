@@ -1,0 +1,87 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+
+type: map
+mapping:
+  "docker_certificates":
+    type: seq
+    required: false
+    sequence:
+    - type: map
+      mapping:
+        "name": { type: str, required: True }
+        "host": { type: str, required: True }  
+        "port":  { type: int, required: False }
+        "ip": { type: str, required: False }        # If set, will be added in target /etc/hosts 
+        "path": { type: str, required: True }
+  "helpers":
+    type: map
+    required: false
+    mapping:
+      "kubespray":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "helper_id": { type: str, required: True }
+            "url": { type: str, required: True }     # Not used technically. This is only to require documentation.
+            "commit": { type: str, required: True }  # Not used technically. This is only to require documentation.
+            "folder": { type: str, required: True }
+  "repositories":
+    type: map
+    required: false
+    mapping:
+      "k9s": 
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "repo_id": { type: str, required: True }
+            "version": { type: str, required: True }
+            "k9s_tgz_url": { type: str, required: True }
+      "helm": 
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "repo_id": { type: str, required: True }
+            "version": { type: str, required: False }
+            "helm_tgz_url": { type: str, required: True }
+      "kubespray_files": 
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "repo_id": { type: str, required: True }
+            "kubeadm_download_url": { type: str, required: True }
+            "kubelet_download_url": { type: str, required: False }   # Depend of kubespray version
+            "kubectl_download_url": { type: str, required: False }   # Depend of kubespray version
+            "hyperkube_download_url": { type: str, required: False } # Depend of kubespray version
+            "etcd_download_url": { type: str, required: True }
+            "cni_download_url": { type: str, required: True }
+            "calicoctl_download_url": { type: str, required: True }
+            "crictl_download_url": { type: str, required: False } # Not present kubespray < v2.11.0
+                                  
+            
+            
+            

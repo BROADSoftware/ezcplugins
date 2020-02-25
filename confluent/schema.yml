@@ -21,13 +21,13 @@ schema;node_list:
   sequence:
   - type: map
     mapping:
-      "kafka_log_dirs":
-        type: seq
-        required: false
-        sequence:
-          - type: str
-            
-
+      "broker": { type: any, required: no }
+      "zookeeper": { type: any, required: no }
+#      "connect": { type: any, required: no }
+#      "control": { type: any, required: no }
+#      "kafkarest": { type: any, required: no }
+#      "ksql": { type: any, required: no }
+#      "schema": { type: any, required: no }
 
 type: map
 mapping:
@@ -35,20 +35,34 @@ mapping:
     type: map
     required: true
     mapping:
-      "security": { type: str, required: true,  enum: [ 'plaintext', 'ssl', 'sasl_ssl' ]  }
       "disabled": { type: bool, required: no }
       "repo_id": { type: str, required: true }
       "helper_id": { type: str, required: true }
-      "edition": { type: str, required: true,  enum: [ 'oss', 'ee' ]  }      
+      "security":
+        type: map
+        required: no
+        mapping:
+          "context": { type: str, required: false }
+      "broker": { type: any, required: no }
+      "zookeeper": { type: any, required: no }
+  #      "connect": { type: any, required: no }
+  #      "control": { type: any, required: no }
+  #      "kafkarest": { type: any, required: no }
+  #      "ksql": { type: any, required: no }
+  #      "schema": { type: any, required: no }
+
   "roles":
     type: seq
     required: true
     sequence:
     - type: map
       mapping:
-        "kafka_log_dirs":
-          type: seq
-          required: false
-          sequence:
-            - type: str  
+        "broker": { type: any, required: no }
+        "zookeeper": { type: any, required: no }
+        #      "connect": { type: any, required: no }
+        #      "control": { type: any, required: no }
+        #      "kafkarest": { type: any, required: no }
+        #      "ksql": { type: any, required: no }
+        #      "schema": { type: any, required: no }
+
         

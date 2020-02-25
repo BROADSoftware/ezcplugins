@@ -1,0 +1,24 @@
+
+ipaserver_setup_firewalld: false
+
+ipaserver_domain: "{{{ m.cluster.freeipa.domain }}}"
+ipaserver_realm: "{{{ m.cluster.freeipa.realm }}}"
+ipadm_password: "{{{ m.cluster.freeipa.ipadm_password }}}"
+ipaadmin_password: "{{{ m.cluster.freeipa.ipaadmin_password }}}"
+
+{%% if  m.cluster.freeipa.subject_base is defined %%}
+ipaserver_subject_base: "{{{ m.cluster.freeipa.subject_base }}}"
+{%% endif %%}
+
+{%% if  m.cluster.freeipa.ca_subject is defined %%}
+ipaserver_ca_subject: "{{{ m.cluster.freeipa.ca_subject }}}"
+{%% endif %%}
+
+{%% if  m.cluster.freeipa.hostname is defined %%}
+ipaserver_hostname: "{{{ m.cluster.freeipa.hostname }}}"
+{%% endif %%}
+
+{%% if  m.data.freeipa.externalCertFiles is defined %%}
+ipaserver_external_cert_files: {{{  m.data.freeipa.externalCertFiles  }}}
+{%% endif %%}
+

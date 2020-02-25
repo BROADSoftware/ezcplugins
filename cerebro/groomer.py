@@ -15,10 +15,10 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import ERROR,lookupRepository,setDefaultInMap
+from misc import lookupRepository,setDefaultInMap
 
 
-def groom(plugin, model):
+def groom(_plugin, model):
     setDefaultInMap(model["cluster"]["cerebro"], "disabled", False)
     if model["cluster"]["cerebro"]["disabled"]:
         return False

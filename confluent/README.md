@@ -32,4 +32,59 @@ Date:   Mon Oct 22 18:09:45 2018 +0200
 
 ```
 
-No modification.
+Modifications are pushed to :
+
+    https://github.com/mlahouar/cp-ansible
+    branch : 5.2.X
+    commit : 
+        commit d53f0aa55bbd6a402fb22e636291c97216eff770
+        Author: moncef lahouar <moncef.lahouar@gmail.com>
+        Date:   Tue Jul 2 14:57:07 2019 +0200
+
+                Add SASL_PLAINTEXT support to confluent
+
+
+            
+## HowTo
+
+### Enable security
+1. Define your security context on config file, ex : 
+
+    ```
+    ...
+    security_contexts:
+      confluent:
+        - name: 'ml'
+          mit_kdc:
+            realm: 'ML.COM'
+            server: mydomain.ml.com
+            admin:
+              login: 'admin/admin'
+              password: 'AdminPassword'
+        - name: 'cib'
+          active_directory:
+            realm: 'ML.COM'
+            uri: 'ldaps://dc1.dc2:636'
+            container_dn: 'OU=....,DC=DC1,DC=DC2'
+            rw_user:
+              login: 'admin'
+              password: 'AdminPassword'
+    ...
+    ```
+2. Reference your security context on your cluster definition file:
+
+    ```
+    ...
+    confluent:
+      disabled: false
+      repo_id: "RepoID"
+      helper_id: "X.Y.Z"
+      security:
+        context: 'ml'           # sasl will be enable automatically if running inside a security context, remove security.context to have a non secured cluster
+    ...
+    ```
+
+
+    
+        
+

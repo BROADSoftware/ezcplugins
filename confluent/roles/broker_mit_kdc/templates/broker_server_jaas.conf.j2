@@ -1,0 +1,18 @@
+KafkaServer {
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true
+  storeKey=true
+  useTicketCache=false
+  keyTab="/etc/security/keytabs/kafka.service.keytab"
+  serviceName="{{ service_name }}"
+  principal="{{ service_name }}/{{ ansible_fqdn }}@{{ realm }}";
+};
+
+Client {
+  com.sun.security.auth.module.Krb5LoginModule required
+  useKeyTab=true
+  storeKey=true
+  useTicketCache=false
+  keyTab="/etc/security/keytabs/kafka.service.keytab"
+  principal="{{ service_name }}/{{ ansible_fqdn }}@{{ realm }}";
+};

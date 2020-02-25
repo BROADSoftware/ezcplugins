@@ -1,0 +1,14 @@
+---
+- name: deploy provisionner
+  shell: su - root -c 'helm template {{working_folder}}/provisionner -f {{working_folder}}/myvalues.yaml >{{working_folder}}/generated.yml'
+  args: 
+    warn: no
+  listen: deploy_provisionner
+  notify: apply_provisionner
+  
+- name: Apply provisionner
+  k8s:
+    state: present
+    src: "{{working_folder}}/generated.yml"
+  listen: apply_provisionner
+  

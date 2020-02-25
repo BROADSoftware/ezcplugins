@@ -1,0 +1,35 @@
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd ${MYDIR}
+
+chmod +x ./cmd/*
+#chmod +x ./ssh/*
+
+if [ "$1" != "{{m.cluster.id}}" ]
+then
+    echo 
+    echo "To really build the cluster, As a security, please provide cluster_id ({{m.cluster.id}}) as parameter"
+    echo
+    exit 1
+fi
+
+shift
+
+
+OPTS=""
+{% if m.data.vaultPasswordFile is defined %}
+OPTS="$OPTS --vault-password-file {{ m.data.vaultPasswordFile }}"
+{% endif %}
+
+if terraform init; then
+	if terraform apply -state=${MYDIR}/../terraform.tfstate; then
+		ansible-playbook ./main.yml $OPTS "$@"
+	else
+		echo "Terraform NOT applied"
+	fi
+else
+	echo "Terraform init FAILED"
+fi
+
+

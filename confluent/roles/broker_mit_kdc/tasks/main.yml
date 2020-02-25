@@ -1,0 +1,28 @@
+---
+
+- name: "Create Kafka Principals"
+  shell: kadmin -p {{ kdc_admin }} -w {{ kdc_admin_password }}  -q 'addprinc -randkey {{ service_name }}/{{ ansible_fqdn }}@{{ realm }}'
+
+- file:
+    path: /etc/security/keytabs
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: "Create Kafka keytabs"
+  shell: |
+    rm -rf /etc/security/keytabs/kafka.service.keytab
+    kadmin -p {{ kdc_admin }} -w {{ kdc_admin_password }}  -q 'xst -k /etc/security/keytabs/kafka.service.keytab {{ service_name }}/{{ ansible_fqdn }}@{{ realm }}'
+
+- file:
+    path: /etc/security/keytabs/kafka.service.keytab
+    owner: "{{ kafka.broker.user }}"
+    group: "{{ kafka.broker.group }}"
+    mode: 0400
+
+- name: Create jaas conf file for kafka broker
+  template:
+    src: broker_server_jaas.conf.j2
+    dest: /etc/kafka/broker_server_jaas.conf
+    mode: 0644

@@ -1,0 +1,8 @@
+ProxyRequests Off
+ProxyPreserveHost On
+
+
+<VirtualHost *:80>
+  ProxyPass /v2 http://localhost:{{nexus_internal_docker_port}}/v2
+</VirtualHost>
+

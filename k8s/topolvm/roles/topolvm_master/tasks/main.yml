@@ -1,0 +1,250 @@
+# Copyright (C) 2020 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+- name: Install k8s ansible module required package
+  yum: name=python2-openshift state=present
+
+- name: Protect system namespaces from TopoLVM webhook
+  shell: "{{topolvm_kubectl}} label --overwrite ns kube-system topolvm.cybozu.com/webhook=ignore"
+  changed_when: false
+  run_once: true
+
+- name: Add a label on topolvm nodes to select them for daemonset
+  shell: "{{topolvm_kubectl}} label nodes {{item}} --overwrite topology.topolvm.cybozu.com=true"
+  with_items: "{{groups['_topolvm_']}}"
+  register: result
+  run_once: true
+  changed_when: result.stdout_lines[0].find('not labeled') == -1
+  
+- name: Fetch topolvm manifests
+  get_url:
+    url: "{{topolvm_manifest_urls[item]}}"
+    dest: "/tmp/{{item}}.yaml"  
+  with_items:
+  - namespace
+  - crd
+  - psp
+  - certificates
+  - scheduler
+  - mutatingwebhooks
+  - controller
+  #- node
+  run_once: true
+
+- name: Kustomize node.yaml
+  include_role: 
+    name: kustompatch
+  vars:
+    kustompatch_src_url: "{{topolvm_manifest_urls['node']}}"
+    kustompatch_dest: /tmp/node.yaml
+    kustompatch_working_folder: /tmp/knode
+    kustompatch_patch:
+      apiVersion: apps/v1
+      kind: DaemonSet
+      metadata:
+        namespace: topolvm-system
+        name: node
+      spec:
+        template:
+          spec:
+            nodeSelector:
+              topology.topolvm.cybozu.com: "true"
+    
+#
+#- name: "Kustomize node.yaml: Ensure working folder"
+#  file:
+#    state: directory
+#    path: /tmp/knode
+#
+#- name: "Kustomize node.yaml: Fetch node.yaml manifests"
+#  get_url:
+#    url: "{{topolvm_manifest_urls['node']}}"
+#    dest: "/tmp/knode/node.yaml"
+#
+#- name: "Kustomize node.yaml: Setup kustomization file"
+#  copy:
+#    content:
+#      resources:
+#      - node.yaml
+#      patchesStrategicMerge:
+#      - nodeSelector.yaml          
+#    dest: /tmp/knode/kustomization.yaml
+#
+#- name: "Kustomize node.yaml: Setup nodeSelector patch file"
+#  copy:
+#    content:
+#      apiVersion: apps/v1
+#      kind: DaemonSet
+#      metadata:
+#        namespace: topolvm-system
+#        name: node
+#      spec:
+#        template:
+#          spec:
+#            nodeSelector:
+#              topology.topolvm.cybozu.com: "true"
+#    dest: /tmp/knode/nodeSelector.yaml
+#
+#- name: "Kustomize node.yaml: Generated patche node.yaml file"
+#  shell: "{{topolvm_kubectl}} kustomize /tmp/knode >/tmp/node.yaml"
+#  changed_when: false
+  
+# NB: We may need to take some time between applying manifests. And give another chance with retry
+- name: Apply topolvm namespace manifests
+  k8s:
+    state: present
+    src: "/tmp/namespace.yaml"
+  run_once: true
+  register: result
+  retries: 3
+  delay: 3
+  until: not result.failed
+
+- name: Apply topolvm crd manifests
+  k8s:
+    state: present
+    src: "/tmp/crd.yaml"
+  run_once: true
+  register: result
+  retries: 3
+  delay: 3
+  until: not result.failed
+
+- name: Apply topolvm psp manifests
+  k8s:
+    state: present
+    src: "/tmp/psp.yaml"
+  run_once: true
+  register: result
+  retries: 3
+  delay: 3
+  until: not result.failed
+
+- name: Apply topolvm certificates manifests
+  k8s:
+    state: present
+    src: "/tmp/certificates.yaml"
+  run_once: true
+  register: result
+  retries: 3
+  delay: 3
+  until: not result.failed
+
+- name: Apply topolvm scheduler manifests
+  k8s:
+    state: present
+    src: "/tmp/scheduler.yaml"
+  run_once: true
+  register: result
+  retries: 3
+  delay: 3
+  until: not result.failed
+
+- name: Apply topolvm mutatingwebhooks manifests
+  k8s:
+    state: present
+    src: "/tmp/mutatingwebhooks.yaml"
+  run_once: true
+  register: result
+  retries: 3
+  delay: 3
+  until: not result.failed
+
+- name: Apply topolvm controller manifests
+  k8s:
+    state: present
+    src: "/tmp/controller.yaml"
+  run_once: true
+  register: result
+  retries: 3
+  delay: 3
+  until: not result.failed
+
+- name: Apply topolvm node manifests
+  k8s:
+    state: present
+    src: "/tmp/node.yaml"
+  run_once: true
+  register: result
+  retries: 3
+  delay: 3
+  until: not result.failed
+  
+- name: Ensure scheduler folder
+  file:
+    state: directory
+    path: /etc/kubernetes/scheduler
+    mode: 0755
+    owner: root
+    group: root
+
+- name: Copy scheduler extension configuration file
+  get_url:
+    url: "{{topolvm_manifest_urls['schedulerconfig']}}"
+    dest: "/etc/kubernetes/scheduler/scheduler-config.yaml"  
+  
+- name: Copy scheduler extension policy file
+  get_url:
+    url: "{{topolvm_manifest_urls['schedulerpolicy']}}"
+    dest: "/etc/kubernetes/scheduler/scheduler-policy.cfg"  
+
+- name: Configure kube-scheduler (1/3)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-scheduler.yaml
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    insertafter: '^.*volumes:'
+  with_items:
+  - { line: '  - { hostPath: { path: /etc/kubernetes/scheduler/scheduler-policy.cfg, type: FileOrCreate}, name: scheduler-policy }', regexp: '^.*path: +/etc/kubernetes/scheduler/scheduler-policy\.cfg' }
+  - { line: '  - { hostPath: { path: /etc/kubernetes/scheduler/scheduler-config.yaml, type: FileOrCreate }, name: scheduler-config }', regexp: '^.*path: +/etc/kubernetes/scheduler/scheduler-config\.yaml' }
+      
+- name: Configure kube-scheduler (2/3)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-scheduler.yaml
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    insertafter: '^.*volumeMounts:'
+  with_items:
+  - { line: '    - { mountPath: /var/lib/scheduler/scheduler-policy.cfg, name: scheduler-policy, readOnly: true }', regexp: '^.*mountPath: +/var/lib/scheduler/scheduler-policy\.cfg' }
+  - { line: '    - { mountPath: /var/lib/scheduler/scheduler-config.yaml, name: scheduler-config, readOnly: true }', regexp: '^.*mountPath: +/var/lib/scheduler/scheduler-config\.yaml' }
+
+- name: Configure kube-scheduler (2/3)
+  lineinfile:
+    path: /etc/kubernetes/manifests/kube-scheduler.yaml
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    insertafter: '^.*leader-elect'
+  with_items:
+  - { line: '    - --config=/var/lib/scheduler/scheduler-config.yaml', regexp: '^.*config=/var/lib/scheduler/scheduler-config\.yaml' }
+        
+- name: Create storage class
+  k8s:
+    state: present
+    definition: 
+      kind: StorageClass
+      apiVersion: storage.k8s.io/v1
+      metadata:
+        name: "{{topolvm_storage_class}}"
+      provisioner: topolvm.cybozu.com
+      parameters:
+        "csi.storage.k8s.io/fstype": "{{topolvm_storage_fstype}}"
+      volumeBindingMode: WaitForFirstConsumer    
+  run_once: true
+    
+    
+    
+    

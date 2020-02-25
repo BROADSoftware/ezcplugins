@@ -1,0 +1,8 @@
+
+- name: "Download kubectl binary"
+  get_url:
+    url: "{{kubctl_bin_url}}"
+    dest: /usr/local/bin/kubectl
+    owner: root
+    group: root
+    mode: 0755

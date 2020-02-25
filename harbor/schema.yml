@@ -1,0 +1,72 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+type: map
+mapping:
+  "harbor":
+    type: map
+    required: true
+    mapping:
+      "disabled": { type: bool, required: False }
+      "repo_id": { type: str, required: True }
+      "ssl_cert_src": { type: str, required: True }
+      "ssl_key_src": { type: str, required: True }
+      "hostname": { type: str, required: False }    # Default: "{{ ansible_fqdn }}"
+      "admin_password": { type: str, required: True }
+      "db_password": { type: str, required: True }
+      "validate_api_cert": { type: bool, required: False }  # Default false
+      "with_notary": { type: bool, required: True }         # Only meaningfull on first install
+      "with_clair": { type: bool, required: True }          # Only meaningfull on first install
+      "with_chartmuseum": { type: bool, required: True }    # Only meaningfull on first install
+      "configurations":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "name": { type: str, required: true } 
+            "value": { type: str, required: true }
+      "users":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping: 
+            "username": { type: str, required: true } 
+            "email": { type: str, required: true } 
+            "password": { type: str, required: true } 
+            "realname": { type: str, required: false } 
+            "comment": { type: str, required: false } 
+            "admin_role": { type: bool, required: false } 
+            "role_name": { type: str, required: false } 
+            "role_id": { type: int, required: false } 
+      "projects":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping: 
+            "name": { type: str, required: true } 
+            "public": { type: str, required: false } 
+            "enable_content_trust": { type: bool, required: false } 
+            "prevent_vul": { type: bool, required: false } 
+            "severity": { type: str, required: false } 
+            "auto_scan": { type: bool, required: false } 
+           
+              
+                

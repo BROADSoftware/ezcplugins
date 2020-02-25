@@ -1,0 +1,18 @@
+
+
+- hosts: kube-master[0]:rancher[0]
+  tags: [ "metallb" ]
+  vars:
+    metallb:
+      external_ip_ranges:
+{%% for r in m.cluster.k8s.metallb.external_ip_ranges %%}
+      - first: {{{ r.first }}}
+        last: {{{ r.last }}}
+{%% endfor %%}
+{%% if  m.cluster.k8s.metallb.dashboard_ip is defined %%}        
+      dashboard_ip: {{{  m.cluster.k8s.metallb.dashboard_ip  }}}
+{%% endif %%}     
+  roles:
+  - { role: "metallb", metallb_version: {{{ m.cluster.k8s.metallb.version }}} }
+      
+     

@@ -1,10 +1,23 @@
 
 - hosts: all
-  roles:
-  - etc_hosts
-{%% if m.cluster.vagrant.yum_repo == "local" %%}
-  - { role: yum_repo, yum_repo_mode: "local", yum_repositories_url: "{{{ m.data.repositories.vagrant.yum_repo_base_url }}}" }
-{%% elif m.cluster.vagrant.yum_repo == "public" %%}
-  - { role: yum_repo, yum_repo_mode: "as_fresh" }
-{%% endif %%}
+  gather_facts: no
+  tasks:
+  - name: Wait for target instances to become reachable/usable
+    tags: [ "always" ]
+    wait_for_connection:
+      timeout: 600
 
+# We need to grep facts, as json caching reference node by short name (Without taking cluster in account) thus leading missmatcches 
+- hosts: all
+  tasks:
+  - gather_facts:
+
+- hosts: all
+  roles:
+  - { role: etc_hosts, tags: [ "base", "etc_hosts" ] }
+{%% if m.cluster.vagrant.yum_repo == "local" %%}
+  - { role: yum_repo, yum_repo_mode: "local", yum_repositories_url: "{{{ m.data.repositories.vagrant.yum_repo_base_url }}}", tags: [ "base", "yum" ] }
+{%% elif m.cluster.vagrant.yum_repo == "public" %%}
+  - { role: yum_repo, yum_repo_mode: "as_fresh", tags: [ "base", "yum" ] }
+{%% endif %%}
+  - { role: disk_format, tags: [ "base", "disks" ] }

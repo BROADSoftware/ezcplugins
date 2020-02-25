@@ -1,0 +1,11 @@
+
+
+- hosts: buildah
+  vars:
+    buildah_users: {{{ m.cluster.buildah.users }}}
+{%% if m.cluster.buildah.enablerepo is defined %%}
+    builah_enablerepo: "{{{m.cluster.buildah.enablerepo }}}"
+{%% endif %%}
+  roles:
+  - buildah
+  

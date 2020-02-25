@@ -1,0 +1,34 @@
+
+
+
+- hosts: _topolvm_
+  tags: [ "topolvm", "topolvm_lvmd" ]
+  vars:
+    topolvm_lvmd_tgz_url: {{{m.data.repositories.topolvm.lvmd_tgz_url }}}
+    topolvm_lvmd_spare: {{{ m.cluster.k8s.topolvm.spare_size }}}
+  roles:
+  - topolvm_lvmd
+
+- hosts: kube-master
+  tags: [ "topolvm", "topolvm_master" ]
+  vars:
+    topolvm_manifest_urls:
+      namespace: "{{{m.data.repositories.topolvm.manifests_base_url }}}namespace.yaml"
+      crd: "{{{m.data.repositories.topolvm.manifests_base_url }}}crd.yaml"
+      psp: "{{{m.data.repositories.topolvm.manifests_base_url }}}psp.yaml"
+      certificates: "{{{m.data.repositories.topolvm.manifests_base_url }}}certificates.yaml"
+      scheduler: "{{{m.data.repositories.topolvm.manifests_base_url }}}scheduler.yaml"
+      mutatingwebhooks: "{{{m.data.repositories.topolvm.manifests_base_url }}}mutatingwebhooks.yaml"
+      controller: "{{{m.data.repositories.topolvm.manifests_base_url }}}controller.yaml"
+      node: "{{{m.data.repositories.topolvm.manifests_base_url }}}node.yaml"
+      
+      schedulerconfig: {{{m.data.repositories.topolvm.scheduler_config_url }}}
+      schedulerpolicy: {{{m.data.repositories.topolvm.scheduler_policy_url }}}
+
+    topolvm_storage_class: {{{ m.cluster.k8s.topolvm.storage_class }}}
+    topolvm_storage_fstype: {{{ m.cluster.k8s.topolvm.fstype }}}
+      
+  roles:
+  - topolvm_master  
+  
+  

@@ -1,0 +1,16 @@
+
+{% for node in m.cluster.nodes %}
+{{ node.name }} ansible_host={{ node.fqdn }} ansible_user=centos ansible_become=true{%if m.data.aws.privateKeyPath is defined%} ansible_ssh_private_key_file={{m.data.aws.privateKeyPath}}{%endif%}
+
+{% endfor %}
+
+{% if m.data.groupByName is defined and m.data.groupByName|length > 0 %}
+{% for name, hosts in m.data.groupByName.iteritems() %}
+
+[{{ name }}]
+{% for h in hosts %}
+{{ h }}
+{% endfor %}
+{% endfor %}
+
+{% endif %}

@@ -1,0 +1,11 @@
+{
+  "username": "{{ item.username }}",
+  "email": "{{ item.email }}",
+  "password": "{{ item.password  }}",
+  "realname": "{{ item.name | default(item.username) }}",
+  "comment": "{{ item.comment | default('') }}",
+  "deleted": false,
+  "role_name": "{{ item.role_name | default("developer") }}",
+  "role_id": {{ item.role_id | default(2) }},
+  "has_admin_role": {{ item.admin_role | default(false) }}
+}

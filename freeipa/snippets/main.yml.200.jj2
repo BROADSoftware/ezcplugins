@@ -1,0 +1,79 @@
+
+
+{%% if m.data.freeipa.filesToCopy is defined %%}
+- name: Copy certificates file
+  hosts: ipaserver
+  tags: ["ipa_server"]
+  tasks:
+  - copy:
+      src={{item.src}}
+      dest={{item.dest}}
+    with_items: {{{ m.data.freeipa.filesToCopy }}}
+{%% endif %%}
+
+
+- name: Playbook to configure IPA servers
+  hosts: ipaserver
+  tags: ["ipa_server"]
+  roles:
+  - role: ipaserver
+    state: present
+    
+
+{%% if m.cluster.freeipa.users is defined and  m.cluster.freeipa.users|length > 0 %%}
+- hosts: ipaserver
+  tags: ["ipa_users"]
+  tasks:
+  - ipauser:
+      ipaadmin_password: {{{ m.cluster.freeipa.ipaadmin_password }}}
+      ipaadmin_principal: admin
+      state: present
+      update_password: always
+      users:
+{%% for user in m.cluster.freeipa.users %%}
+      - name: {{{ user.uid }}}
+        first: {{{ user.firstname|default(None) }}}
+        last: "{{{ user.lastname }}}"
+        cn: "{{{ user.cn }}}"
+        displayname: "{{{ user.displayname }}}"
+        initials: "{{{ user.initials }}}"
+{%% if user.homedir is defined %%}
+        homedir: "{{{ user.homedir }}}"
+{%% endif %%}
+{%% if user.shell is defined %%}
+        shell: "{{{ user.shell }}}"
+{%% endif %%}
+{%% if user.email is defined %%}
+        email: "{{{ user.email }}}"
+{%% else %%}
+        email: null
+{%% endif %%}
+{%% if user.password is defined %%}
+        password: "{{{ user.password }}}"
+{%% endif %%}
+{%% if user.uidnumber is defined %%}
+        uidnumber: "{{{ user.uidnumber }}}"
+{%% endif %%}
+{%% if user.gidnumber is defined %%}
+        gidnumber: "{{{ user.gidnumber }}}"
+{%% endif %%}
+{%% endfor %%}
+{%% endif %%}
+
+
+{%% if m.cluster.freeipa.groups is defined and  m.cluster.freeipa.groups|length > 0 %%}
+- hosts: ipaserver
+  tags: ["ipa_users"]
+  tasks:
+{%% for group in m.cluster.freeipa.groups %%}
+  - ipagroup:
+      ipaadmin_password: {{{ m.cluster.freeipa.ipaadmin_password }}}
+      ipaadmin_principal: admin
+      name: {{{ group.name }}}
+{%% if group.description is defined %%}
+      description: "{{{ group.description }}}"
+{%% endif %%}
+      user: {{{ group.users }}}
+{%% endfor %%}
+{%% endif %%}
+

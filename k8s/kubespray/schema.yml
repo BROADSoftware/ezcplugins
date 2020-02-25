@@ -1,0 +1,81 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+type: map
+mapping:
+  "k8s":
+    type: map
+    required: True
+    mapping:
+      "kubespray":
+        type: map
+        required: true
+        mapping:
+          "disabled": { type: bool, required: False }    
+          "cluster_name": { type: str, required: True }
+          "helper_id": { type: str, required: True }
+          "basic_auth": { type: bool, required: True }
+          "admin_password": { type: str, required: False }
+          "default_not_ready_toleration_seconds": { type: int, required: False }       
+          "default_unreachable_toleration_seconds": { type: int, required: False }       
+          "metrics_server": { type: bool, required: false }    # Default to true
+          "audit": { type: bool, required: false }    # Default to false
+          "pod_security_policies": { type: bool, required: false }    # Default to true
+          "docker_certificates":
+            type: seq
+            required: false
+            sequence:
+            -  type: str
+          "docker_yum_repo_id":  { type: str, required: True }
+          "yum_proxy_id":  { type: str, required: False }   # Will be set in yum_http_proxy variable, which will be set in several yum task in kubespray (See README)
+          "docker_proxy_id":  { type: str, required: False }  # Will be set in docker_http_proxy variable, which will be set by kubespray in docker configuration in /etc/systemd/system/docker.service.d/http-proxy.conf
+          "master_root_proxy_id":  { type: str, required: False }  # This is a proxy conf which will be set in the /root/.bashrc of all kube_master
+          "files_repo_id":  { type: str, required: False }   # Use kubespray default 
+          "k9s_repo_id":  { type: str, required: False }     # Not installed if not defined 
+          "helm_repo_id":  { type: str, required: False }    # Not installed if not defined 
+          "network_plugin": { type: str, required: False }   # Default in template
+          "service_addresses_cidr": { type: str, required: False } # Default in template
+          "pods_subnet_cidr": { type: str, required: False } # Default in template
+          "network_node_prefix": { type: int, required: False } # Default in template
+          "kube_version": { type: str, required: false } # Default in template
+  "roles":
+    type: seq
+    required: true
+    sequence:
+    - type: map
+      mapping:
+        "k8s":      
+          type: map
+          required: false
+          mapping:
+            "node_labels":
+              type: map
+              required: false
+              mapping:
+                regex;(.*):
+                  type: str
+            "node_taints":
+              type: seq
+              required: false
+              sequence:
+              - type: map
+                mapping:
+                  key: { type: str, required: True }
+                  value: { type: str, required: False }
+                  effect: { type: str, required: True }
+  

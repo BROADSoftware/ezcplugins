@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import ERROR,lookupRepository,setDefaultInMap
+from misc import lookupRepository,setDefaultInMap
 
 HD_CLIENT = "hdp_client"
 CLUSTER = "cluster"
@@ -23,7 +23,7 @@ DISABLED = "disabled"
 HORTONWORKS = "hortonworks"
 AMBARI_SERVER_URL = "ambari_server_url"
 
-def groom(plugin, model):
+def groom(_plugin, model):
     setDefaultInMap(model[CLUSTER][HD_CLIENT], DISABLED, False)
     if model[CLUSTER][HD_CLIENT][DISABLED]:
         return False

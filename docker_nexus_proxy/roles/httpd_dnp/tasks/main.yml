@@ -1,0 +1,126 @@
+
+    
+# ======================================= Install reverse proxy
+
+- name: Ensure Apache httpd and mod_ssl are installed
+  yum: name=httpd,mod_ssl state=present
+
+- name: ensure ca generation folder
+  file: 
+    path: "{{httpd_ndp_cacert_location}}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  
+- name: copy ca generation script
+  template:
+    src: create_ca_cert.sh.j2
+    dest: "{{httpd_ndp_cacert_location}}/create_ca_cert.sh"
+    owner: root
+    group: root
+    mode: 0755
+    backup: no
+    
+- name: Ensure existing ca folder
+  file: 
+    path: "{{httpd_ndp_cacert_location}}/ca"
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+  when: httpd_ndp_ca is defined and httpd_ndp_ca != 'new'
+  
+- name: Copy existing CA if required
+  copy:
+    src: "{{httpd_ndp_ca}}/{{item}}"
+    dest: "{{httpd_ndp_cacert_location}}/ca/{{item}}"
+    owner: root
+    group: root
+    mode: 0644
+    force: no
+  with_items:
+  - ca.crt
+  - ca.key
+  - ca.srl
+  when: httpd_ndp_ca is defined and httpd_ndp_ca != 'new'
+      
+      
+- name: Generate ca and certs
+  shell: "{{httpd_ndp_cacert_location}}/create_ca_cert.sh"
+  args:
+    creates: "{{httpd_ndp_cacert_location}}/certs/fullchain_with_key.pem"
+  register: ca_generation
+  
+  
+- name: expose ca.crt
+  copy:
+    remote_src: yes
+    src: "{{httpd_ndp_cacert_location}}/ca/ca.crt"
+    dest: /var/www/html/ca.crt
+    owner: root
+    group: root
+    mode: 0644
+  when: ca_generation.changed
+   
+  
+- name: Configure nexus proxy for HTTP
+  template: 
+    src: nexus.conf.j2
+    dest: /etc/httpd/conf.d/nexus.conf
+    owner: root
+    group: root
+    mode: 0644
+    backup: no
+  notify:
+  - restart_httpd
+  
+- name: Configure HTTPS Proxy redirection
+  lineinfile:
+    path: /etc/httpd/conf.d/ssl.conf
+    line: "  ProxyPass / http://localhost:{{nexus_internal_docker_port}}/"
+    regex: '^[\s]+ProxyPass[\s]+/[\s]+http://localhost:{{nexus_internal_docker_port}}/'
+    state: present
+    insertafter: "^<VirtualHost"
+  notify:
+  - restart_httpd
+    
+- name: Configure HTTPS Proxy certificate
+  lineinfile:
+    path: /etc/httpd/conf.d/ssl.conf
+    line: "SSLCertificateFile {{httpd_ndp_cacert_location}}/certs/web.crt"
+    regex: '^SSLCertificateFile.*'
+    state: present
+  notify:
+  - restart_httpd
+    
+- name: Configure HTTPS Proxy Key file
+  lineinfile:
+    path: /etc/httpd/conf.d/ssl.conf
+    line: "SSLCertificateKeyFile {{httpd_ndp_cacert_location}}/certs/web.key"
+    regex: '^SSLCertificateKeyFile.*'
+    state: present
+  notify:
+  - restart_httpd
+    
+- name: Configure HTTPS Proxy certificate chain
+  lineinfile:
+    path: /etc/httpd/conf.d/ssl.conf
+    line: "SSLCertificateChainFile {{httpd_ndp_cacert_location}}/certs/fullchain.pem"
+    regex: '^SSLCertificateChainFile.*'
+    state: present
+  notify:
+  - restart_httpd
+    
+  
+# ------------------------------------ Service activate and start   
+- meta: flush_handlers
+   
+- name: Enable httpd services
+  service:
+    name: httpd
+    enabled: yes
+    state: started        
+  
+  
+        

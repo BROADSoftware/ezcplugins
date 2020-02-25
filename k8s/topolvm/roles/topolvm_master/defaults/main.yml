@@ -1,0 +1,40 @@
+# Copyright (C) 2020 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+# Value fine for kubespray clusters
+topolvm_kubectl: /usr/local/bin/kubectl
+
+#topolvm_manifest_urls:
+#  namespace: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/namespace.yaml
+#  crd: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/crd.yaml
+#  psp: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/psp.yaml
+#  certificates: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/certificates.yaml
+#  scheduler: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/scheduler.yaml
+#  mutatingwebhooks: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/mutatingwebhooks.yaml
+#  controller: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/controller.yaml
+#  node: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/node.yaml
+#  
+#  schedulerconfig: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/scheduler-config/scheduler-config.yaml
+#  schedulerpolicy: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/scheduler-config/scheduler-policy.cfg
+  
+
+# topolvm_storage_class: topolvm-provisioner
+# topolvm_storage_fstype: xfs
+
+
+

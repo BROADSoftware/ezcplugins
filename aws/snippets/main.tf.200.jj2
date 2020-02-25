@@ -1,0 +1,178 @@
+provider "aws" {
+  region     = "{{{m.cluster.aws.region}}}"
+  version	= "~> 2.22"
+}
+
+// ------------------------------------------------ Lookup existing ressources
+
+{%% for subnet in m.data.aws.subnets %%}
+data "aws_subnet" "{{{subnet.terraName}}}" {
+  filter {
+    name   = "tag:Name"
+    values = ["{{{subnet.name}}}"]
+  }
+}
+{%% endfor %%}
+
+data "aws_route53_zone" "forward" {
+  name = "{{{m.data.aws.route53.forward_domain}}}"
+  private_zone = true
+  vpc_id = data.aws_subnet.{{{m.data.aws.subnets[0].terraName}}}.vpc_id
+}
+
+data "aws_route53_zone" "reverse" {
+  name = "{{{m.data.aws.route53.reverse_domain}}}"
+  private_zone = true
+  vpc_id = data.aws_subnet.{{{m.data.aws.subnets[0].terraName}}}.vpc_id
+}
+
+{%% if m.data.aws.needMyVpc %%}
+data "aws_vpc" "my_vpc" {
+  id = data.aws_subnet.{{{m.data.aws.subnets[0].terraName}}}.vpc_id
+}
+{%% endif %%}
+
+{%% for esg in m.data.aws.externalSecurityGroups %%}
+data "aws_security_group" "{{{esg}}}" {
+  filter {
+    name   = "tag:Name"
+    values = ["{{{esg}}}"]
+  }
+}
+{%% endfor %%}
+
+// -------------------------------------------- Security groups definition(s)
+
+{%% for name, sg in m.data.aws.securityGroupByName.iteritems() %%}
+resource "aws_security_group" "{{{sg.name}}}" {
+	name 	= "{{{sg.name}}}"
+{%% if sg.description is defined %%}
+	description = "{{{ sg.description }}}"
+{%% endif %%}
+	vpc_id	= data.aws_subnet.{{{m.data.aws.subnets[0].terraName}}}.vpc_id
+{%% if sg.tags is defined %%}	
+  	tags 	= {
+{%%- for name, value in sg.tags.iteritems() %%}  		
+    	{{{name}}} = "{{{value}}}"
+{%% endfor %%}
+  	}
+{%% endif %%}
+{%%  for ingress in sg.ingress %%}
+	ingress {
+		protocol = "{{{ ingress.protocol }}}"
+		from_port = {{{ ingress.from_port }}}
+		to_port = {{{ ingress.to_port }}}
+{%% if ingress.description is defined %%}
+		description = "{{{ ingress.description }}}"
+{%% endif %%}
+{%% if ingress.self is defined and ingress.self %%}
+		self = true
+{%% endif %%}
+{%% if ingress.cidr_block is defined %%}
+		cidr_blocks = ["{{{ ingress.cidr_block }}}"]
+{%% endif %%}
+{%% if ingress.security_group is defined %%}
+		security_groups = [{{{ ingress.security_group }}}]
+{%% endif %%}
+	} 
+{%% endfor %%} 
+{%%  for egress in sg.egress %%}
+	egress {
+		protocol = "{{{ egress.protocol }}}"
+		from_port = {{{ egress.from_port }}}
+		to_port = {{{ egress.to_port }}}
+{%% if egress.description is defined %%}
+		description = "{{{ egress.description }}}"
+{%% endif %%}
+{%% if egress.self is defined and egress.self %%}
+		self = true
+{%% endif %%}
+{%% if egress.cidr_block is defined %%}
+		cidr_blocks = ["{{{ egress.cidr_block }}}"]
+{%% endif %%}
+{%% if egress.security_group is defined %%}
+		security_groups = [{{{ egress.security_group }}}]
+{%% endif %%}
+	} 
+{%% endfor %%} 
+}
+
+{%% endfor %%} 
+
+
+// ----------------------------------------------------------------------- centos 7 latest
+data "aws_ami" "my_ami" {
+  most_recent = true
+  filter {
+    name   = "product-code"
+    values = ["aw0evgkw8e5c1q413zgy5pjce"]
+  }
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+  owners = ["679593333241"] # Centos
+}
+
+// ------------------------------------------------------------------- Instance definition(s)
+
+{%% for node in m.cluster.nodes %%}
+// ...................................................... {{{ node.name }}}
+
+resource "aws_instance" "{{{node.terraName}}}" {
+	ami                    	= data.aws_ami.my_ami.id
+  	instance_type          	= "{{{m.data.roleByName[node.role].aws.instance_type }}}"
+  	subnet_id				= data.aws_subnet.{{{node.aws.subnet.terraName}}}.id
+	vpc_security_group_ids	= [{{{m.data.roleByName[node.role].aws.security_group_id }}}]
+	key_name				= "{{{m.data.aws.keyPair}}}"
+	tags					= {
+{%%- for name, value in node.aws.tags.iteritems() %%}  		
+    								{{{name}}} = "{{{value}}}"
+{%%- endfor -%%}
+    						}
+	volume_tags				= {
+{%%- for name, value in node.aws.tags.iteritems() %%}  		
+    								{{{name}}} = "{{{value}}}"
+{%%- endfor -%%}
+    						}
+	root_block_device {
+    	volume_size = {{{ m.data.roleByName[node.role].root_size }}}
+   		volume_type = "{{{m.data.roleByName[node.role].aws.root_type }}}"
+   		delete_on_termination = true
+  	}
+}
+
+module "route53_{{{node.terraName}}}" {
+	source = "./modules/route53"
+	forward_zone_id = data.aws_route53_zone.forward.id
+	reverse_zone_id = data.aws_route53_zone.reverse.id
+	fqdn = "{{{node.fqdn}}}"
+	private_ip = aws_instance.{{{node.terraName}}}.private_ip
+}
+
+{%% if node.name in m.data.aws.dataDiskByNode %%}
+
+{%% for disk in m.data.aws.dataDiskByNode[node.name] %%}
+resource "aws_ebs_volume" "{{{disk.terraName}}}" {
+	availability_zone   = aws_instance.{{{node.terraName}}}.availability_zone
+  	size				= {{{disk.size}}}
+  	type				= "{{{disk.type}}}"
+  // Must be same as instance tags. Otherwise, idempotency will fail. (Conflict between aws_ebs_volume.tags and aws_instance.volume_tags
+	tags					= {
+{%%- for name, value in node.aws.tags.iteritems() %%}  		
+    								{{{name}}} = "{{{value}}}"
+{%%- endfor -%%}
+    						}
+}
+resource "aws_volume_attachment" "{{{disk.terraName}}}" {
+  device_name = "{{{disk.device_aws}}}"
+  volume_id   = aws_ebs_volume.{{{disk.terraName}}}.id
+  instance_id = aws_instance.{{{node.terraName}}}.id
+}
+{%% endfor %%}  
+
+{%% endif %%}
+
+{%% endfor %%}  
+
+

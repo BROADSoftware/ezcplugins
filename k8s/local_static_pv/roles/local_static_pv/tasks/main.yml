@@ -1,0 +1,50 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+# Install https://github.com/kubernetes-sigs/sig-storage-local-static-provisioner
+
+- name: Install k8s ansible module required package
+  yum: name=python2-openshift state=present
+
+- name: Create storage class
+  k8s:
+    state: present
+    definition: 
+      apiVersion: storage.k8s.io/v1
+      kind: StorageClass
+      metadata:
+        name: "{{item.name}}"
+      provisioner: kubernetes.io/no-provisioner
+      volumeBindingMode: WaitForFirstConsumer
+      reclaimPolicy: "{{item.reclaim_policy}}"
+  with_items: "{{storage_classes}}"
+  when: storage_classes is defined and storage_classes|length > 0
+
+- name: Copy helm chart in working folder
+  copy:
+    src: "{{version}}/"
+    dest: "{{working_folder}}/provisionner"
+  notify:
+  - deploy_provisionner  
+
+- name: Copy our values
+  template:
+    src: myvalues.yaml.j2
+    dest: "{{working_folder}}/myvalues.yaml"
+  notify:
+  - deploy_provisionner  
+  

@@ -18,12 +18,24 @@ Vagrant.configure(2) do |config|
 
   config.vm.define "{{{ node.name}}}" do |node|
     node.vm.network "private_network", ip: "{{{node.ip}}}"
+{%% if node.default_router is defined  and node.default_router != None %%}
+{%% if node.default_router|lower != "none" %%}
+ 	# default router (https://www.vagrantup.com/docs/networking/public_network.html)
+  	node.vm.provision "shell",
+    	run: "always",
+    	inline: "route add default gw {{{node.default_router}}}"
+{%% endif %%}
+  	# delete default gw on eth0
+  	node.vm.provision "shell",
+    	run: "always",
+    	inline: "eval `route -n | awk '{ if ($8 ==\"eth0\" && $2 != \"0.0.0.0\") print \"route del default gw \" $2; }'`"
+{%% endif %%}
 {%% if m.cluster.domain is defined  and m.cluster.domain != None %%}
     node.vm.hostname = "{{{ node.hostname }}}.{{{ m.cluster.domain }}}"
 {%% else %%}
     node.vm.hostname = "{{{ node.hostname }}}"
 {%% endif %%}
-    config.vm.provider "virtualbox" do |vb|
+    node.vm.provider "virtualbox" do |vb|
 {%% if m.cluster.id == node.name %%}
 		vb.name = "{{{ node.name }}}"
 {%% else %%}
@@ -31,6 +43,11 @@ Vagrant.configure(2) do |config|
 {%% endif %%}
         vb.customize ["modifyvm", :id, "--memory", "{{{ (m.data.roleByName[node.role].memory * 1024)|round|int }}}"]
     	vb.customize ["modifyvm", :id, "--cpus", "{{{ m.data.roleByName[node.role].vcpu }}}"]
+{%% if node.name in m.data.dataDisksByNode %%}
+{%% for disk in m. data.dataDisksByNode[node.name] %%}
+  		vb.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', {{{disk.port}}}, '--device', 0, '--type', 'hdd', '--medium', '{{{ disk.fileName }}}']
+{%% endfor %%}
+{%% endif %%}
     end
 {%% if node.synced_folders is defined and node.synced_folders | length > 0 %%}
 {%% for f in node.synced_folders %%}

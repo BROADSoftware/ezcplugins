@@ -1,9 +1,15 @@
 
+{%% if m.data.confluent.security != 'none' %%}
 
-security_mode: '{{{ m.cluster.confluent.security }}}'           
+security_mode: 'sasl_plaintext'
+
+{%% else %%}
+
+security_mode: 'plaintext'
+
+{%% endif %%}
 
 confluent:
-  edition: {{{ m.cluster.confluent.edition }}}
   package_name: "{{{ m.data.repositories.confluent.package_name }}}"
   support:
     customer_id: anonymous
@@ -23,3 +29,6 @@ confluent:
         gpgkey:  "{{{ m.data.repositories.confluent.dist.gpgkey }}}"
         enabled: 1
 
+
+# playbook vars
+{{{ m.data.confluent.vars | to_pretty_yaml() }}}

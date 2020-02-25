@@ -1,0 +1,7 @@
+
+MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+cd ${MYDIR}/..
+
+terraform destroy -state=${MYDIR}/../../terraform.tfstate
+

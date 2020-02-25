@@ -1,0 +1,9 @@
+
+
+
+- hosts: all
+  tags: [ "register_ca" ]
+  roles:
+  - { role: register_ca, register_ca_urls: "{{{m.cluster.register_ca.from_urls|default([])}}}", register_ca_paths: "{{{m.cluster.register_ca.from_paths|default([])}}}" }  
+
+    

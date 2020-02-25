@@ -1,0 +1,139 @@
+
+# Thanks to https://github.com/nicholasamorim/ansible-role-harbor
+
+
+- name: Install docker-compose
+  yum:
+    name: 
+    - docker-compose
+    state: present 
+
+
+- name: Checking if Harbor is already installed
+  stat:
+    path: "{{ harbor_install_dir }}/harbor"
+  register: harbor_folder_st
+
+- name: "Downloading Harbor {{ harbor_version }} (offline installer)"
+  get_url: url={{ harbor_url }} dest=/tmp/harbor.tgz validate_certs=no
+  when: not harbor_folder_st.stat.exists 
+
+- name: "Creating Harbor directory... ({{ harbor_install_dir }}/harbor)"
+  file:
+    path: "{{ harbor_install_dir }}"
+    state: directory
+    mode: o+r
+  when: not harbor_folder_st.stat.exists 
+
+- name: "Uncompressing Harbor installer..."
+  unarchive:
+    remote_src: True
+    src: /tmp/harbor.tgz
+    dest: "{{ harbor_install_dir }}"
+    creates: "{{ harbor_install_dir }}/harbor"
+  when: not harbor_folder_st.stat.exists
+
+- name: Create folder for SSL
+  file:
+    state: directory
+    path: "{{item|dirname}}"
+  with_items:
+  - "{{harbor_ssl_cert}}"
+  - "{{harbor_ssl_key}}"
+  when: harbor_scheme == "https"
+  
+- name: Copy ssl keys
+  copy:
+    src: "{{item.src}}"
+    dest: "{{item.dest}}"
+  with_items:
+  - { src: "{{harbor_ssl_cert_src}}", dest: "{{harbor_ssl_cert}}" }
+  - { src: "{{harbor_ssl_key_src}}", dest: "{{harbor_ssl_key}}" }
+  when: harbor_scheme == "https"
+  notify:
+  - harbor_install
+
+- name: Copying over harbor.yaml
+  template:
+    src: harbor.yml.j2
+    dest: "{{ harbor_install_dir }}/harbor/harbor.yml"
+  notify:
+  - harbor_install
+  
+- name: (re)deploy harbor if neeed
+  meta: flush_handlers  
+
+- name: Wait for portal to be up
+  uri:
+    url: "{{ harbor_api_url }}/configurations"
+    method: GET
+    status_code: 
+    - 200
+    user: "admin"
+    password: "{{ harbor_admin_password }}"
+    force_basic_auth: yes
+    validate_certs: "{{harbor_validate_api_cert|default(true)}}"
+  retries: 30
+  delay: 5
+  register: result
+  until: ('status' in result) and (result.status == 200)
+  changed_when: false
+
+- name: "Applying configurations"
+  uri:
+    url: "{{ harbor_api_url }}/configurations"
+    method: PUT
+    user: "admin"
+    password: "{{ harbor_admin_password }}"
+    status_code:
+      - 200
+    body_format: json
+    force_basic_auth: yes
+    return_content: yes
+    validate_certs: "{{harbor_validate_api_cert|default(true)}}"
+    body: '{ "{{item.name}}":"{{item.value}}" }'
+  when: harbor_configurations is defined
+  with_items: "{{ harbor_configurations }}"
+
+# WARNING: Once created, further modification are not taken in accout.
+- name: "Creating projects..."
+  uri:
+    url: "{{ harbor_api_url }}/projects"
+    method: POST
+    user: "admin"
+    password: "{{ harbor_admin_password }}"
+    status_code:
+      - 201
+      - 409 # already created
+    body_format: json
+    force_basic_auth: yes
+    return_content: yes
+    validate_certs: "{{harbor_validate_api_cert|default(true)}}"
+    body: "{{ lookup('template', 'templates/create_project.json.j2') }}"
+  when: harbor_projects is defined
+  with_items: "{{ harbor_projects }}"
+
+# - debug:
+#     msg: "{{ lookup('template', 'templates/create_user.json.j2') }}"
+#   when: harbor_users is defined and harbor_self_registration == "off"
+#   with_items: "{{ harbor_users }}"
+
+# WARNING: Once created, further modification are not taken in accout.
+- name: "Creating users..."
+  uri:
+    url: "{{ harbor_api_url }}/users"
+    method: POST
+    user: "admin"
+    password: "{{ harbor_admin_password | default('Harbor12345') }}"
+    status_code:
+      - 201
+      - 409 # already created
+    body_format: json
+    force_basic_auth: yes
+    return_content: yes
+    validate_certs: "{{harbor_validate_api_cert|default(true)}}"
+    body: "{{ lookup('template', 'templates/create_user.json.j2') }}"
+  when: harbor_users is defined
+  with_items: "{{ harbor_users }}"
+  
+  
