@@ -34,6 +34,7 @@ mapping:
             required: true
             mapping:
               "disabled": { type: bool, required: False }
+              "lb_address": { type: str, required: False }
               "persistence": 
                 type: map
                 required: false  # Required if enabled
@@ -61,19 +62,19 @@ mapping:
               "disabled": { type: bool, required: False }
               "server":
                 type: map
-                required: true
+                required: false   # Required if enabled
                 mapping:
                   "disabled": { type: bool, required: False }
                   "persistence": 
                     type: map
-                    required: false  # Required if enabled
+                    required: false  # Required if prometheus enabled
                     mapping:
                       disabled: { type: bool, required: False }
                       storage_class: { type: str, required: False }  # Required if enabled
                       size_gb: { type: int, required: False  }       # Required if enabled
               "alert_manager":
                 type: map
-                required: true
+                required: false  # Required if prometheus enabled
                 mapping:
                   "disabled": { type: bool, required: False }
                   "persistence": 
