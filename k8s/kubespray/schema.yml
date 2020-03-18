@@ -53,6 +53,8 @@ mapping:
           "pods_subnet_cidr": { type: str, required: False } # Default in template
           "network_node_prefix": { type: int, required: False } # Default in template
           "kube_version": { type: str, required: false } # Default in template
+          "kube_feature_gates": { type: seq, required: false, sequence: [ { type: str }] }
+
   "roles":
     type: seq
     required: true
