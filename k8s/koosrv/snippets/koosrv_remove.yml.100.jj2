@@ -1,0 +1,11 @@
+
+
+- hosts: kube-master
+  tags: [ "koo", "koosrv" ]
+  vars:
+    koosrv_state: absent
+    
+  roles:
+  - koosrv
+      
+        

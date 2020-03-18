@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: koosrv
+  name: koosrv
+  namespace: {{koosrv_namespace}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: koosrv 
+  template:
+    metadata:
+      labels:
+        app: koosrv
+    spec:
+      containers:
+      - image: {{koosrv_image}}
+        name: koosrv
+        command: ["/go/bin/koosrv", "-c", "/etc/koo/cfg/config.yaml"]
+
+        ports:
+        - name: https
+          containerPort: 8443
+
+        volumeMounts:
+        - name: config
+          mountPath: /etc/koo/cfg
+        - name: tls
+          mountPath: /etc/koo/tls
+      volumes:
+      - name: config
+        configMap:
+          name: koosrv
+          items:
+          - key: config.yaml
+            path: config.yaml
+      - name: tls
+        secret:
+          secretName: koosrv.tls
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: koosrv
+  namespace: {{koosrv_namespace}}
+data:
+  config.yaml: |
+    logLevel: DEBUG
+    logJson: False
+    certFile: /etc/koo/tls/tls.crt
+    keyFile: /etc/koo/tls/tls.key
+    addr: ":8443"
+    adminGroup: "kooadmin"
+    templatePath: tmpl    
+    inactivityTimeout: "10m"
+    sessionMaxTTL: "12h"
+    clientTokenTTL: "10s"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: koosrv
+  namespace: {{koosrv_namespace}}
+  labels:
+    app: koosrv
+spec:
+  type: NodePort
+  ports:
+    - name: https
+      port: 8443
+      targetPort: 8443
+      protocol: TCP
+      nodePort: {{koosrv_nodeport}}
+  selector:
+    app: koosrv
+    
+    

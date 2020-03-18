@@ -1,0 +1,106 @@
+
+# ---------------------------------------------------------------------------
+- name: koosrv pod deployment
+  block:
+  
+  - name: Install k8s ansible module required package
+    yum: name=python2-openshift state=present
+    
+  - name: Create {{koosrv_namespace}} namespace
+    k8s:
+      state: present
+      definition:
+        apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: "{{koosrv_namespace}}"
+          
+  - name: Create a temporary storage space
+    file:
+      state: directory
+      path: "{{koosrv_tmp}}"
+      mode: 0700          
+          
+  - name: Copy certificate files
+    copy:
+      src: "{{item.src}}"
+      dest: "{{item.dest}}"
+    with_items:
+    - { src: "{{koosrv_crt_file}}", dest: "{{koosrv_tmp}}/koosrv.crt" }
+    - { src: "{{koosrv_key_file}}", dest: "{{koosrv_tmp}}/koosrv.key" }
+
+          
+  - name: Create tls secret for the server
+    shell: "{{koosrv_kubectl}} -n {{koosrv_namespace}} create secret tls koosrv.tls --cert={{koosrv_tmp}}/koosrv.crt --key={{koosrv_tmp}}/koosrv.key"
+    register: cs_result
+    failed_when: cs_result.rc != 0 and 'AlreadyExists' not in cs_result.stderr
+    changed_when: "'AlreadyExists' not in cs_result.stderr"
+  
+  - name: Copy koosrv deployment manifest
+    template:
+      src: koosrv.yaml
+      dest: "{{koosrv_tmp}}/koosrv.yaml" 
+  
+  - name: Apply koosrv deployment manifest
+    k8s:
+      state: present
+      src: "{{koosrv_tmp}}/koosrv.yaml" 
+  
+  run_once: true
+  when: koosrv_deploy_pod
+
+# ---------------------------------------------------------------------------
+- name: API server configuration
+  block:       
+  - name: Ensure target folder
+    file:
+      state: directory
+      path: /etc/kubernetes/koo
+      
+#  - name: Copy client certificate files
+#    copy:
+#      src: "{{ item.src }}"
+#      dest: "{{ item.dest }}"
+#    with_items:
+#    - { src: "..../certificates/kooapisrv1/tls.crt", dest: /etc/kubernetes/koo/kooapisrv.crt }
+#    - { src: "..../certificates/kooapisrv1/tls.key", dest: /etc/kubernetes/koo/kooapisrv.key }
+    
+  - name: Copy authentication webhook config file
+    template:
+      src: hookconfig.yaml
+      dest: /etc/kubernetes/koo/hookconfig.yaml
+      
+  - name: Configure kube api server (1/3)
+    blockinfile:
+      path: /etc/kubernetes/manifests/kube-apiserver.yaml
+      insertafter: "^.*volumeMounts:.*"
+      marker: "# Ansible koo config 1/3 hacking {mark}"      
+      block: |2
+            - mountPath: /etc/kubernetes/koo
+              name: koo-config
+      
+  - name: Configure kube api server (2/3)
+    blockinfile:
+      path: /etc/kubernetes/manifests/kube-apiserver.yaml
+      insertafter: "^.*volumes:.*"
+      marker: "# Ansible koo config 2/3 hacking {mark}"      
+      block: |2
+          - hostPath:
+              path: /etc/kubernetes/koo
+              type: ""
+            name: koo-config
+    
+  - name: Configure kube api server(3/3)
+    lineinfile:
+      path: /etc/kubernetes/manifests/kube-apiserver.yaml
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+      insertafter: '^.*- kube-apiserver'
+    with_items:
+    - { line: '    - --authentication-token-webhook-config-file=/etc/kubernetes/koo/hookconfig.yaml', regexp: '^.*authentication-token-webhook-config-file.*' }
+    - { line: '    - --authentication-token-webhook-cache-ttl=2s', regexp: '^.*authentication-token-webhook-cache-ttl.*' }
+    - { line: '    - --runtime-config=authentication.k8s.io/v1beta1=true', regexp: '^.*runtime-config.*' }
+
+  when: koosrv_configure_apiserver
+    
+    

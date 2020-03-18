@@ -1,0 +1,28 @@
+
+
+# To set 
+#koosrv_crt_file: ..../koosrv/tls.crt
+#koosrv_key_file: ..../koosrv/tls.key
+
+
+# Role behavior switch
+koosrv_state: present   # absent to trigger removal
+koosrv_deploy_pod: true
+koosrv_configure_apiserver: true
+
+# This may be overwritten, for example to run the server out of k8s (For dev) 
+koosrv_hostname: "{{ansible_hostname}}"
+koosrv_nodeport: 31443
+
+koosrv_image: harbor2.bsa.broadsoftware.com/library/koosrv:latest
+   
+
+# Value fine for kubespray clusters
+koosrv_kubectl: /usr/local/bin/kubectl
+
+# Some default fine for most cases 
+koosrv_namespace: koo-system
+
+koosrv_tmp: /tmp/koosrv
+
+

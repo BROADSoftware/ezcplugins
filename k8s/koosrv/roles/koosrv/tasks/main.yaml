@@ -1,0 +1,10 @@
+
+
+- include_tasks: install.yml
+  when: koosrv_state == 'present'
+  
+- include_tasks: remove.yml
+  when: koosrv_state == 'absent'
+  
+  
+  

@@ -1,0 +1,7 @@
+
+
+- name: Install koosrv
+  import_playbook: koosrv_install.yml
+
+  
+  
