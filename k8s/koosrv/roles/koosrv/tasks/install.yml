@@ -101,6 +101,13 @@
     - { line: '    - --authentication-token-webhook-cache-ttl=2s', regexp: '^.*authentication-token-webhook-cache-ttl.*' }
     - { line: '    - --runtime-config=authentication.k8s.io/v1beta1=true', regexp: '^.*runtime-config.*' }
 
+  - name: Wait for api server to be back again
+    wait_for:
+      port: 6443
+      state: started
+      timeout: 300
+      delay: 5
+
   when: koosrv_configure_apiserver
     
     

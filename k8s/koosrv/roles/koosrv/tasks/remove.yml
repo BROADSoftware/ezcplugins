@@ -63,6 +63,13 @@
       path: /etc/kubernetes/manifests/kube-apiserver.yaml
       marker: "# Ansible koo config 2/3 hacking {mark}"      
       state: absent      
+
+  - name: Wait for api server to be back again
+    wait_for:
+      port: 6443
+      state: started
+      timeout: 300
+      delay: 5
         
   - name: Remove koo config folder
     file:
