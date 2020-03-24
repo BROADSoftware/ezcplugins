@@ -1,0 +1,15 @@
+
+
+{%% if m.data.kbNodes is defined and m.data.kbNodes | length > 0 %%}
+
+{%% for kbNode in m.data.kbNodes %%}
+- name: Will deploy kibana on '{{{ kbNode.role }}}'
+  hosts: {{{ kbNode.role }}}
+  roles:
+  - role: ansible-kibana
+
+{%% endfor %%}
+
+{%% endif %%}
+
+ 
