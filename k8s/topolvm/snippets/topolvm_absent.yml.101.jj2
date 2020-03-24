@@ -1,18 +1,9 @@
 
 
-
-- hosts: _topolvm_
-  tags: [ "topolvm", "topolvm_lvmd" ]
-  vars:
-    topolvm_lvmd_tgz_url: {{{m.data.repositories.topolvm.lvmd_tgz_url }}}
-    topolvm_lvmd_spare: {{{ m.cluster.k8s.topolvm.spare_size }}}
-  roles:
-  - topolvm_lvmd
-
 - hosts: kube-master
   tags: [ "topolvm", "topolvm_master" ]
   vars:
-    topolvm_state: present  
+    topolvm_state: absent  
     topolvm_manifest_urls:
       namespace: "{{{m.data.repositories.topolvm.manifests_base_url }}}namespace.yaml"
       crd: "{{{m.data.repositories.topolvm.manifests_base_url }}}crd.yaml"
@@ -32,4 +23,10 @@
   roles:
   - topolvm_master  
   
+
+
+- hosts: _topolvm_
+  tags: [ "topolvm", "topolvm_lvmd" ]
+  roles:
+  - topolvm_lvmd_absent
   

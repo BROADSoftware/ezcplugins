@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-from misc import setDefaultInMap, ERROR, resolveDns
+from misc import setDefaultInMap, ERROR, resolveDnsAndCheck
 import ipaddress
 
 CLUSTER = "cluster"
@@ -26,13 +26,6 @@ EXTERNAL_IP_RANGES="external_ip_ranges"
 FIRST="first"
 LAST="last"
 DASHBOARD_IP="dashboard_ip"
-
-
-def resolveDnsAndCheck(fqdnOrIp):
-    ip = resolveDns(fqdnOrIp)
-    if ip is None:
-        ERROR("Unable to resolve '{}'".format(fqdnOrIp))
-    return ip
 
 def groom(_plugin, model):
     setDefaultInMap(model[CLUSTER], K8S, {})
@@ -55,5 +48,5 @@ def groom(_plugin, model):
             if dashboard_ip >= first_ip and dashboard_ip <= last_ip:
                 dashboardInRange = True
         if not dashboardInRange:
-            ERROR("metallb.dashboard_ip is not included in metallb.external_ip_range")
+            ERROR("metallb.dashboard_ip is not included in one of metallb.external_ip_ranges")
         return True

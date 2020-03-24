@@ -17,7 +17,6 @@
 
 from misc import setDefaultInMap,lookupRepository
 from sets import Set
-from jinja2._compat import iteritems
  
 CLUSTER = "cluster"
 K8S="k8s"
@@ -54,7 +53,7 @@ def groom(_plugin, model):
         setDefaultInMap(model[DATA][K8S][TOPOLVM], SIZE_BY_NODE, {})
         setDefaultInMap(model[DATA][K8S][TOPOLVM], GROUP, Set())
         topolvmRef = model[CLUSTER][K8S][TOPOLVM][DATA_DISK_REF]
-        for _, role in iteritems(model[DATA][ROLE_BY_NAME]):
+        for _, role in model[DATA][ROLE_BY_NAME].iteritems():
             if DATA_DISKS in role:
                 for disk in role[DATA_DISKS]:
                     if REF in disk and disk[REF] == topolvmRef:
@@ -65,6 +64,6 @@ def groom(_plugin, model):
                             model[DATA][K8S][TOPOLVM][SIZE_BY_NODE][node] += disk[SIZE]
                             model[DATA][K8S][TOPOLVM][GROUP].add(node)
         print "------- TOPOLVM Node capacity:"
-        for node, size in iteritems(model[DATA][K8S][TOPOLVM][SIZE_BY_NODE]):
+        for node, size in model[DATA][K8S][TOPOLVM][SIZE_BY_NODE].iteritems():
             print "\t{} -> {}GB".format(node, size)
         return True

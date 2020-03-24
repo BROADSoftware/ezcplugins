@@ -1,0 +1,7 @@
+
+
+- name: Install Loki stack
+  import_playbook: loki_stack.yml
+
+  
+  

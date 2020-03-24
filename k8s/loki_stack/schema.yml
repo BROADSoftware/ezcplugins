@@ -1,0 +1,87 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+type: map
+mapping:
+  "k8s":
+    type: map
+    required: True
+    mapping:
+      "loki_stack":
+        type: map
+        required: true
+        mapping:
+          "disabled": { type: bool, required: False }
+          "repo_id": { type: str, required: True }
+          "namespace": { type: str, required: False }
+          "loki":
+            type: map
+            required: true
+            mapping:
+              "disabled": { type: bool, required: False }
+              "persistence": 
+                type: map
+                required: false  # Required if enabled
+                mapping:
+                  disabled: { type: bool, required: False }
+                  storage_class: { type: str, required: False }  # Required if enabled
+                  size_gb: { type: int, required: False  }       # Required if enabled
+          "grafana":
+            type: map
+            required: true
+            mapping:
+              "disabled": { type: bool, required: False }
+              "lb_address": { type: str, required: False }
+              "persistence": 
+                type: map
+                required: false  # Required if enabled
+                mapping:
+                  disabled: { type: bool, required: False }
+                  storage_class: { type: str, required: False }  # Required if enabled
+                  size_gb: { type: int, required: False  }       # Required if enabled
+          "prometheus":
+            type: map
+            required: true
+            mapping:
+              "disabled": { type: bool, required: False }
+              "server":
+                type: map
+                required: true
+                mapping:
+                  "disabled": { type: bool, required: False }
+                  "persistence": 
+                    type: map
+                    required: false  # Required if enabled
+                    mapping:
+                      disabled: { type: bool, required: False }
+                      storage_class: { type: str, required: False }  # Required if enabled
+                      size_gb: { type: int, required: False  }       # Required if enabled
+              "alert_manager":
+                type: map
+                required: true
+                mapping:
+                  "disabled": { type: bool, required: False }
+                  "persistence": 
+                    type: map
+                    required: false  # Required if enabled
+                    mapping:
+                      disabled: { type: bool, required: False }
+                      storage_class: { type: str, required: False }  # Required if enabled
+                      size_gb: { type: int, required: False  }       # Required if enabled
+              
+                
