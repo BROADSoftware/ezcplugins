@@ -1,0 +1,59 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: koomgr
+  namespace: koo-system
+data:
+  config.yaml: |
+{{ koomgr_config|default({}) | to_nice_yaml(indent=2) | indent(4, first=True) }}
+
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: koo-directory-editor-{{ koomgr_admin_group }}
+  namespace: koo-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: koo-directory-editor
+subjects:
+- apiGroup: rbac.authorization.k8s.io 
+  kind: Group
+  name: {{ koomgr_admin_group }}
+  
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: koo-token-editor-{{ koomgr_admin_group }}
+  namespace: koo-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: koo-token-editor
+subjects:
+- apiGroup: rbac.authorization.k8s.io 
+  kind: Group
+  name: {{ koomgr_admin_group }}
+
+---
+# This to remove when web server will be separated
+apiVersion: cert-manager.io/v1alpha2
+kind: Certificate
+metadata:
+  name: koo-serving-cert
+  namespace: koo-system
+spec:
+  dnsNames:
+  - koo-webhook-service.koo-system.svc
+  - koo-webhook-service.koo-system.svc.cluster.local
+{% for node in groups["kube-master"] %}
+  - {{hostvars[node].ansible_nodename }}
+{% endfor %}  
+  issuerRef:
+    kind: Issuer
+    name: koo-selfsigned-issuer
+  secretName: webhook-server-cert
+  

@@ -1,0 +1,47 @@
+# Copyright (C) 2020 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+koomgr_version: v0.0.1
+
+# Value fine for kubespray clusters
+koomgr_kubectl: /usr/local/bin/kubectl
+
+# Users belonging to this group will have admin privileges on koobind
+koomgr_admin_group: kooadmin
+
+
+
+# Role behavior switch
+koomgr_state: present   # absent to trigger removal
+koomgr_deploy_pod: true
+koomgr_configure_apiserver: true
+
+# This will be used to configure the API server for the authentication webhook. This configuration match the value from the standart deployment  
+# This may be overwritten, for example to run the server out of k8s (For dev) 
+koomgr_webhook_host: koo-webhook-service.koo-system.svc
+koomgr_webhook_port: 443
+
+koomgr_tmp: /tmp/koomgr
+
+koomgr_manifests:
+- src: https://github.com/koobind/koobind/releases/download/{{koomgr_version}}/crd.yaml
+  name: crd.yaml
+- src: https://github.com/koobind/koobind/releases/download/{{koomgr_version}}/deploy.yaml
+  name: deploy.yaml
+- src: https://github.com/koobind/koobind/releases/download/{{koomgr_version}}/rbac.yaml
+  name: rbac.yaml
+  

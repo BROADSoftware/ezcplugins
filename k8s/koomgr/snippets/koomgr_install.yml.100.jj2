@@ -1,0 +1,52 @@
+
+
+- hosts: kube-master
+  tags: [ "koo", "koomgr" ]
+  vars:
+    
+    koomgr_version: {{{ m.cluster.k8s.koomgr.version }}}
+    koomgr_admin_group: {{{ m.cluster.k8s.koomgr.admin_group }}}
+    
+{%% if m.cluster.k8s.koomgr.local_manifests is defined %%}
+    koomgr_manifests:
+    - src: {{{ m.cluster.k8s.koomgr.local_manifests.crd }}}
+      name: crd.yaml
+    - src: {{{ m.cluster.k8s.koomgr.local_manifests.deploy }}}
+      name: deploy.yaml
+    - src: {{{ m.cluster.k8s.koomgr.local_manifests.rbac }}}
+      name: rbac.yaml
+{%% endif %%}
+
+{%% if m.data.k8s.koomgr.ldqpRootcas is defined and m.data.k8s.koomgr.ldqpRootcas|length > 0 %%}
+    koomgr_ldap_rootcas:
+{%% for rootca in m.data.k8s.koomgr.ldqpRootcas %%}
+    - name: {{{ rootca.name }}}
+      basename:  {{{ rootca.basename }}}
+      srcPath:  {{{ rootca.srcPath }}}
+{%% endfor %%}
+{%% endif %%}
+    
+    koomgr_config:
+      
+      logLevel: {{{ m.cluster.k8s.koomgr.log_level }}}
+      adminGroup: {{{ m.cluster.k8s.koomgr.admin_group }}}
+      # certDIr, host, port will be the defaulted by the executable
+      
+{%% if m.cluster.k8s.koomgr.inactivity_timeout is defined %%}     
+        inactivityTimeout: {{{ m.cluster.k8s.koomgr.inactivity_timeout }}}
+{%% endif %%}        
+{%% if m.cluster.k8s.koomgr.session_max_TTL is defined %%}     
+        sessionMaxTTL: {{{ m.cluster.k8s.koomgr.session_max_TTL }}}
+{%% endif %%}        
+{%% if m.cluster.k8s.koomgr.client_token_TTL is defined %%}     
+        clientTokenTTL: {{{ m.cluster.k8s.koomgr.client_token_TTL }}}
+{%% endif %%}        
+      
+      providers: 
+{%% for prvd in m.data.k8s.koomgr.providers %%}
+      - {{{ prvd|to_pretty_yaml|indent(8, first=false) }}}
+{%% endfor %%}          
+      
+  roles:
+  - koomgr
+  

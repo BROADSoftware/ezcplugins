@@ -1,0 +1,119 @@
+# Copyright (C) 2020 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+# ---------------------------------------------------------------------------
+- name: koomgr pod removal
+  block:
+  
+  - name: Install k8s ansible module required package
+    yum: name=python2-openshift state=present
+
+  - name: Create a clean temporary storage space
+    file:
+      state: "{{item}}"
+      path: "{{koomgr_tmp}}"
+      mode: 0700          
+    with_items:
+    - absent
+    - directory
+      
+  # ------------------------------------- Remove configuration and other addons
+  - name: Generate the addons manifest
+    template:
+      src: addons.yaml
+      dest: "{{koomgr_tmp}}/addons.yaml"
+  
+  - name: Delete the addons
+    k8s:
+      state: absent
+      src: "{{koomgr_tmp}}/addons.yaml"
+  
+  # ---------------------------------- Remove the deployment itself      
+  - name: "Copy koomgr deployment manifest from local files"
+    copy:
+      src: "{{item.src}}"
+      dest: "{{koomgr_tmp}}/{{item.name}}"
+    with_items: "{{koomgr_manifests[::-1]}}"
+    when: koomgr_manifests[0].src is not match("https://.*")
+    
+  - name: "Copy koomgr deployment manifest from remote url"
+    get_url:
+      url: "{{item.src}}"
+      dest: "{{koomgr_tmp}}/{{item.name}}"
+    with_items: "{{koomgr_manifests}}"
+    when: koomgr_manifests[0].src is match("https://.*")
+  
+  - name: Delete koomgr resources
+    k8s:
+      state: absent
+      src: "{{koomgr_tmp}}/{{item.name}}"
+    with_items: "{{koomgr_manifests[::-1]}}"
+  
+  run_once: true
+  when: koomgr_deploy_pod
+
+# ---------------------------------------------------------------------------
+- name: API server clean configuration
+  block:
+  - name: Unconfigure kube api server (1/4)
+    lineinfile:
+      path: /etc/kubernetes/manifests/kube-apiserver.yaml
+      regexp: "{{ item.regexp }}"
+      state: absent
+    with_items:
+    - { regexp: '^.*authentication-token-webhook-config-file.*' }
+    - { regexp: '^.*authentication-token-webhook-cache-ttl.*' }
+    - { regexp: '^.*dnsPolicy:.*' }
+
+
+  # Restore original line (--runtime-config=)
+  - name: Unconfigure kube api server(2/4)
+    lineinfile:
+      path: /etc/kubernetes/manifests/kube-apiserver.yaml
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+      insertafter: '^.*- kube-apiserver'
+    with_items:
+    - { line: '    - --runtime-config=', regexp: '^.*runtime-config.*' }
+        
+  - name: Unconfigure kube api server (3/4)
+    blockinfile:
+      path: /etc/kubernetes/manifests/kube-apiserver.yaml
+      marker: "# Ansible koo config 1/3 hacking {mark}"
+      state: absent      
+      
+  - name: Unconfigure kube api server (4/3)
+    blockinfile:
+      path: /etc/kubernetes/manifests/kube-apiserver.yaml
+      marker: "# Ansible koo config 2/3 hacking {mark}"      
+      state: absent      
+
+  - name: Wait for api server to be back again
+    wait_for:
+      port: 6443
+      state: started
+      timeout: 300
+      delay: 15
+      
+  when: koomgr_configure_apiserver  
+  
+- name: Remove koo working folder
+  file:
+    state: absent
+    path: /etc/kubernetes/koo
+  

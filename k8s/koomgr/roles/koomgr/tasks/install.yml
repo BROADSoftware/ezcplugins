@@ -1,0 +1,196 @@
+# Copyright (C) 2020 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+- name: Install k8s ansible module required package on all masters
+  yum: name=python2-openshift state=present
+    
+# ---------------------------------------------------------------------------
+- name: koomgr pod deployment
+  block:
+  
+  - name: Create a clean temporary storage space
+    file:
+      state: "{{item}}"
+      path: "{{koomgr_tmp}}"
+      mode: 0700          
+    with_items:
+    - absent
+    - directory
+
+  # ---------------------------------- The deployment itself
+  - name: "Copy koomgr deployment manifest from local files"
+    copy:
+      src: "{{item.src}}"
+      dest: "{{koomgr_tmp}}/{{item.name}}"
+    with_items: "{{koomgr_manifests}}"
+    when: koomgr_manifests[0].src is not match("https://.*")
+
+  - name: "Copy koomgr deployment manifest from remote url"
+    get_url:
+      url: "{{item.src}}"
+      dest: "{{koomgr_tmp}}/{{item.name}}"
+    with_items: "{{koomgr_manifests}}"
+    when: koomgr_manifests[0].src is match("https://.*")
+  
+  - name: Apply koomgr deployment manifest
+    k8s:
+      state: present
+      src: "{{koomgr_tmp}}/{{item.name}}"
+    with_items: "{{koomgr_manifests}}"
+
+  # ------------------------------------- The configuration and other addons
+  - name: Generate the addons manifest
+    template:
+      src: addons.yaml
+      dest: "{{koomgr_tmp}}/addons.yaml"
+  
+  - name: Apply the addons
+    k8s:
+      state: present
+      src: "{{koomgr_tmp}}/addons.yaml"
+  
+  # ------------------------------------ rootCA for ldap provider
+  - name: Handle rootCA setup for ldap provider(s)
+    block:
+    - name: Ensure a clean rootCA folder
+      file:
+        state: "{{item}}"
+        path: "{{koomgr_tmp}}/rootCA/"
+        mode: 0700          
+      with_items:
+      - absent
+      - directory
+      changed_when: false
+      
+    - name: Copy ldap rootCA file
+      copy:
+        src: "{{ item.srcPath }}"
+        dest: "{{koomgr_tmp}}/rootCA/{{item.name}}-{{item.basename}}"
+      with_items: "{{koomgr_ldap_rootcas}}"
+      changed_when: false
+      
+    - name: Create the ldap rootCA config file definition
+      shell: "{{koomgr_kubectl}} create configmap ldaprootcas --from-file={{koomgr_tmp}}/rootCA/ --dry-run -o yaml >{{koomgr_tmp}}/ldaprootcas.yaml"
+      changed_when: false
+      
+    - name: Apply the ldap provider rootCA config file  
+      k8s:
+        state: present
+        namespace: koo-system
+        src: "{{koomgr_tmp}}/ldaprootcas.yaml" 
+
+    when: koomgr_ldap_rootcas is defined
+   
+  
+  run_once: true
+  when: koomgr_deploy_pod
+
+# ---------------------------------------------------------------------------
+- name: API server configuration
+  block:       
+  - name: Ensure target folder
+    file:
+      state: directory
+      path: /etc/kubernetes/koo
+
+
+  - name: Wait for certificate to be generated
+    k8s_info:
+      api_version: v1
+      kind: Secret
+      name: webhook-server-cert
+      namespace: koo-system
+    register: k8s_result
+    retries: 3
+    delay: 10
+    until: k8s_result.resources is defined and k8s_result.resources|length > 0
+
+#  - debug: var=k8s_result              
+
+  - name: Decode the certificate
+    set_fact:
+      cacert: "{{k8s_result.resources[0].data['ca.crt']|b64decode}}"
+
+#  - debug: var=cacert
+  
+  - name: And generate the certificate file 
+    copy:
+      content: "{{cacert}}"
+      dest: /etc/kubernetes/koo/koomgr_ca.crt
+      force: yes         
+
+  - name: "Copy koomgr_ca locally"
+    fetch:
+      src: /etc/kubernetes/koo/koomgr_ca.crt
+      dest: ./koomgr_ca.crt    
+      flat: yes
+    run_once: true          
+      
+  - name: Copy authentication webhook config file
+    template:
+      src: hookconfig.yaml
+      dest: /etc/kubernetes/koo/hookconfig.yaml
+      
+  - name: Configure kube api server (1/4)
+    blockinfile:
+      path: /etc/kubernetes/manifests/kube-apiserver.yaml
+      insertafter: "^.*volumeMounts:.*"
+      marker: "# Ansible koo config 1/3 hacking {mark}"      
+      block: |2
+            - mountPath: /etc/kubernetes/koo
+              name: koo-config
+      
+  - name: Configure kube api server (2/4)
+    blockinfile:
+      path: /etc/kubernetes/manifests/kube-apiserver.yaml
+      insertafter: "^.*volumes:.*"
+      marker: "# Ansible koo config 2/3 hacking {mark}"      
+      block: |2
+          - hostPath:
+              path: /etc/kubernetes/koo
+              type: ""
+            name: koo-config
+    
+  - name: Configure kube api server(3/4)
+    lineinfile:
+      path: /etc/kubernetes/manifests/kube-apiserver.yaml
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+      insertafter: '^.*- kube-apiserver'
+    with_items:
+    - { line: '    - --authentication-token-webhook-config-file=/etc/kubernetes/koo/hookconfig.yaml', regexp: '^.*authentication-token-webhook-config-file.*' }
+    - { line: '    - --authentication-token-webhook-cache-ttl=2s', regexp: '^.*authentication-token-webhook-cache-ttl.*' }
+    - { line: '    - --runtime-config=authentication.k8s.io/v1beta1=true', regexp: '^.*runtime-config.*' }
+
+  - name: Configure kube api server(4/3)
+    lineinfile:
+      path: /etc/kubernetes/manifests/kube-apiserver.yaml
+      regexp: "^.*dnsPolicy:.*"
+      line: '  dnsPolicy: ClusterFirstWithHostNet'
+      insertafter: '^.*hostNetwork:.*'
+
+  - name: Wait for api server to be back again
+    wait_for:
+      port: 6443
+      state: started
+      timeout: 300
+      delay: 15
+
+  when: koomgr_configure_apiserver
+    
+    
