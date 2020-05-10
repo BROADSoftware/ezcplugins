@@ -85,7 +85,7 @@ def groom(_plugin, model):
                         bag[BASENAME] = os.path.basename(prvd[ROOTCA])
                         model[DATA][K8S][KOOMGR][LDAP_ROOTCAS].append(bag)                        
                         # Set the path inside the container.
-                        prvd[ROOTCA] = "/etc/koo/rootCA/{}-{}".format(prvd[NAME], os.path.basename(prvd[ROOTCA]))
+                        prvd[ROOTCA] = "/etc/koo/cfg/{}-{}".format(prvd[NAME], os.path.basename(prvd[ROOTCA]))
             if CRD_PROVIDERS in model[CONFIG][KOOMGR]:
                 for prvd in model[CONFIG][KOOMGR][CRD_PROVIDERS]:
                     prvd[TYPE] = "crd"

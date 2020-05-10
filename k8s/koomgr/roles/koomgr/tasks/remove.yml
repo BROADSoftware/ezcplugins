@@ -43,7 +43,16 @@
       state: absent
       src: "{{koomgr_tmp}}/addons.yaml"
   
-  # ---------------------------------- Remove the deployment itself      
+  # ---------------------------------- Remove the deployment itself
+  
+  - name: Delete the configMap
+    k8s:
+      state: absent
+      api_version: v1
+      kind: ConfigMap
+      namespace: koo-system
+      name: mgrconfig
+        
   - name: "Copy koomgr deployment manifest from local files"
     copy:
       src: "{{item.src}}"
@@ -63,7 +72,7 @@
       state: absent
       src: "{{koomgr_tmp}}/{{item.name}}"
     with_items: "{{koomgr_manifests[::-1]}}"
-  
+    
   run_once: true
   when: koomgr_deploy_pod
 

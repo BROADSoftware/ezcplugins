@@ -1,12 +1,3 @@
----
-kind: ConfigMap
-apiVersion: v1
-metadata:
-  name: koomgr
-  namespace: koo-system
-data:
-  config.yaml: |
-{{ koomgr_config|default({}) | to_nice_yaml(indent=2) | indent(4, first=True) }}
 
 ---
 kind: RoleBinding

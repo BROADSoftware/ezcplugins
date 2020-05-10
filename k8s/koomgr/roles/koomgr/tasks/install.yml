@@ -64,39 +64,40 @@
       state: present
       src: "{{koomgr_tmp}}/addons.yaml"
   
-  # ------------------------------------ rootCA for ldap provider
-  - name: Handle rootCA setup for ldap provider(s)
-    block:
-    - name: Ensure a clean rootCA folder
-      file:
-        state: "{{item}}"
-        path: "{{koomgr_tmp}}/rootCA/"
-        mode: 0700          
-      with_items:
-      - absent
-      - directory
-      changed_when: false
-      
-    - name: Copy ldap rootCA file
-      copy:
-        src: "{{ item.srcPath }}"
-        dest: "{{koomgr_tmp}}/rootCA/{{item.name}}-{{item.basename}}"
-      with_items: "{{koomgr_ldap_rootcas}}"
-      changed_when: false
-      
-    - name: Create the ldap rootCA config file definition
-      shell: "{{koomgr_kubectl}} create configmap ldaprootcas --from-file={{koomgr_tmp}}/rootCA/ --dry-run -o yaml >{{koomgr_tmp}}/ldaprootcas.yaml"
-      changed_when: false
-      
-    - name: Apply the ldap provider rootCA config file  
-      k8s:
-        state: present
-        namespace: koo-system
-        src: "{{koomgr_tmp}}/ldaprootcas.yaml" 
+  # ------------------------------------ Configuration and eventual rootCA
+  - name: Ensure a clean config folder
+    file:
+      state: "{{item}}"
+      path: "{{koomgr_tmp}}/config/"
+      mode: 0700          
+    with_items:
+    - absent
+    - directory
+    changed_when: false
+    
+  - name: Copy config file
+    copy:
+      content: "{{ koomgr_config|default({}) | to_nice_yaml(indent=2) }}"
+      dest: "{{koomgr_tmp}}/config/config.yaml"
 
+  - name: Copy ldap rootCA file
+    copy:
+      src: "{{ item.srcPath }}"
+      dest: "{{koomgr_tmp}}/config/{{item.name}}-{{item.basename}}"
+    with_items: "{{koomgr_ldap_rootcas}}"
+    changed_when: false
     when: koomgr_ldap_rootcas is defined
-   
-  
+
+  - name: Create the configMap definition
+    shell: "{{koomgr_kubectl}} create configmap mgrconfig --from-file={{koomgr_tmp}}/config/ --dry-run -o yaml >{{koomgr_tmp}}/mgrconfig.yaml"
+    changed_when: false
+    
+  - name: Apply the config map
+    k8s:
+      state: present
+      namespace: koo-system
+      src: "{{koomgr_tmp}}/mgrconfig.yaml" 
+
   run_once: true
   when: koomgr_deploy_pod
 
