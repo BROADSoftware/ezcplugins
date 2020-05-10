@@ -44,4 +44,56 @@ koomgr_manifests:
   name: deploy.yaml
 - src: https://github.com/koobind/koobind/releases/download/{{koomgr_version}}/rbac.yaml
   name: rbac.yaml
-  
+
+# Default, simple configuratio
+koomgr_config:
+      
+  logLevel: 0
+  adminGroup: kooadmin
+      
+  providers: 
+  - name: crdsys
+    type: crd
+
+    
+# An example of configuration for an LDAP connection (Freeipa in this case)
+    
+#koomgr_config:
+#      
+#  logLevel: 0
+#  adminGroup: kooadmin
+#      
+#  providers: 
+#  - type: ldap
+#    name: ipa
+#    bindDN: uid=admin,cn=users,cn=accounts,dc=mycompany,dc=com
+#    bindPW: myipapassword
+#    host: ipa.mycompany.com
+#    insecureNoSSL: false
+#    insecureSkipVerify: false
+#    port: 636
+#    rootCA: /etc/koo/rootCA/ipa-ca.pem
+#    startTLS: false
+#    userSearch:
+#      baseDN: cn=users,cn=accounts,dc=mycompany,dc=com
+#      emailAttr: mail
+#      filter: (objectClass=inetOrgPerson)
+#      loginAttr: uid
+#      numericalIdAttr: uidNumber
+#    groupSearch:
+#      baseDN: cn=groups,cn=accounts,dc=mycompany,dc=com
+#      filter: (objectClass=posixgroup)
+#      linkGroupAttr: member
+#      linkUserAttr: DN
+#      nameAttr: cn
+#
+#  - name: crdsys
+#    type: crd
+
+# Example above require prividing the CA for SSL access: 
+#koomgr_ldap_rootcas:
+#- name: ipa
+#  basename:  ca.pem
+#  srcPath:  /some/folder/ipa/ca.pem
+
+    
