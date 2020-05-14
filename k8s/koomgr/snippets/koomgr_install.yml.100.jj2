@@ -17,15 +17,6 @@
       name: rbac.yaml
 {%% endif %%}
 
-{%% if m.data.k8s.koomgr.ldqpRootcas is defined and m.data.k8s.koomgr.ldqpRootcas|length > 0 %%}
-    koomgr_ldap_rootcas:
-{%% for rootca in m.data.k8s.koomgr.ldqpRootcas %%}
-    - name: {{{ rootca.name }}}
-      basename:  {{{ rootca.basename }}}
-      srcPath:  {{{ rootca.srcPath }}}
-{%% endfor %%}
-{%% endif %%}
-    
     koomgr_config:
       
       logLevel: {{{ m.cluster.k8s.koomgr.log_level }}}

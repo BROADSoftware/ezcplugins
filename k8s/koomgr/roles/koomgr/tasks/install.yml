@@ -75,18 +75,32 @@
     - directory
     changed_when: false
     
-  - name: Copy config file
+  # For each provider with a 'rootCA' attribute, we must substitue the source path by a container based one.
+  # For unicity, the 'in container' rootCA file name will be build from <providerName>-<sourceFileBasename>
+  - name: Build modified provider list
+    set_fact:
+      new_providers: "{{ new_providers|default([]) + [ (item.rootCA is defined) | ternary ( item|combine({'rootCA':'/etc/koo/cfg/'+item.name+'-'+item.rootCA|default('x/x')|basename}), item) ] }}" 
+    with_items: "{{koomgr_config.providers}}"
+
+  #- debug: var=new_prvd
+
+  - name: Build modified config
+    set_fact:
+      new_config: "{{ koomgr_config | combine( { 'providers': new_providers } ) }}"
+      
+  #- debug: var=new_config
+              
+  - name: Generate the config file
     copy:
-      content: "{{ koomgr_config|default({}) | to_nice_yaml(indent=2) }}"
+      content: "{{ new_config|default({}) | to_nice_yaml(indent=2) }}"
       dest: "{{koomgr_tmp}}/config/config.yml"
 
   - name: Copy ldap rootCA file(s)
     copy:
-      src: "{{ item.srcPath }}"
-      dest: "{{koomgr_tmp}}/config/{{item.name}}-{{item.basename}}"
-    with_items: "{{koomgr_ldap_rootcas}}"
-    changed_when: false
-    when: koomgr_ldap_rootcas is defined
+      src: "{{ item.rootCA }}"
+      dest: "{{koomgr_tmp}}/config/{{item.name}}-{{item.rootCA|basename}}"
+    when: item.rootCA is defined
+    with_items: "{{koomgr_config.providers}}"
 
   - name: Create the configMap definition
     shell: "{{koomgr_kubectl}} create configmap mgrconfig --from-file={{koomgr_tmp}}/config/ --dry-run -o yaml >{{koomgr_tmp}}/mgrconfig.yaml"

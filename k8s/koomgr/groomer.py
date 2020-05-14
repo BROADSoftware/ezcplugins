@@ -36,7 +36,6 @@ TYPE="type"
 LDAP_PROVIDERS="ldap_providers"
 ROOTCA="rootCA"
 CONFIG_FILE="configFile"
-LDAP_ROOTCAS="ldqpRootcas"
 SRC_PATH="srcPath"
 BASENAME="basename"
 LOG_LEVEL="log_level"
@@ -61,7 +60,6 @@ def groom(_plugin, model):
         setDefaultInMap(model[DATA][K8S],KOOMGR, {})
                     
         providerByName = {}
-        model[DATA][K8S][KOOMGR][LDAP_ROOTCAS] = []
         if KOOMGR in model[CONFIG]:
             if STATIC_PROVIDERS in model[CONFIG][KOOMGR]:
                 for prvd in model[CONFIG][KOOMGR][STATIC_PROVIDERS]:
@@ -79,13 +77,6 @@ def groom(_plugin, model):
                         prvd[ROOTCA] = appendPath(os.path.dirname(model[DATA][CONFIG_FILE]), prvd[ROOTCA])
                         if not os.path.isfile( prvd[ROOTCA]):
                             ERROR("Unable to find '{}'!".format( prvd[ROOTCA]))
-                        bag = {}
-                        bag[NAME] = prvd[NAME]
-                        bag[SRC_PATH] = prvd[ROOTCA]
-                        bag[BASENAME] = os.path.basename(prvd[ROOTCA])
-                        model[DATA][K8S][KOOMGR][LDAP_ROOTCAS].append(bag)                        
-                        # Set the path inside the container.
-                        prvd[ROOTCA] = "/etc/koo/cfg/{}-{}".format(prvd[NAME], os.path.basename(prvd[ROOTCA]))
             if CRD_PROVIDERS in model[CONFIG][KOOMGR]:
                 for prvd in model[CONFIG][KOOMGR][CRD_PROVIDERS]:
                     prvd[TYPE] = "crd"

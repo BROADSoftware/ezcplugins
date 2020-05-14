@@ -72,7 +72,7 @@ koomgr_config:
 #    insecureNoSSL: false
 #    insecureSkipVerify: false
 #    port: 636
-#    rootCA: /etc/koo/rootCA/ipa-ca.pem
+#    rootCA: /some/local/folder/ipa/ca.pem
 #    startTLS: false
 #    userSearch:
 #      baseDN: cn=users,cn=accounts,dc=mycompany,dc=com
@@ -89,11 +89,3 @@ koomgr_config:
 #
 #  - name: crdsys
 #    type: crd
-
-# Example above require providing the CA for SSL access: 
-#koomgr_ldap_rootcas:
-#- name: ipa
-#  basename:  ca.pem
-#  srcPath:  /some/folder/ipa/ca.pem
-
-    
