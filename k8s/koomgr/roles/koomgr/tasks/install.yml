@@ -53,7 +53,7 @@
       src: "{{koomgr_tmp}}/{{item.name}}"
     with_items: "{{koomgr_manifests}}"
 
-  # ------------------------------------- The configuration and other addons
+  # ------------------------------------- Addon manifest
   - name: Generate the addons manifest
     template:
       src: addons.yaml
@@ -78,9 +78,9 @@
   - name: Copy config file
     copy:
       content: "{{ koomgr_config|default({}) | to_nice_yaml(indent=2) }}"
-      dest: "{{koomgr_tmp}}/config/config.yaml"
+      dest: "{{koomgr_tmp}}/config/config.yml"
 
-  - name: Copy ldap rootCA file
+  - name: Copy ldap rootCA file(s)
     copy:
       src: "{{ item.srcPath }}"
       dest: "{{koomgr_tmp}}/config/{{item.name}}-{{item.basename}}"
@@ -175,7 +175,7 @@
       insertafter: '^.*- kube-apiserver'
     with_items:
     - { line: '    - --authentication-token-webhook-config-file=/etc/kubernetes/koo/hookconfig.yaml', regexp: '^.*authentication-token-webhook-config-file.*' }
-    - { line: '    - --authentication-token-webhook-cache-ttl=2s', regexp: '^.*authentication-token-webhook-cache-ttl.*' }
+    - { line: '    - --authentication-token-webhook-cache-ttl=30s', regexp: '^.*authentication-token-webhook-cache-ttl.*' }
     - { line: '    - --runtime-config=authentication.k8s.io/v1beta1=true', regexp: '^.*runtime-config.*' }
 
   - name: Configure kube api server(4/3)

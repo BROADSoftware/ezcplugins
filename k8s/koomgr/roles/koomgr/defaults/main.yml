@@ -90,7 +90,7 @@ koomgr_config:
 #  - name: crdsys
 #    type: crd
 
-# Example above require prividing the CA for SSL access: 
+# Example above require providing the CA for SSL access: 
 #koomgr_ldap_rootcas:
 #- name: ipa
 #  basename:  ca.pem

@@ -30,7 +30,6 @@ subjects:
   name: {{ koomgr_admin_group }}
 
 ---
-# This to remove when web server will be separated
 apiVersion: cert-manager.io/v1alpha2
 kind: Certificate
 metadata:
