@@ -1,0 +1,44 @@
+[local-AppStream]
+name=CentOS-$releasever - AppStream
+#mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=AppStream&infra=$infra
+baseurl={{yum_repositories_url}}/centos/8/AppStream/x86_64/
+gpgcheck=1
+enabled = 1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+
+
+[local-BaseOS]
+name=CentOS-$releasever - Base
+#mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=BaseOS&infra=$infra
+baseurl={{yum_repositories_url}}/centos/8/BaseOS/x86_64/
+gpgcheck=1
+enabled = 1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+
+
+[local-epel]
+name=Extra Packages for Enterprise Linux $releasever - $basearch
+baseurl={{yum_repositories_url}}/centos/8/epel/x86_64/
+#metalink=https://mirrors.fedoraproject.org/metalink?repo=epel-$releasever&arch=$basearch&infra=$infra&content=$contentdir
+enabled = 1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8
+
+
+[local-epel-modular]
+name=Extra Packages for Enterprise Linux Modular $releasever - $basearch
+baseurl={{yum_repositories_url}}/centos/8/epel-modular/x86_64/
+#metalink=https://mirrors.fedoraproject.org/metalink?repo=epel-modular-$releasever&arch=$basearch&infra=$infra&content=$contentdir
+enabled = 1
+gpgcheck=1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-8
+
+
+[local-extras]
+name=CentOS-$releasever - Extras
+#mirrorlist=http://mirrorlist.centos.org/?release=$releasever&arch=$basearch&repo=extras&infra=$infra
+baseurl={{yum_repositories_url}}/centos/8/extras/x86_64/
+gpgcheck=1
+enabled = 1
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-centosofficial
+ 

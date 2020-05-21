@@ -37,6 +37,7 @@
 yum_repo_mode: to_be_defined
 
 
+# This is for centos7
 yum_repo_os_url: "{{ yum_repositories_url }}/centos/$releasever/os/$basearch/"
 yum_repo_updates_url: "{{ yum_repositories_url }}/centos/$releasever/updates/$basearch/"
 yum_repo_extras_url: "{{ yum_repositories_url }}/centos/$releasever/extras/$basearch/"
@@ -44,4 +45,18 @@ yum_repo_centosplus_url: "{{ yum_repositories_url }}/centos/$releasever/centospl
 yum_repo_epel_url: "{{ yum_repositories_url }}/epel/$releasever/$basearch/"
 
 
-
+yum_repo_centos8_files:
+- id: AppStream
+  file: CentOS-AppStream.repo
+- id: BaseOS
+  file: CentOS-Base.repo
+- id: epel
+  file: epel.repo
+- id: epel-modular
+  file: epel-modular.repo
+- id: extras
+  file: CentOS-Extras.repo
+ 
+  
+  
+  
