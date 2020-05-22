@@ -18,52 +18,20 @@
 - name: Test yum_repo_mode variable
   fail: msg="yum_repo_mode variable must be defined and defined as as_fresh|local|other"
   when: yum_repo_mode is not defined or (yum_repo_mode != 'as_fresh' and yum_repo_mode != 'local' and yum_repo_mode != 'other')
+ 
+
+- name: Set state of original repo
+  ini_file:
+    path: "/etc/yum.repos.d/{{item.file}}"
+    section: "{{item.id}}"
+    option: enabled
+    value: "{{ (yum_repo_mode == 'as_fresh') | ternary(1, 0) }}"
+  with_items: "{{yum_repo_centos7_files}}"
   
-- name: Copy EPEL PGP key
-  copy:
-    src: RPM-GPG-KEY-EPEL-7
-    dest: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ansible_distribution_major_version}}"
-
-- name: Import EPEL GPG key.
-  rpm_key:
-    key: "/etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-{{ansible_distribution_major_version}}"
-    state: present
-    
-# Handle 'other' mode
-
-- name: "Mode 'other': Remove repo files"
-  file: path=/etc/yum.repos.d/{{item}} state=absent
-  when: yum_repo_mode == 'other'
-  with_items:
-  - CentOS-Base.repo
-  - epel.repo
-  - local-config.repo    
-
-# Handle 'as_fresh' mode
-
-- name: "Mode 'as_fresh': Set repo file"
-  template: 
-    src: "{{ansible_distribution_major_version}}/as_fresh/{{item}}.j2"
-    dest: /etc/yum.repos.d/{{item}}
-    group: root
-    owner: root
-    mode: 0644
-  when: yum_repo_mode == 'as_fresh'
-  with_items:
-  - CentOS-Base.repo
-  - epel.repo
-
-- name: "Mode 'as_fresh': Remove local repo files"
-  file: path=/etc/yum.repos.d/{{item}} state=absent
-  when: yum_repo_mode == 'as_fresh'
-  with_items:
-  - local-config.repo    
-
-# Handle 'local' mode
 
 - name: "Mode 'local': Set repo file"
   template: 
-    src: "{{ansible_distribution_major_version}}/local/{{item}}.j2"
+    src: "7/{{item}}.j2"
     dest: /etc/yum.repos.d/{{item}}
     group: root
     owner: root
@@ -72,13 +40,15 @@
   with_items:
   - local-config.repo    
 
-- name: "Mode 'local': Remove local repo files"
-  file: path=/etc/yum.repos.d/{{item}} state=absent
-  when: yum_repo_mode == 'local'
+- name: If mode is not local, remove local repo file
+  file:
+    path: /etc/yum.repos.d/{{item}}
+    state: absent
+  when: yum_repo_mode != 'local'
   with_items:
-  - CentOS-Base.repo
-  - epel.repo
-  
+  - local-config.repo    
+     
+ 
 # In all case
 
 - name: Cleanup yum cache

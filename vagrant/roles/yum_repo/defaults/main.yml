@@ -58,5 +58,19 @@ yum_repo_centos8_files:
   file: CentOS-Extras.repo
  
   
+
+yum_repo_centos7_files:
+- id: base
+  file: CentOS-Base.repo
+- id: updates
+  file: CentOS-Base.repo
+- id: extras
+  file: CentOS-Base.repo
+- id: epel
+  file: epel.repo
+ 
+  
+  
+  
   
   
