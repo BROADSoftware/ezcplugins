@@ -81,6 +81,7 @@ mapping:
                 "loginAttr": { type: str, required: false }
                 "numericalIdAttr": { type: str, required: false }
                 "emailAttr": { type: str, required: false }
+                "cnAttr": { type: str, required: false }
             "groupSearch":
               type: map
               required: true
