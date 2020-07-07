@@ -42,6 +42,13 @@ spec:
 {% for node in groups["kube-master"] %}
   - {{hostvars[node].ansible_nodename }}
 {% endfor %}  
+{% if koomgr_domains is defined %}
+{% for domain in koomgr_domains %}
+{% for node in groups["kube-master"] %}
+  - {{hostvars[node].ansible_nodename }}.{{domain}}
+{% endfor %}  
+{% endfor %}  
+{% endif %}
   issuerRef:
     kind: Issuer
     name: koo-selfsigned-issuer

@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU Lesser General Public License
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
-koomgr_version: v0.1.0
+koomgr_version: v0.2.0
 
 # Value fine for kubespray clusters
 koomgr_kubectl: /usr/local/bin/kubectl
@@ -23,7 +23,9 @@ koomgr_kubectl: /usr/local/bin/kubectl
 # Users belonging to this group will have admin privileges on koobind
 koomgr_admin_group: kooadmin
 
-
+# The koo-manager certificate will be associated with all the nodes in the kube-master ansible group (As Subject Alternative Name) 
+# Depending of how the ansible inventory is defined, we may need to add one or more domains to these node name
+koomgr_domains: []
 
 # Role behavior switch
 koomgr_state: present   # absent to trigger removal

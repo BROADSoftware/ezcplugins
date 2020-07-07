@@ -17,6 +17,11 @@
       name: rbac.yaml
 {%% endif %%}
 
+{%% if m.cluster.domain is defined and m.cluster.domain != None  %%}
+    koomgr_domains:
+    - {{{ m.cluster.domain }}}
+{%% endif %%}
+
     koomgr_config:
       
       logLevel: {{{ m.cluster.k8s.koomgr.log_level }}}

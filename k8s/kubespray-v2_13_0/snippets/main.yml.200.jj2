@@ -72,14 +72,14 @@
 {%% endfor %%}
 
 
-- hosts:  kube-master[0]
+- hosts:  kube-master
   tasks:
   - name: "Copy config file locally"
     fetch:
       src: /root/.kube/config
       dest: ./config
       flat: yes
-    tags: [ "config" ]      
+    tags: [ "client" ]      
 {%% if m.data.httpProxies.master_root is defined %%}
   - name: Add proxy config to root environment on master node(s)
     blockinfile:
@@ -102,10 +102,10 @@
   roles:
 {%% endif %%}    
 {%% if m.data.repositories.k9s is defined %%}    
-  - { role: k9s,  tags: [ "k9s" ], k9s_tgz_url: "{{{ m.data.repositories.k9s.k9s_tgz_url}}}" }
+  - { role: k9s,  tags: [ "client", "k9s" ], k9s_tgz_url: "{{{ m.data.repositories.k9s.k9s_tgz_url}}}" }
 {%% endif %%}    
 {%% if m.data.repositories.helm is defined %%}    
-  - { role: helm,  tags: [ "helm" ], helm_tgz_url: "{{{ m.data.repositories.helm.helm_tgz_url}}}" }
+  - { role: helm,  tags: [ "client", "helm" ], helm_tgz_url: "{{{ m.data.repositories.helm.helm_tgz_url}}}" }
 {%% endif %%}    
     
     
