@@ -1,0 +1,13 @@
+{% for dc in topolvm_device_classes %}
+---
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: {{ dc.storage_class }} 
+provisioner: topolvm.cybozu.com
+parameters:
+  "csi.storage.k8s.io/fstype": "{{ dc.fstype }}"
+  "topolvm.cybozu.com/device-class": "{{ dc.name }}"
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: {{ dc.allow_volume_expansion }}
+{% endfor %}

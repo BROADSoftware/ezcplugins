@@ -54,122 +54,36 @@
 #- debug: var=result
 #  when: topolvm_state == 'absent'
 
-- name: Fetch topolvm manifests
-  get_url:
-    url: "{{topolvm_manifest_urls[item]}}"
-    dest: "/tmp/{{item}}.yaml"  
-  with_items:
-  - namespace
-  - crd
-  - psp
-  - certificates
-  - scheduler
-  - mutatingwebhooks
-  - controller
-  #- node
+- name: Setup main manifest
+  template:
+    src: "v{{ topolvm_version}}/manifest.yaml.j2"
+    dest: /tmp/manifest.yaml
   run_once: true
-
-- name: Kustomize node.yaml
-  include_role: 
-    name: kustompatch
-  vars:
-    kustompatch_src_url: "{{topolvm_manifest_urls['node']}}"
-    kustompatch_dest: /tmp/node.yaml
-    kustompatch_working_folder: /tmp/knode
-    kustompatch_patch:
-      apiVersion: apps/v1
-      kind: DaemonSet
-      metadata:
-        namespace: topolvm-system
-        name: node
-      spec:
-        template:
-          spec:
-            nodeSelector:
-              topology.topolvm.cybozu.com: "true"
-    
-  
-# NB: We may need to take some time between applying manifests. And give another chance with retry
-- name: Apply topolvm namespace manifests
+ 
+ # NB: We may need to take some time between applying manifests. And give another chance with retry
+- name: Apply  main manifest
   k8s:
     state: "{{topolvm_state}}"
-    src: "/tmp/namespace.yaml"
-  run_once: true
-  register: result
-  retries: 3
-  delay: 3
-  until: not result.failed
-
-- name: Apply topolvm crd manifests
-  k8s:
-    state: "{{topolvm_state}}"
-    src: "/tmp/crd.yaml"
-  run_once: true
-  register: result
-  retries: 3
-  delay: 3
-  until: not result.failed
-
-- name: Apply topolvm psp manifests
-  k8s:
-    state: "{{topolvm_state}}"
-    src: "/tmp/psp.yaml"
-  run_once: true
-  register: result
-  retries: 3
-  delay: 3
-  until: not result.failed
-
-- name: Apply topolvm certificates manifests
-  k8s:
-    state: "{{topolvm_state}}"
-    src: "/tmp/certificates.yaml"
-  run_once: true
-  register: result
-  retries: 3
-  delay: 3
-  until: not result.failed
-
-- name: Apply topolvm scheduler manifests
-  k8s:
-    state: "{{topolvm_state}}"
-    src: "/tmp/scheduler.yaml"
-  run_once: true
-  register: result
-  retries: 3
-  delay: 3
-  until: not result.failed
-
-- name: Apply topolvm mutatingwebhooks manifests
-  k8s:
-    state: "{{topolvm_state}}"
-    src: "/tmp/mutatingwebhooks.yaml"
-  run_once: true
-  register: result
-  retries: 3
-  delay: 3
-  until: not result.failed
-
-- name: Apply topolvm controller manifests
-  k8s:
-    state: "{{topolvm_state}}"
-    src: "/tmp/controller.yaml"
-  run_once: true
-  register: result
-  retries: 3
-  delay: 3
-  until: not result.failed
-
-- name: Apply topolvm node manifests
-  k8s:
-    state: "{{topolvm_state}}"
-    src: "/tmp/node.yaml"
+    src: "/tmp/manifest.yaml"
   run_once: true
   register: result
   retries: 3
   delay: 3
   until: not result.failed
   
+- name: Setup storage classes
+  template:
+    src: "v{{ topolvm_version}}/storage_classes.yaml.j2"
+    dest: /tmp/storage_classes.yaml
+  run_once: true
+ 
+- name: Apply storage classes manifest
+  k8s:
+    state: "{{topolvm_state}}"
+    src: "/tmp/storage_classes.yaml"
+  run_once: true
+  
+
 - name: Ensure scheduler folder
   file:
     state: directory
@@ -180,14 +94,14 @@
   when: topolvm_state == 'present'
 
 - name: Copy scheduler extension configuration file
-  get_url:
-    url: "{{topolvm_manifest_urls['schedulerconfig']}}"
+  template:
+    src: "v{{ topolvm_version}}/scheduler-config.yaml.j2"
     dest: "/etc/kubernetes/scheduler/scheduler-config.yaml"  
   when: topolvm_state == 'present'
   
 - name: Copy scheduler extension policy file
-  get_url:
-    url: "{{topolvm_manifest_urls['schedulerpolicy']}}"
+  template:
+    src: "v{{ topolvm_version}}/scheduler-policy.cfg.j2"
     dest: "/etc/kubernetes/scheduler/scheduler-policy.cfg"  
   when: topolvm_state == 'present'
 
@@ -229,20 +143,7 @@
     path: /etc/kubernetes/scheduler
   when: topolvm_state == 'absent'
         
-- name: Apply storage class
-  k8s:
-    state: "{{topolvm_state}}"
-    definition: 
-      kind: StorageClass
-      apiVersion: storage.k8s.io/v1
-      metadata:
-        name: "{{topolvm_storage_class}}"
-      provisioner: topolvm.cybozu.com
-      parameters:
-        "csi.storage.k8s.io/fstype": "{{topolvm_storage_fstype}}"
-      volumeBindingMode: WaitForFirstConsumer    
-  run_once: true
-    
+
     
     
     
