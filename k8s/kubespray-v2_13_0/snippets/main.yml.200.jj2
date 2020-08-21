@@ -79,6 +79,7 @@
       src: /root/.kube/config
       dest: ./config
       flat: yes
+    run_once: true      
     tags: [ "client" ]      
 {%% if m.data.httpProxies.master_root is defined %%}
   - name: Add proxy config to root environment on master node(s)
