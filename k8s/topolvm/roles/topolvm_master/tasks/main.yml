@@ -73,7 +73,7 @@
   
 - name: Setup storage classes
   template:
-    src: "v{{ topolvm_version}}/storage_classes.yaml.j2"
+    src: "storage_classes.yaml.j2"
     dest: /tmp/storage_classes.yaml
   run_once: true
  

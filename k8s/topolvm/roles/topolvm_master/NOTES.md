@@ -1,5 +1,5 @@
 
-## manifest.yaml build
+## manifest.yaml.j2 build
 
 git clone topolvm and check out appropriate version
 
@@ -50,11 +50,12 @@ spec:
 Then in the root folder of topolvm:
 
 ```
+mkdir /tmp
 kustomize build ./deploy/manifests/overlays/daemonset-scheduler >./tmp/manifest.yaml.j2
 ```
 
 ## Other files
 
-- scheduler-config and scheduler-policy are copies as is
-- storage_classes should be adjusted
+- scheduler-config and scheduler-policy are copies as is, from deploy/scheduler-config
+- storage_classes should be adjusted 
 
