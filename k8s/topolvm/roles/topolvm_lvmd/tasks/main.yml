@@ -19,10 +19,31 @@
 - name: Install required LMV packages
   yum: pkg=lvm2 state=present
 
-- name: Create volume group
+- name: Create volume groups
   lvg:
-    vg: "{{topolvm_lvmd_vg_name}}"
-    pvs: "{{topolvm_lvmd_physical_volumes|join(',')}}"
+    vg: "{{item.name}}"
+    pvs: "{{item.physical_volumes|join(',')}}"
+  with_items: "{{ topolvm_volumes_groups }}"
+
+- name: Ensure /etc/topolvm exists
+  file:
+    state: directory
+    path: /etc/topolvm
+    mode: 0755
+    owner: root
+    group: root
+    
+- name: Install the lvmd config file
+  template:
+    src: lvmd.yaml.j2
+    dest: /etc/topolvm/lvmd.yaml
+    owner: root
+    group: root
+    mode: 0644
+    backup: no
+  notify:
+  - reload_service_file      
+  - restart_lvmd
 
 - name: Ensure /opt/sbin exists
   file:

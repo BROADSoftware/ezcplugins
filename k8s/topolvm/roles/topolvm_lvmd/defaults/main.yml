@@ -16,12 +16,31 @@
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
 
-topolvm_lvmd_vg_name: topovg
+#topolvm_lvmd_tgz_url: https://github.com/topolvm/topolvm/releases/download/v0.5.1/lvmd-0.5.1.tar.gz
 
-#topolvm_lvmd_physical_volumes: 
-#- /dev/sdb
+#topolvm_device_classes: 
+#- fstype: xfs
+#  name: cl1
+#  spare_gb: 1
+#  storage_class: topolvm-cl1
+#  volume_group: topolvm-cl1
+#- fstype: btrfs
+#  name: cl2
+#  spare_gb: 1
+#  storage_class: topolvm-cl2
+#  volume_group: topolvm-cl2
+#
+#
+#topolvm_volumes_groups:
+#- name: topolvm-cl1
+#  physical_volumes:
+#  - /dev/sdb
+#  size: 20
+#- name: topolvm-cl2
+#  physical_volumes:
+#  - /dev/sdc
+#  - /dev/sdd
+#  size: 25
 
-#topolvm_lvmd_tgz_url: https://github.com/cybozu-go/topolvm/releases/download/v0.2.2/lvmd-0.2.2.tar.gz
 
-# topolvm_lvmd_spare: 10
 

@@ -1,0 +1,22 @@
+
+
+- hosts: kube-master
+  tags: [ "koo", "koomgr" ]
+  vars:
+    koomgr_state: absent
+    koomgr_version: {{{ m.cluster.k8s.koomgr.version }}}
+
+{%% if m.cluster.k8s.koomgr.local_manifests is defined %%}
+    koomgr_manifests:
+    - src: {{{ m.cluster.k8s.koomgr.local_manifests.crd }}}
+      name: crd.yaml
+    - src: {{{ m.cluster.k8s.koomgr.local_manifests.deploy }}}
+      name: deploy.yaml
+    - src: {{{ m.cluster.k8s.koomgr.local_manifests.rbac }}}
+      name: rbac.yaml
+{%% endif %%}
+    
+  roles:
+  - koomgr
+      
+        

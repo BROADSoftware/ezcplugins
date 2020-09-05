@@ -1,6 +1,6 @@
 
 
 [_topolvm_]
-{% for node in m.data.k8s.topolvm.group %}
+{% for node in m.data.k8s.topolvm.lvmdHosts %}
 {{node}}
 {%endfor%}

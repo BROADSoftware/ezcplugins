@@ -1,0 +1,26 @@
+# Kubernetes API version
+apiVersion: v1
+# kind of the API object
+kind: Config
+# clusters refers to the remote service.
+clusters:
+  - name: koomgr
+    cluster:
+      certificate-authority: /etc/kubernetes/koo/koomgr_ca.crt        # CA for verifying the remote service.
+      server: https://{{koomgr_webhook_host}}:{{koomgr_webhook_port}}/auth/v1/validateToken # URL of remote service to query. Must use 'https'.
+
+# users refers to the API server's webhook configuration.
+users:
+  - name: kooapisrv
+#    user:
+#      client-certificate: /etc/kubernetes/koo/kooapisrv.crt # cert for the webhook plugin to use
+#      client-key: /etc/kubernetes/koo/kooapisrv.key          # key matching the cert
+
+# kubeconfig files require a context. Provide one for the API server.
+current-context: authwebhook
+contexts:
+- context:
+    cluster: koomgr
+    user: kooapisrv
+  name: authwebhook
+

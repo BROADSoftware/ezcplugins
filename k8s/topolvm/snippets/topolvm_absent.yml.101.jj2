@@ -4,26 +4,10 @@
   tags: [ "topolvm", "topolvm_master" ]
   vars:
     topolvm_state: absent  
-    topolvm_manifest_urls:
-      namespace: "{{{m.data.repositories.topolvm.manifests_base_url }}}namespace.yaml"
-      crd: "{{{m.data.repositories.topolvm.manifests_base_url }}}crd.yaml"
-      psp: "{{{m.data.repositories.topolvm.manifests_base_url }}}psp.yaml"
-      certificates: "{{{m.data.repositories.topolvm.manifests_base_url }}}certificates.yaml"
-      scheduler: "{{{m.data.repositories.topolvm.manifests_base_url }}}scheduler.yaml"
-      mutatingwebhooks: "{{{m.data.repositories.topolvm.manifests_base_url }}}mutatingwebhooks.yaml"
-      controller: "{{{m.data.repositories.topolvm.manifests_base_url }}}controller.yaml"
-      node: "{{{m.data.repositories.topolvm.manifests_base_url }}}node.yaml"
-      
-      schedulerconfig: {{{m.data.repositories.topolvm.scheduler_config_url }}}
-      schedulerpolicy: {{{m.data.repositories.topolvm.scheduler_policy_url }}}
-
-    topolvm_storage_class: {{{ m.cluster.k8s.topolvm.storage_class }}}
-    topolvm_storage_fstype: {{{ m.cluster.k8s.topolvm.fstype }}}
-      
+    topolvm_version: {{{ m.data.repositories.topolvm.version }}}      
   roles:
   - topolvm_master  
   
-
 
 - hosts: _topolvm_
   tags: [ "topolvm", "topolvm_lvmd" ]

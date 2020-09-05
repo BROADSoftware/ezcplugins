@@ -31,6 +31,11 @@
     path:  /opt/sbin/lvmd
     state: absent
 
+- name: Remove the lvmd config folder
+  file:
+    path:  /etc/topolvm
+    state: absent
+
 - name: Remove lvmd service
   file:
     path: /usr/lib/systemd/system/lvmd.service

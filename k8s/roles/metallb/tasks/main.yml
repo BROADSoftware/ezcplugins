@@ -34,6 +34,34 @@
   k8s:
     state: present
     src: "/tmp/metallb.yaml"
+    
+- name: Test if secret is created
+  k8s_info:
+    api_version: v1
+    kind: Secret
+    name: memberlist
+    namespace: metallb-system
+  register: mlb_secret
+  changed_when: false
+
+- block:
+  - name: generate secret
+    shell: openssl rand -base64 128 | tr -d '\n'
+    register: secret_data
+  
+  - debug: var=secret_data  
+  
+  - name: Generate secret manifest
+    template:
+      src: memberList.yaml
+      dest: /tmp/memberList.yaml  
+  
+  - name: Apply secret manifest
+    k8s:
+      state: present
+      src: /tmp/memberList.yaml
+  when: mlb_secret.resources|length == 0 
+
   
 - name: Configure metallb
   k8s:

@@ -22,22 +22,19 @@ topolvm_kubectl: /usr/local/bin/kubectl
 # Will allow removal
 topolvm_state: present
 
-#topolvm_manifest_urls:
-#  namespace: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/namespace.yaml
-#  crd: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/crd.yaml
-#  psp: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/psp.yaml
-#  certificates: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/certificates.yaml
-#  scheduler: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/scheduler.yaml
-#  mutatingwebhooks: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/mutatingwebhooks.yaml
-#  controller: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/controller.yaml
-#  node: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/manifests/node.yaml
-#  
-#  schedulerconfig: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/scheduler-config/scheduler-config.yaml
-#  schedulerpolicy: https://raw.githubusercontent.com/cybozu-go/topolvm/v0.2.2/deploy/scheduler-config/scheduler-policy.cfg
+#topolvm_version: 0.5.1
+
+#topolvm_device_classes: 
+#- allow_volume_expansion: false
+#  fstype: xfs
+#  name: cl1
+#  spare_gb: 1
+#  storage_class: topolvm-cl1
+#  volume_group: topolvm-cl1
+#- allow_volume_expansion: false
+#  fstype: btrfs
+#  name: cl2
+#  spare_gb: 1
+#  storage_class: topolvm-cl2
+#  volume_group: topolvm-cl2
   
-
-# topolvm_storage_class: topolvm-provisioner
-# topolvm_storage_fstype: xfs
-
-
-

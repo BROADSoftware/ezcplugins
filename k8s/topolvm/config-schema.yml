@@ -32,7 +32,4 @@ mapping:
             "repo_id": { type: str, required: True }
             "version": { type: str, required: True }
             "lvmd_tgz_url": { type: str, required: True }
-            "manifests_base_url": { type: str, required: True }
-            "scheduler_config_url": { type: str, required: True }
-            "scheduler_policy_url": { type: str, required: True }
             
