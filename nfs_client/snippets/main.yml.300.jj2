@@ -1,0 +1,10 @@
+
+- hosts: nfs_client
+  tags: [ "nfs", "nfs_client", "nfs-client" ]
+  tasks:
+  - name: Install NFS client 
+    package:
+      name: nfs-utils
+      state: present
+      
+  
