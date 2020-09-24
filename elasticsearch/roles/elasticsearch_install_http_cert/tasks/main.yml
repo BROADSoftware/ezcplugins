@@ -16,16 +16,16 @@
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
 - name: Create certificate location
-  file: path=/etc/elasticsearch/{{es_instance_name}}/certs state=directory owner=elasticsearch group=elasticsearch mode="0700"
+  file: path=/etc/elasticsearch/certs state=directory owner=elasticsearch group=elasticsearch mode="0700"
 
 - name: Copy certificates to location
   copy:
     src=certs/{{inventory_hostname}}/{{inventory_hostname}}.p12
-    dest=/etc/elasticsearch/{{es_instance_name}}/certs/{{inventory_hostname}}.p12
+    dest=/etc/elasticsearch/certs/{{inventory_hostname}}.p12
 
 - name: Configure certificate in Elastic
   blockinfile:
-    path: /etc/elasticsearch/{{es_instance_name}}/elasticsearch.yml
+    path: /etc/elasticsearch/elasticsearch.yml
     marker: "# {mark} ANSIBLE MANAGED BLOCK (SSL_CERT)"
     block: |
       xpack.security.http.ssl.enabled: true

@@ -1,0 +1,3 @@
+
+
+{{{ (m.data.nodeByName[m.node.name].kibana_playbook_vars | to_pretty_yaml()) if "kibana_playbook_vars" in m.data.nodeByName[m.node.name] else ""  }}}

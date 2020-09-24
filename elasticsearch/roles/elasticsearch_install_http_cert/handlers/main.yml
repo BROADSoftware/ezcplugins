@@ -20,7 +20,7 @@
 
 - name: restart elasticsearch
   service: 
-    name: "{{es_instance_name}}_elasticsearch"
+    name: "elasticsearch"
     state: restarted
     
     

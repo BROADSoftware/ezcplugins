@@ -1,0 +1,4 @@
+
+
+cluster_id: {{{ m.cluster.id }}}
+{{{ (m.data.nodeByName[m.node.name].playbook_vars | to_pretty_yaml()) if "playbook_vars" in m.data.nodeByName[m.node.name] else ""  }}}

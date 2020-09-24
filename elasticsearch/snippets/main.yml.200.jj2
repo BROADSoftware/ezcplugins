@@ -4,28 +4,25 @@
 {%% if m.data.esNodes is defined and m.data.esNodes | length > 0 %%}
 
 {%% for esNode in m.data.esNodes %%}
-- name: Will deploy instance '{{{ esNode.vars.es_instance_name }}}' on '{{{ esNode.role }}}'
+- name: Will deploy instance elasticsearch on '{{{ esNode.role }}}'
   hosts: {{{ esNode.role }}}
   tags: [ "elasticsearch" ]
-  vars:
-    cluster_id: {{{ m.cluster.id }}}
-{{{ esNode.vars | to_pretty_yaml() | indent(width=4, first=True) }}}
   roles:
   - role: ansible-elasticsearch
-    
+
 {%% endfor %%}
 
 {%% for esNode in m.data.esNodes %%}
-- name: Will ensure instance '{{{ esNode.vars.es_instance_name }}}' on '{{{ esNode.role }}}' is started
+- name: Will ensure elasticsearch on '{{{ esNode.role }}}' is started
   hosts: {{{ esNode.role }}}
   tags: [ "elasticsearch" ]
   tasks:
   -  name:
      service:
-       name: {{{ esNode.vars.es_instance_name }}}_elasticsearch.service
+       name: elasticsearch.service
        state: started
        enabled: True
-    
+
 
 {%% endfor %%}
 
@@ -84,7 +81,7 @@
   tags: [ "elasticsearch", "esHttpSsl" ]  
   vars:
     es_security_working_folder: /var/lib/elasticsearch/security
-    es_path_conf: /etc/elasticsearch/{{{ m.data.esNodes[0].vars.es_instance_name }}}  
+    es_path_conf: /etc/elasticsearch
     es_hosts:
 {%% for instance in m.data.groupByName['_elasticsearch_'] %%}
     - name: "{{{ instance }}}"
@@ -96,13 +93,12 @@
 
 # Now, distribute and install certificates
 {%% for esNode in m.data.esNodes %%}
-- name: Will install certificate for '{{{ esNode.vars.es_instance_name }}}' on '{{{ esNode.role }}}'
+- name: Will install certificate on '{{{ esNode.role }}}'
   hosts: {{{ esNode.role }}}
   tags: [ "elasticsearch", "esHttpSsl" ]  
   vars:
     es_certificates_src_host: {{{ m.data.groupByName[m.data.esNodes[0].role][0] }}}
     es_security_working_folder: /var/lib/elasticsearch/security
-    es_instance_name: {{{ esNode.vars.es_instance_name }}}
   roles:
   - elasticsearch_install_http_cert  
 {%% endfor %%}
