@@ -29,6 +29,7 @@ mapping:
           "disabled": { type: bool, required: False }
           "version": { type: str, required: true }
           "log_level": { type: int, required: False }
+          "log_mode": { type: str, required: False, enum: [ "dev", "json" ] }
           "admin_group": { type: str, required: false }
           "providers":
             type: seq

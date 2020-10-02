@@ -39,6 +39,7 @@ CONFIG_FILE="configFile"
 SRC_PATH="srcPath"
 BASENAME="basename"
 LOG_LEVEL="log_level"
+LOG_MODE="log_mode"
 ADMIN_GROUP="admin_group"
 CRD_PROVIDERS="crd_providers"
 LOCAL_MANIFESTS="local_manifests"
@@ -54,10 +55,14 @@ def groom(_plugin, model):
         return False
     else:
         setDefaultInMap(model[CLUSTER][K8S][KOOMGR], LOG_LEVEL, 0)
+        setDefaultInMap(model[CLUSTER][K8S][KOOMGR], LOG_MODE, "json")
         setDefaultInMap(model[CLUSTER][K8S][KOOMGR], ADMIN_GROUP,  "kooadmin")
 
         setDefaultInMap(model[DATA], K8S, {})
         setDefaultInMap(model[DATA][K8S],KOOMGR, {})
+        
+        if model[CLUSTER][K8S][KOOMGR][LOG_LEVEL] > 0 and model[CLUSTER][K8S][KOOMGR][LOG_MODE] == "json":
+            ERROR("logLevel can't be greater than one when logMode is 'json'. Set 'log_mode' to 'dev'")
                     
         providerByName = {}
         if KOOMGR in model[CONFIG]:

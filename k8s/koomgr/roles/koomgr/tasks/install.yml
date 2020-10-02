@@ -17,7 +17,9 @@
 
 
 - name: Install k8s ansible module required package on all masters
-  yum: name=python2-openshift state=present
+  yum: 
+    name: python2-openshift
+    state: present
     
 # ---------------------------------------------------------------------------
 - name: koomgr pod deployment

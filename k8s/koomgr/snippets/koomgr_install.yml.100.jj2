@@ -25,6 +25,7 @@
     koomgr_config:
       
       logLevel: {{{ m.cluster.k8s.koomgr.log_level }}}
+      logMode: {{{ m.cluster.k8s.koomgr.log_mode }}}
       adminGroup: {{{ m.cluster.k8s.koomgr.admin_group }}}
       # certDIr, host, port will be the defaulted by the executable
       
