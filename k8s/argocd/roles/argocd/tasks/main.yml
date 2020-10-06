@@ -1,0 +1,75 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+
+- name: Install k8s ansible module required package
+  yum: 
+    name: python2-openshift 
+    state: present
+
+- name: Create argocd namespace
+  k8s:
+    api_version: v1
+    kind: Namespace
+    name: argocd
+    state: present
+
+- name: "Copy argocd deployment manifest from local files"
+  copy:
+    src: "{{argocd_manifest}}"
+    dest: "/tmp/argocd.yaml"
+  when: argocd_manifest is not match("https://.*")
+
+- name: "Copy argocd deployment manifest from remote url"
+  get_url:
+    url: "{{argocd_manifest}}"
+    dest: "/tmp/argocd.yaml"
+  when: argocd_manifest is match("https://.*")
+              
+- name: Install argocd
+  k8s:
+    state: present
+    src: "/tmp/argocd.yaml"
+    namespace: argocd
+
+- block:
+  - name: Generate the LoadBalancer manifest
+    template:
+      src: service_patchlb.yaml.j2
+      dest: "/tmp/service_patchlb.yaml"
+    
+  - name: Apply the LoadBalancer manifest
+    k8s:
+      state: present
+      src:  "/tmp/service_patchlb.yaml"
+      namespace: argocd
+  when: argocd_load_balancer_ip is defined
+
+- block:
+  - name: Generate the ingress_nginx manifest
+    template:
+      src: ingress_nginx.yaml.j2
+      dest: "/tmp/ingress_nginx.yaml"
+    
+  - name: Apply the ingress_nginx manifest
+    k8s:
+      state: present
+      src:  "/tmp/ingress_nginx.yaml"
+      namespace: argocd
+  when: argocd_ingress_nginx_host is defined
+

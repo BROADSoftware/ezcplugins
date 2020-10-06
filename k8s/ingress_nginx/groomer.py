@@ -38,14 +38,14 @@ def groom(_plugin, model):
         if DASHBOARD_HOST in model[CLUSTER][K8S][INGRESS_NGINX]:
             dashboard_ip = resolveDnsAndCheck(model[CLUSTER][K8S][INGRESS_NGINX][DASHBOARD_HOST])
             if model[CLUSTER][K8S][INGRESS_NGINX][EXTERNAL_IP] != dashboard_ip:
-                ERROR("'external_ip' and 'dashboard_host' must resolve on same ip ({} != {})".format(model[CLUSTER][K8S][INGRESS_NGINX][EXTERNAL_IP], dashboard_ip))
+                ERROR("k8s.ingress_nginx: 'external_ip' and 'dashboard_host' must resolve on same ip ({} != {})".format(model[CLUSTER][K8S][INGRESS_NGINX][EXTERNAL_IP], dashboard_ip))
             enableSslPassthrough = False
             if COMMAND_LINE_ARGUMENTS in model[CLUSTER][K8S][INGRESS_NGINX]:
                 for cla in model[CLUSTER][K8S][INGRESS_NGINX][COMMAND_LINE_ARGUMENTS]:
                     if cla == "--enable-ssl-passthrough":
                         enableSslPassthrough = True 
             if not enableSslPassthrough:
-                ERROR("Dashbaord access require '--enable-ssl-passthrough' command line argument to be defined")
+                ERROR("k8s.ingress_nginx: Dashbaord access require '--enable-ssl-passthrough' command line argument to be defined")
         return True
 
 
