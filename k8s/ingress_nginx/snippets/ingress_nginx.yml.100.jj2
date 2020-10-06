@@ -1,0 +1,18 @@
+
+
+- hosts: kube-master[0]:rancher[0]
+  tags: [ "ingress_nginx", "ingressnginx", "ingress-nginx" ]
+  roles:
+  - role: "ingress_nginx"
+    ingress_nginx_version: "{{{ m.cluster.k8s.ingress_nginx.version }}}"
+    ingress_nginx_external_ip: "{{{ m.cluster.k8s.ingress_nginx.external_ip }}}"
+{%% if m.cluster.k8s.ingress_nginx.command_line_arguments is defined %%}
+    ingress_nginx_command_line_arguments: {{{ m.cluster.k8s.ingress_nginx.command_line_arguments }}}
+{%% endif %%}
+{%% if m.cluster.k8s.ingress_nginx.manifest is defined %%}
+    ingress_nginx_manifest: {{{ m.cluster.k8s.ingress_nginx.manifest }}}
+{%% endif %%}
+{%% if m.cluster.k8s.ingress_nginx.dashboard_host is defined %%}
+    ingress_nginx_dashboard_host: {{{ m.cluster.k8s.ingress_nginx.dashboard_host }}}
+{%% endif %%}
+     

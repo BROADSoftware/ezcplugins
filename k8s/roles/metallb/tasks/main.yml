@@ -18,7 +18,9 @@
 
 
 - name: Install k8s ansible module required package
-  yum: name=python2-openshift state=present
+  yum: 
+    name: python2-openshift 
+    state: present
   
 - name: Copy definition file
   template:
@@ -49,7 +51,7 @@
     shell: openssl rand -base64 128 | tr -d '\n'
     register: secret_data
   
-  - debug: var=secret_data  
+  # - debug: var=secret_data  
   
   - name: Generate secret manifest
     template:

@@ -1,0 +1,4 @@
+
+- name: Install ingress_nginx
+  import_playbook: ingress_nginx.yml
+     
