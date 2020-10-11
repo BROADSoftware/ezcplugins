@@ -1,4 +1,0 @@
-
-- name: Install Metallb
-  import_playbook: metallb.yml
-     

@@ -1,7 +1,0 @@
-
-- name: Create Persistent Volumes
-  import_playbook: local_static_pv/split.yml
-
-- name: Deploy provisionner
-  import_playbook: local_static_pv/local_static_pv.yml
-     

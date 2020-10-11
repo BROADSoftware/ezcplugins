@@ -1,8 +1,0 @@
-socket-name: /run/topolvm/lvmd.sock
-device-classes:
-{% for dc in topolvm_device_classes %}
-- name: {{ dc.name }}
-  volume-group: {{ dc.volume_group }}
-  spare-gb: {{ dc.spare_gb }}
-  default: {{ dc.default }}
-{% endfor %}

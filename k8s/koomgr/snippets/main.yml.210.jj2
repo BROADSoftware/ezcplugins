@@ -1,7 +1,0 @@
-
-
-- name: Install koomgr
-  import_playbook: koomgr_install.yml
-
-  
-  

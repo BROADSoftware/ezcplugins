@@ -1,4 +1,0 @@
-
-- name: Install argocd
-  import_playbook: argocd.yml
-     
