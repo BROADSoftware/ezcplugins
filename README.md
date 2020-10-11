@@ -1,13 +1,5 @@
+# ezcplugins
 
+Set of plugins to be used by ezcluster.
 
-Tested plugins with vagrant
-- ansible
-- core
-- vagrant
-- oraclejdk
-- docker
-- kubespray (Does not work with ansible 2.7. See release 2.7.0)
-- hortonworks
-- cerebro
-- elastic
-- confluent
+All plugins related to Kubernetes has been moved in another repository: ezck8splugins
