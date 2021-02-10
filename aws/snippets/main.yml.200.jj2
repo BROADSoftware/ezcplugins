@@ -55,11 +55,21 @@
     failed_when: false
     changed_when: false
     
+  - name: upgrade all packages
+    tags: [ "upgrade" ] 
+    yum: name=* state=latest
+
+  - name: Check for reboot required by upgrade.
+    shell: LAST_KERNEL=$(rpm -q --last kernel | awk 'NR==1{sub(/kernel-/,""); print $1}'); CURRENT_KERNEL=$(uname -r); if [ $LAST_KERNEL != $CURRENT_KERNEL ]; then echo 'reboot'; else echo 'no'; fi
+    ignore_errors: true
+    changed_when: false
+    register: reboot_upgrade
+    
   - name: "Reboot if needed"
-    tags: ["base", "selinux", "resolv_conf"]
+    tags: ["upgrade", "base", "selinux", "resolv_conf"]
     reboot:
       reboot_timeout: 600
-    when: (selinux_result is defined and selinux_result.reboot_required) or (domain_in_resolv is defined and domain_in_resolv.rc != 0) or (hostname_result is defined and hostname_result.changed) or (ebsnvme_result is defined and ebsnvme_result.changed) or (udev_result is defined and udev_result.changed)
+    when: (reboot_upgrade.stdout.find("reboot") != -1) or (selinux_result is defined and selinux_result.reboot_required) or (domain_in_resolv is defined and domain_in_resolv.rc != 0) or (hostname_result is defined and hostname_result.changed) or (ebsnvme_result is defined and ebsnvme_result.changed) or (udev_result is defined and udev_result.changed)
     
   - name: "Install EPEL"
     tags: ["base", "packages"]
