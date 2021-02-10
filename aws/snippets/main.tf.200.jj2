@@ -1,6 +1,7 @@
 provider "aws" {
   region     = "{{{m.cluster.aws.region}}}"
-  version	= "~> 2.22"
+  // version	= "~> 2.22"
+  profile = "default"
 }
 
 // ------------------------------------------------ Lookup existing ressources
@@ -105,13 +106,13 @@ data "aws_ami" "my_ami" {
   most_recent = true
   filter {
     name   = "product-code"
-    values = ["aw0evgkw8e5c1q413zgy5pjce"]
+    values = ["cvugziknvmxgqna9noibqnnsy"]		# https://wiki.centos.org/Cloud/AWS
   }
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
   }
-  owners = ["679593333241"] # Centos
+  owners = ["aws-marketplace"]
 }
 
 // ------------------------------------------------------------------- Instance definition(s)
