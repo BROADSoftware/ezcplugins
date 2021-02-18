@@ -1,7 +1,6 @@
 provider "aws" {
-  region     = "{{{m.cluster.aws.region}}}"
-  // version	= "~> 2.22"
-  profile = "default"
+  region  = "{{{m.data.aws.infra.region}}}"
+  profile = "{{{m.data.aws.infra.profile}}}"
 }
 
 // ------------------------------------------------ Lookup existing ressources
@@ -16,13 +15,13 @@ data "aws_subnet" "{{{subnet.terraName}}}" {
 {%% endfor %%}
 
 data "aws_route53_zone" "forward" {
-  name = "{{{m.data.aws.route53.forward_domain}}}"
+  name = "{{{m.data.aws.infra.route53.forward_domain}}}"
   private_zone = true
   vpc_id = data.aws_subnet.{{{m.data.aws.subnets[0].terraName}}}.vpc_id
 }
 
 data "aws_route53_zone" "reverse" {
-  name = "{{{m.data.aws.route53.reverse_domain}}}"
+  name = "{{{m.data.aws.infra.route53.reverse_domain}}}"
   private_zone = true
   vpc_id = data.aws_subnet.{{{m.data.aws.subnets[0].terraName}}}.vpc_id
 }
@@ -100,32 +99,17 @@ resource "aws_security_group" "{{{sg.name}}}" {
 
 {%% endfor %%} 
 
-
-// ----------------------------------------------------------------------- centos 7 latest
-data "aws_ami" "my_ami" {
-  most_recent = true
-  filter {
-    name   = "product-code"
-    values = ["cvugziknvmxgqna9noibqnnsy"]		# https://wiki.centos.org/Cloud/AWS
-  }
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-  owners = ["aws-marketplace"]
-}
-
 // ------------------------------------------------------------------- Instance definition(s)
 
 {%% for node in m.cluster.nodes %%}
 // ...................................................... {{{ node.name }}}
 
 resource "aws_instance" "{{{node.terraName}}}" {
-	ami                    	= data.aws_ami.my_ami.id
+	ami                    	= "{{{m.data.roleByName[node.role].aws.ami.id}}}"
   	instance_type          	= "{{{m.data.roleByName[node.role].aws.instance_type }}}"
   	subnet_id				= data.aws_subnet.{{{node.aws.subnet.terraName}}}.id
 	vpc_security_group_ids	= [{{{m.data.roleByName[node.role].aws.security_group_id }}}]
-	key_name				= "{{{m.data.aws.keyPair}}}"
+	key_name				= "{{{m.data.aws.infra.key_pair.name}}}"
 	tags					= {
 {%%- for name, value in node.aws.tags.iteritems() %%}  		
     								{{{name}}} = "{{{value}}}"
@@ -150,6 +134,7 @@ module "route53_{{{node.terraName}}}" {
 	fqdn = "{{{node.fqdn}}}"
 	private_ip = aws_instance.{{{node.terraName}}}.private_ip
 }
+
 
 {%% if node.name in m.data.aws.dataDiskByNode %%}
 

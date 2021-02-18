@@ -41,9 +41,9 @@ mapping:
     type: map
     required: true
     mapping:
-      "region": { type: str, required: true }
-      "key_pair": { type: str, required: false }   # Default: 'default'
-      "route53": { type: str, required: true }
+      "infra": { type: str, required: true }
+      "owner": { type: str, required: true }
+      "ami": { type: str, required: false }
       "security_groups": 
         type: seq
         required: false
@@ -97,7 +97,8 @@ mapping:
           type: map
           required: true
           mapping:
-            "instance_type": { type: str, required: true }   
+            "ami": { type: str, required: false }
+            "instance_type": { type: str, required: true }
             "root_type": { type: str, required: false, enum: ["standard", "gp2", "io1", "sc1", "st1"] }  # default: gp2   
             "security_group": { type: str, required: true }   
             "tags":

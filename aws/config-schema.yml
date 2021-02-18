@@ -37,4 +37,68 @@ mapping:
         forward_domain: { type: str, required: true }
         reverse_domain: { type: str, required: true }
   
-  
+  "infras":
+    type: seq
+    required: false
+    sequence:
+    - type: map
+      mapping:
+        "name": { type: str, required: true }
+        "region": { type: str, required: true }
+        "profile_by_user":
+          type: seq
+          required: true
+          sequence:
+          - type: map
+            mapping:
+              "login": { type: str, required: true }
+              "profile": { type: str, required: true }
+        "route53":
+          type: map
+          required: true
+          mapping:
+            "forward_domain": { type: str, required: true }
+            "reverse_domain": { type: str, required: true }
+        "subnet_aliases":
+          type: seq
+          required: false
+          sequence:
+          - type: map
+            mapping:
+              "name": { type: str, required: true }
+              "alias": { type: str, required: true }
+        "key_pair":
+          type: map
+          required: true
+          mapping:
+            "name": { type: str, required: true }
+            "private_key_path_by_user":
+              type: seq
+              required: true
+              sequence:
+              - type: map
+                mapping:
+                  "login": { type: str, required: true }
+                  "path": { type: str, required: true }
+          
+            
+  "amazon_machine_images":
+    type: seq
+    required: false
+    sequence:
+    - type: map
+      mapping:
+        "name": { type: str, required: true }
+        "ssh_user": { type: str, required: true }
+        "ami_by_region":
+          type: seq
+          required: true
+          sequence:
+          - type: map
+            mapping:
+              "region": { type: str, required: true }
+              "ami_id": { type: str, required: true }
+            
+        
+        
+        
