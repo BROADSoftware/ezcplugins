@@ -1,0 +1,19 @@
+
+
+# To generate password:
+# mkpasswd --method=SHA-512 <password>
+# (On a linux machine)
+
+
+#local_users:
+#- login: jc
+#  comment: Jim Clark
+#  password: $6$MySalt32$gQX8.GY7/ClQfpk.HQkwceg9CZB/RP3.q28cUzaymrV6eyZUtjdHALN/jyWDs7jXJw4VHpbBQzs6rlTaj1Dj0/
+#  public_key: ssh-rsa AAAAB3NzaC1yc2EAAAADAQAjkdlkjkdjdlkdjlkdjlkdjdkljklkjLKJLKJKLJLKJLKJLKJLKJLKJLKJLJLJLJLJLJLJLJL3OSynhduocvuQnoJmtHgbZ jc@jlotus.com
+#  bashrc_addon: |
+#    export PS1="[\\t \u@\H:\w]\\\$ "
+#    PATH=~/bin:$PATH:/sbin:/usr/sbin:/root/bin:/usr/local/sbin
+#  sudo: true
+#- login: gh
+#  comment: Graham Hill
+#  password: $6$MySalt32$eI4dHPmbUSWhgcjjXO81hzESzXbvsPlS4U1qM7FCZg/R96DF7k531A638zii7hhZJu.c.tV5wEbV4coB.2hYe0

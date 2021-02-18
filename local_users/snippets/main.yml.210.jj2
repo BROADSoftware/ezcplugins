@@ -1,0 +1,12 @@
+
+{%% if m.data.local_users is defined and m.data.local_users|length > 0 %%}
+- hosts: all
+  tags: ["users", "local_users" ]
+  vars:
+    local_users:
+      {{{ m.data.local_users|to_pretty_yaml|indent(6) }}}
+  roles:
+  - local_users
+{%% endif %%}
+
+

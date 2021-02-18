@@ -1,0 +1,48 @@
+---
+- name: Setup user local accounts
+  user:
+    name: "{{item.login}}"
+    state: present
+    comment: "{{item.comment}}"
+    shell: /bin/bash
+    password: "{{item.password}}"
+  with_items: "{{local_users}}"
+
+- name: Set ssh key for local users
+  authorized_key: 
+    user: "{{item.login}}"
+    key: "{{item.public_key}}"
+  with_items: "{{local_users}}"
+  when: item.public_key is defined
+    
+- name: Install sudo package
+  package: pkg=sudo state=present
+
+- name: Full sudo rights to users
+  copy:
+    content: |
+      sa  ALL=(ALL) NOPASSWD:ALL
+    dest: "/etc/sudoers.d/{{item.login}}"
+    mode: 0400
+    owner: root
+    group: root
+  with_items: "{{local_users}}"
+  when: item.sudo|default(false)
+
+- name: Remove sudo rights, if any
+  file:
+    path: "/etc/sudoers.d/{{item.login}}"
+    state: absent
+  with_items: "{{local_users}}"
+  when: not (item.sudo|default(false))
+      
+- name: Append some tools in bashrc
+  blockinfile:
+    dest: "/home/{{item.login}}/.bashrc"
+    backup: yes
+    insertafter: EOF
+    marker: "# {mark} Ansible managed block (user shortcut)"
+    content: "{{item.bashrc_addon}}"
+  with_items: "{{local_users}}"
+  when: item.bashrc_addon is defined
+    
