@@ -1,0 +1,4 @@
+
+- name: Creates local users
+  import_playbook: local_users.yml
+     
