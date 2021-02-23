@@ -1,5 +1,5 @@
 
 MYDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-aws ec2 start-instances --instance-ids $(aws ec2 describe-instances --query 'Reservations[].Instances[].InstanceId' --filters "Name=tag:Cluster,Values={{m.cluster.id}}" --output text)
+aws ec2 start-instances --profile {{ m.data.aws.infra.profile }} --instance-ids $(aws ec2 describe-instances --profile {{ m.data.aws.infra.profile }}  --query 'Reservations[].Instances[].InstanceId' --filters "Name=tag:Cluster,Values={{m.cluster.id}}" --output text)
 
