@@ -24,7 +24,8 @@ from misc import ERROR, setDefaultInMap, appendPath
 
 
 #TDISK_DEVICE_FROM_IDX= ["/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde", "/dev/sdf", "/dev/sdg", "/dev/sdh", "/dev/sdi"]
-DISK_DEVICE_FROM_IDX= ["/dev/xvdb", "/dev/xvdc", "/dev/xvdd", "/dev/xvde", "/dev/xvdf", "/dev/xvdg", "/dev/xvdh", "/dev/xvdi"]
+#DISK_DEVICE_FROM_IDX= ["/dev/xvdb", "/dev/xvdc", "/dev/xvdd", "/dev/xvde", "/dev/xvdf", "/dev/xvdg", "/dev/xvdh", "/dev/xvdi"]
+DISK_DEVICE_FROM_IDX= ["xvdb", "xvdc", "xvdd", "xvde", "xvdf", "xvdg", "xvdh", "xvdi"]
 
 
 CLUSTER="cluster"
@@ -285,8 +286,8 @@ def groom_roles(model):
             for i in range(0, len(role[DATA_DISKS])):
                 role[DATA_DISKS][i][INDEX] = i
                 setDefaultInMap(role[DATA_DISKS][i], DEVICE, DISK_DEVICE_FROM_IDX[i])
-                setDefaultInMap(role[DATA_DISKS][i], DEVICE_AWS, role[DATA_DISKS][i][DEVICE])
-                setDefaultInMap(role[DATA_DISKS][i], DEVICE_HOST, role[DATA_DISKS][i][DEVICE])
+                setDefaultInMap(role[DATA_DISKS][i], DEVICE_AWS, "/dev/" + role[DATA_DISKS][i][DEVICE])
+                setDefaultInMap(role[DATA_DISKS][i], DEVICE_HOST, "/dev/" + role[DATA_DISKS][i][DEVICE])
                 if MOUNT in role[DATA_DISKS][i]:
                     role[DISK_TO_MOUNT_COUNT] += 1
                 setDefaultInMap(role[DATA_DISKS][i], TYPE, "gp2")
