@@ -21,6 +21,7 @@ import copy
 import re
 import logging
 from misc import ERROR, setDefaultInMap, appendPath
+from _ast import alias
 
 
 #TDISK_DEVICE_FROM_IDX= ["/dev/sdb", "/dev/sdc", "/dev/sdd", "/dev/sde", "/dev/sdf", "/dev/sdg", "/dev/sdh", "/dev/sdi"]
@@ -91,6 +92,13 @@ AMI_ID="ami_id"
 REGION="region"
 AMI="ami"
 OWNER="owner"
+SSH_USER="ssh_user"
+NETWORK_LOAD_BALANCERS="network_load_balancers"
+SUBNET_NAME_BY_ALIAS = "subnetNameByAlias"
+SUBNET_SET = "subnetSet"
+GROUP_BY_NAME = "groupByName"
+LISTENERS = "listeners"
+TARGET_GROUP="target_group"
 
 
 logger = logging.getLogger("ezcluster.plugins.aws")
@@ -185,7 +193,6 @@ def handle_tcp_udp_port(rule, prefix):
             ERROR("{}: 'from_port' and 'to_port' must be both defined if 'port' is not".format(prefix))
         return rule[FROM_PORT], rule[TO_PORT]
 
-
 cidrCheck = re.compile("^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/[0-9]{1,2}$")
 
 
@@ -236,15 +243,26 @@ def compute_security_group_rule(model, rule, sgName, ruleIdx):
     elif is_cidr(peer):
         tf[CIDR_BLOCK] = peer
     else:
-        if peer == sgName:
-            # This refers to ourself
-            tf[SELF] = True
-        elif peer in model[DATA][AWS][SECURITY_GROUP_BY_NAME]:
-            # Should be a reference to another SG.
-            tf[SECURITY_GROUP] = "aws_security_group." + peer + ".id"
+        if not ":" in peer:
+            peer = "sg:" + peer
+            logger.warning("in security_group '{}' definition, {}' is assumed to be a source security_group. This should be prefixed by 'sg:'".format(sgName, peer))
+        if peer.startswith("sg:"):
+            peer = peer[len("sg:"):]
+            if peer == sgName:
+                # This refers to ourself
+                tf[SELF] = True
+            elif peer in model[DATA][AWS][SECURITY_GROUP_BY_NAME]:
+                # Should be a reference to another SG.
+                tf[SECURITY_GROUP] = "aws_security_group." + peer + ".id"
+            else:
+                model[DATA][AWS][EXTERNAL_SECURITY_GROUPS].add(peer)
+                tf[SECURITY_GROUP] = "data.aws_security_group." + peer + ".id"
+        elif peer.startswith("subnet:"):
+            peer = peer[len("subnet:"):]
+            peer = handle_subnet(model, peer)
+            tf[SUBNET] = peer 
         else:
-            model[DATA][AWS][EXTERNAL_SECURITY_GROUPS].add(peer)
-            tf[SECURITY_GROUP] = "data.aws_security_group." + peer + ".id"
+            ERROR("in security_group '{}' definition, '{}' does not start with a valid prefix".format(sgName, peer))
     return tf
 
 
@@ -266,6 +284,18 @@ def groom_security_groups(model):
                 sg[EGRESS].append(compute_security_group_rule(model, outbound, sg[NAME], idx))
             addTags(sg, {"Name": sg[NAME], "Cluster": model[CLUSTER][ID], "Owner": model[CLUSTER][AWS][OWNER]})
 
+
+
+def groom_network_load_balancers(model):
+    if NETWORK_LOAD_BALANCERS in model[CLUSTER][AWS]:
+        for nlb in model[CLUSTER][AWS][NETWORK_LOAD_BALANCERS]:
+            for i, subnet in enumerate(nlb[SUBNETS]):
+                nlb[SUBNETS][i] = handle_subnet(model, subnet)
+            for listener in nlb[LISTENERS]:
+                if listener[TARGET_GROUP] not in model[DATA][GROUP_BY_NAME]:
+                    ERROR("Unknow target_group '{}' for listener on port {} on network load balancer '{}'".format(listener[TARGET_GROUP], listener[PORT], nlb[NAME]))
+            addTags(nlb, {"Name": nlb[NAME], "Cluster": model[CLUSTER][ID], "Owner": model[CLUSTER][AWS][OWNER]})
+                 
 
 def groom_roles(model):
     for roleName, role in model[DATA][ROLE_BY_NAME].iteritems():
@@ -293,23 +323,26 @@ def groom_roles(model):
                 setDefaultInMap(role[DATA_DISKS][i], TYPE, "gp2")
 
 
+
+# Handle subnet aliasing
+# Add subnet in a global list
+
+def handle_subnet(model, subnet):
+    if subnet in model[DATA][AWS][INFRA][SUBNET_NAME_BY_ALIAS]:
+        subnet  = model[DATA][AWS][INFRA][SUBNET_NAME_BY_ALIAS][subnet]
+    if subnet not in model[DATA][AWS][SUBNET_SET]: 
+        model[DATA][AWS][SUBNET_SET].add(subnet)
+        model[DATA][AWS][SUBNETS].append(subnet)
+    return subnet
+
 # WARNING: Loop for data disks must occurs on the same node array here and in the main.tf template
 def groom_nodes(model):
     # model[DATA][AWS][DATA_DATA_DISKS] = []
     model[DATA][AWS][DATA_DISK_BY_NODE] = {}
-    model[DATA][AWS][SUBNETS] = []
-    subnets = set()
-    subnetByAlias = list_to_map(model[DATA][AWS][INFRA][SUBNET_ALIASES], ALIAS)
     for node in model[CLUSTER][NODES]:
         node[TERRA_NAME] = terraName(node[NAME])
-        if node[AWS][SUBNET] in subnetByAlias:
-            node[AWS][SUBNET] = subnetByAlias[node[AWS][SUBNET]][NAME]
-        # Replace subnet by a map name, terraName
-        subnet = {NAME: node[AWS][SUBNET], TERRA_NAME: terraName(node[AWS][SUBNET])}
-        node[AWS][SUBNET] = subnet
-        if subnet[NAME] not in subnets:
-            subnets.add(subnet[NAME])
-            model[DATA][AWS][SUBNETS].append(subnet)
+        # Replace subnet by a map name, terraName. And register globaly
+        node[AWS][SUBNET] = handle_subnet(model, node[AWS][SUBNET])
         role = model[DATA][ROLE_BY_NAME][node[ROLE]]
         if TAGS in role[AWS]:
             addTags(node[AWS], role[AWS][TAGS])
@@ -348,7 +381,6 @@ def fix_key_pair(model, infra):
             return
     logger.warning("Unable to find a private_key_path for user '{}' in infra '{}'. Will use default key".format(login, infra[NAME]))
 
-SSH_USER="ssh_user"
 
 def get_ami(config, os, region):
     ami = {}
@@ -363,16 +395,26 @@ def get_ami(config, os, region):
     ERROR("Unable to find AMI list for os='{}' in configuration".format(os))
 
 
-def groom(_plugin, model):
-    model[DATA][AWS] = {}
+def groom_infra(model):
     model[DATA][AWS][INFRA] = infra = lookup_infra(model, model[CLUSTER][AWS][INFRA])
     fix_profile(infra)
     fix_key_pair(model, infra)
     if AMI in model[CLUSTER][AWS]:  # If not, must be defined in the role
         infra[AMI] = get_ami(model[CONFIG], model[CLUSTER][AWS][AMI], infra[REGION])
+    infra[SUBNET_NAME_BY_ALIAS] = {}
+    for alias in infra[SUBNET_ALIASES]:
+        infra[SUBNET_NAME_BY_ALIAS][alias[ALIAS]] = alias[NAME]
+        
+
+def groom(_plugin, model):
+    model[DATA][AWS] = {}
+    model[DATA][AWS][SUBNETS] = []
+    model[DATA][AWS][SUBNET_SET] = set()
+    groom_infra(model)
     groom_security_groups(model)
     groom_roles(model)
     groom_nodes(model)
+    groom_network_load_balancers(model)
     model["data"]["buildScript"] = appendPath(model["data"]["targetFolder"], "build.sh")
     return True     # Always enabled
 

@@ -52,13 +52,13 @@ mapping:
           mapping:
             "name":  { type: str, required: true }
             "description":  { type: str, required: false }
-            tags:
+            "tags":
               type: map
               required: false
               mapping:
                 regex;(.*):
                   type: str
-            inbound_rules:
+            "inbound_rules":
               type: seq
               required: false
               sequence:
@@ -72,7 +72,7 @@ mapping:
                   "icmp_type": { type: str, required: false }
                   "icmp_code": { type: int, required: false }
                   "source": { type: str, required: true }   
-            outbound_rules:
+            "outbound_rules":
               type: seq
               required: false
               sequence:
@@ -86,7 +86,48 @@ mapping:
                   "icmp_type": { type: str, required: false }
                   "icmp_code": { type: int, required: false }
                   "destination": { type: str, required: true }   
-
+      "network_load_balancers":
+        type: seq
+        required: false
+        sequence:
+        - type: map
+          mapping:
+            "name":  { type: str, required: true }
+            "description":  { type: str, required: false }
+            "tags":
+              type: map
+              required: false
+              mapping:
+                regex;(.*):
+                  type: str
+            "aliases":
+              type: seq
+              required: false
+              sequence:
+              - type: str
+            "subnets":
+              type: seq
+              required: true
+              sequence:
+              - type: str
+            "listeners":
+              type: seq
+              required: true
+              sequence:
+              - type: map
+                mapping:
+                  "port": { type: int, required: true }
+                  "target_port": { type: int, required: true }
+                  "target_group": { type: str, required: true }
+            
+          
+        
+        
+        
+        
+        
+        
+        
   "roles": 
     type: seq
     required: true

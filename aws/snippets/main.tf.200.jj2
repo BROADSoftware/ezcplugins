@@ -6,10 +6,10 @@ provider "aws" {
 // ------------------------------------------------ Lookup existing ressources
 
 {%% for subnet in m.data.aws.subnets %%}
-data "aws_subnet" "{{{subnet.terraName}}}" {
+data "aws_subnet" "{{{subnet}}}" {
   filter {
     name   = "tag:Name"
-    values = ["{{{subnet.name}}}"]
+    values = ["{{{subnet}}}"]
   }
 }
 {%% endfor %%}
@@ -17,18 +17,18 @@ data "aws_subnet" "{{{subnet.terraName}}}" {
 data "aws_route53_zone" "forward" {
   name = "{{{m.data.aws.infra.route53.forward_domain}}}"
   private_zone = true
-  vpc_id = data.aws_subnet.{{{m.data.aws.subnets[0].terraName}}}.vpc_id
+  vpc_id = data.aws_subnet.{{{m.data.aws.subnets[0]}}}.vpc_id
 }
 
 data "aws_route53_zone" "reverse" {
   name = "{{{m.data.aws.infra.route53.reverse_domain}}}"
   private_zone = true
-  vpc_id = data.aws_subnet.{{{m.data.aws.subnets[0].terraName}}}.vpc_id
+  vpc_id = data.aws_subnet.{{{m.data.aws.subnets[0]}}}.vpc_id
 }
 
 {%% if m.data.aws.needMyVpc %%}
 data "aws_vpc" "my_vpc" {
-  id = data.aws_subnet.{{{m.data.aws.subnets[0].terraName}}}.vpc_id
+  id = data.aws_subnet.{{{m.data.aws.subnets[0]}}}.vpc_id
 }
 {%% endif %%}
 
@@ -49,7 +49,7 @@ resource "aws_security_group" "{{{sg.name}}}" {
 {%% if sg.description is defined %%}
 	description = "{{{ sg.description }}}"
 {%% endif %%}
-	vpc_id	= data.aws_subnet.{{{m.data.aws.subnets[0].terraName}}}.vpc_id
+	vpc_id	= data.aws_subnet.{{{m.data.aws.subnets[0]}}}.vpc_id
 {%% if sg.tags is defined %%}	
   	tags 	= {
 {%%- for name, value in sg.tags.iteritems() %%}  		
@@ -74,6 +74,9 @@ resource "aws_security_group" "{{{sg.name}}}" {
 {%% if ingress.security_group is defined %%}
 		security_groups = [{{{ ingress.security_group }}}]
 {%% endif %%}
+{%% if ingress.subnet is defined %%}
+		cidr_blocks = [data.aws_subnet.{{{ingress.subnet}}}.cidr_block]
+{%% endif %%}
 	} 
 {%% endfor %%} 
 {%%  for egress in sg.egress %%}
@@ -93,6 +96,9 @@ resource "aws_security_group" "{{{sg.name}}}" {
 {%% if egress.security_group is defined %%}
 		security_groups = [{{{ egress.security_group }}}]
 {%% endif %%}
+{%% if egress.subnet is defined %%}
+		cidr_blocks = [data.aws_subnet.{{{egress.subnet}}}.cidr_block]
+{%% endif %%}
 	} 
 {%% endfor %%} 
 }
@@ -107,7 +113,7 @@ resource "aws_security_group" "{{{sg.name}}}" {
 resource "aws_instance" "{{{node.terraName}}}" {
 	ami                    	= "{{{m.data.roleByName[node.role].aws.ami.id}}}"
   	instance_type          	= "{{{m.data.roleByName[node.role].aws.instance_type }}}"
-  	subnet_id				= data.aws_subnet.{{{node.aws.subnet.terraName}}}.id
+  	subnet_id				= data.aws_subnet.{{{node.aws.subnet}}}.id
 	vpc_security_group_ids	= [{{{m.data.roleByName[node.role].aws.security_group_id }}}]
 	key_name				= "{{{m.data.aws.infra.key_pair.name}}}"
 	tags					= {
@@ -162,3 +168,70 @@ resource "aws_volume_attachment" "{{{disk.terraName}}}" {
 {%% endfor %%}  
 
 
+{%% if (m.cluster.aws.network_load_balancers is defined) and (m.cluster.aws.network_load_balancers | length > 0) %%}
+
+// --------------------------------- Network Load Balancer
+
+{%% for nlb in m.cluster.aws.network_load_balancers %%}
+
+resource "aws_lb" "{{{ nlb.name }}}" {
+	name = "{{{ nlb.name }}}"
+	internal  = true
+	load_balancer_type = "network"
+	tags					= {
+{%%- for name, value in nlb.tags.iteritems() %%}  		
+    								{{{name}}} = "{{{value}}}"
+{%%- endfor -%%}
+	}
+	subnets = [ {%% for subnet in nlb.subnets %%}{%% if loop.index != 1 %%},{%% endif %%}data.aws_subnet.{{{subnet}}}.id{%% endfor %%} ]
+}
+
+{%% for alias in nlb.aliases %%}
+resource "aws_route53_record" "{{{ nlb.name }}}-alias" {
+  zone_id = data.aws_route53_zone.forward.id
+  name = "{{{ alias }}}"
+  type = "CNAME"
+  ttl = "300"
+  records = [aws_lb.{{{ nlb.name }}}.dns_name]
+}
+{%% endfor %%}
+
+
+
+{%% for listener in nlb.listeners %%}
+
+resource "aws_lb_target_group" "tg-{{{ nlb.name }}}-{{{ listener.port }}}" {
+	name = "tg-{{{ nlb.name }}}-{{{ listener.port }}}"
+	target_type = "instance"
+	vpc_id = data.aws_subnet.{{{nlb.subnets[0]}}}.vpc_id
+	port = {{{ listener.target_port}}}
+	protocol = "TCP"	
+}
+
+{%% for target in m.data.groupByName[listener.target_group] %%}
+resource "aws_lb_target_group_attachment" "tg-{{{ nlb.name }}}-{{{ listener.port }}}-{{{target}}}" {
+ 	target_group_arn = aws_lb_target_group.tg-{{{ nlb.name }}}-{{{ listener.port }}}.arn
+ 	target_id        = aws_instance.{{{target}}}.id
+ 	port             = {{{ listener.target_port }}}
+}
+{%% endfor %%}
+
+
+resource "aws_lb_listener" "l-{{{ nlb.name }}}-{{{ listener.port }}}" {
+	load_balancer_arn = aws_lb.{{{ nlb.name }}}.arn
+	port              = "{{{ listener.port }}}"
+	protocol          = "TCP"
+
+ 	default_action {
+    	type             = "forward"
+    	target_group_arn = aws_lb_target_group.tg-{{{ nlb.name }}}-{{{ listener.port }}}.arn
+  	}
+}
+
+
+
+{%% endfor %%}
+
+{%% endfor %%}
+
+{%% endif %%}
