@@ -105,6 +105,50 @@ resource "aws_security_group" "{{{sg.name}}}" {
 
 {%% endfor %%} 
 
+// ------------------------------------------------------------------- Instance role definition(s)
+
+{%% for name, role in m.data.roleByName.iteritems() %%}
+
+{%% if role.aws.instance_role_name is defined %%}
+
+
+resource "aws_iam_instance_profile" "{{{ role.aws.instance_role_name }}}" {
+  name = "{{{ role.aws.instance_role_name }}}"
+  role = aws_iam_role.{{{ role.aws.instance_role_name }}}.name
+}
+
+# This role to be attached to all instances of the group {{{ name }}}
+resource "aws_iam_role" "{{{ role.aws.instance_role_name }}}" {
+  name = "{{{ role.aws.instance_role_name }}}"
+
+	tags = {
+{%%- for name, value in role.aws.tags.iteritems() %%}  		
+    	{{{name}}} = "{{{value}}}"
+{%%- endfor -%%}
+    }
+
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
+      },
+    ]
+  })
+}
+
+
+{%% endif %%}
+
+{%% endfor %%} 
+
+
+
 // ------------------------------------------------------------------- Instance definition(s)
 
 {%% for node in m.cluster.nodes %%}
@@ -116,6 +160,11 @@ resource "aws_instance" "{{{node.terraName}}}" {
   	subnet_id				= data.aws_subnet.{{{node.aws.subnet}}}.id
 	vpc_security_group_ids	= [{{{m.data.roleByName[node.role].aws.security_group_id }}}]
 	key_name				= "{{{m.data.aws.infra.key_pair.name}}}"
+	
+{%% if m.data.roleByName[node.role].aws.instance_role_name is defined %%}
+	iam_instance_profile = aws_iam_instance_profile.{{{ m.data.roleByName[node.role].aws.instance_role_name }}}.name
+{%% endif %%}
+	
 	tags					= {
 {%%- for name, value in node.aws.tags.iteritems() %%}  		
     								{{{name}}} = "{{{value}}}"

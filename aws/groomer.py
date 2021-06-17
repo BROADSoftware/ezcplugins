@@ -99,7 +99,8 @@ SUBNET_SET = "subnetSet"
 GROUP_BY_NAME = "groupByName"
 LISTENERS = "listeners"
 TARGET_GROUP="target_group"
-
+CREATE_INSTANCE_ROLE="create_instance_role"
+INSTANCE_ROLE_NAME="instance_role_name"
 
 logger = logging.getLogger("ezcluster.plugins.aws")
 
@@ -299,6 +300,7 @@ def groom_network_load_balancers(model):
 
 def groom_roles(model):
     for roleName, role in model[DATA][ROLE_BY_NAME].iteritems():
+        addTags(role[AWS], {"Role": roleName, "Cluster": model[CLUSTER][ID], "Owner": model[CLUSTER][AWS][OWNER]})
         if role[AWS][SECURITY_GROUP] in model[DATA][AWS][SECURITY_GROUP_BY_NAME]:
             role[AWS][SECURITY_GROUP_ID] = "aws_security_group." + role[AWS][SECURITY_GROUP] + ".id"
         else:
@@ -321,6 +323,12 @@ def groom_roles(model):
                 if MOUNT in role[DATA_DISKS][i]:
                     role[DISK_TO_MOUNT_COUNT] += 1
                 setDefaultInMap(role[DATA_DISKS][i], TYPE, "gp2")
+        setDefaultInMap(role[AWS], CREATE_INSTANCE_ROLE, False)
+        if role[AWS][CREATE_INSTANCE_ROLE]:
+            setDefaultInMap(role[AWS], INSTANCE_ROLE_NAME, "{}_{}_instance".format(model[CLUSTER][ID], roleName))
+        else:
+            if INSTANCE_ROLE_NAME in role[AWS]:
+                ERROR("'instance_role_name' is defined while 'create_instane_role' is not set for role '{}'".format(roleName))
 
 
 
@@ -346,7 +354,7 @@ def groom_nodes(model):
         role = model[DATA][ROLE_BY_NAME][node[ROLE]]
         if TAGS in role[AWS]:
             addTags(node[AWS], role[AWS][TAGS])
-        addTags(node[AWS], {"Name": node[FQDN], "Cluster": model[CLUSTER][ID], "Owner": model[CLUSTER][AWS][OWNER]})
+        addTags(node[AWS], {"Name": node[FQDN] })
         # Handle dataDisks
         if DATA_DISKS in role and len(role[DATA_DISKS]) > 0:
             dataDisks = copy.deepcopy(role[DATA_DISKS])

@@ -142,6 +142,8 @@ mapping:
             "instance_type": { type: str, required: true }
             "root_type": { type: str, required: false, enum: ["standard", "gp2", "io1", "sc1", "st1"] }  # default: gp2   
             "security_group": { type: str, required: true }   
+            "create_instance_role": { type: bool, required: false }   # Default: false
+            "instance_role_name": { type: str, required: false }    # Default to "<clusterId>_<role>_instance"
             "tags":
               type: map
               required: false
