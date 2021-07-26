@@ -1,0 +1,16 @@
+---
+- name: Set fact for minio_host_addresses per instance
+  set_fact:
+    minio_host_addresses: "{{ minio_host_addresses|default({})|combine({ item.name: item['cluster_members']|map('extract', hostvars, ['ansible_default_ipv4', 'address'])|list }) }}"
+  when: item.cluster_members is defined and item.cluster_members|length > 1
+  with_items: "{{ minio_instances }}"
+- name: Copy minio env config
+  template:
+    src: minio-defaults.j2
+    dest: "/etc/default/minio{{ minio_name_separator ~ item.name }}"
+    owner: root
+    group: root
+  with_items: "{{ minio_instances }}"
+  notify: restart_minio
+  register: minio_config_results
+...

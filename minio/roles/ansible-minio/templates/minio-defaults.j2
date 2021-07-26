@@ -1,0 +1,27 @@
+{% if item.cluster_members is defined and item.cluster_members|length > 1 %}
+MINIO_VOLUMES=
+{%- for volume in item.volumes -%}
+  {%- for address in minio_host_addresses[item.name] -%}
+{{ 'http://' ~ address ~ ':' ~ item.bind_port ~ volume ~ ' ' }}
+  {%- endfor -%}
+{%- endfor -%}
+{% else %}
+MINIO_VOLUMES="{{ item.volumes|join(' ') }}"
+{% endif %}
+
+{% if item.access_key is defined %}
+MINIO_ACCESS_KEY={{ item.access_key }}
+{% endif %}
+{% if item.secret_key is defined %}
+MINIO_SECRET_KEY={{ item.secret_key }}
+{% endif %}
+{% if item.region is defined %}
+MINIO_REGION={{ item.region }}
+{% endif %}
+{% if item.browser is defined %}
+MINIO_BROWSER={{ item.browser }}
+{% endif %}
+{% if item.domain is defined %}
+MINIO_DOMAIN={{ item.domain }}
+{% endif %}
+MINIO_OPTS="--config-dir /home/{{ minio_user ~ '/.minio' ~ minio_name_separator ~ item.name }}"

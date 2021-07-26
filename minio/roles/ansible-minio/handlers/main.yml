@@ -1,0 +1,20 @@
+---
+- name: restart_rsyslog
+  service:
+    name: rsyslog
+    state: restarted
+# Ensure not all minio servers are restarted at once
+# https://github.com/ansible/issues/12170
+- name: restart_minio
+  service:
+    name: "{{ 'minio' ~ minio_name_separator ~ item[1] }}"
+    state: restarted
+  listen: "reload_systemd"
+  run_once: yes
+  delegate_to: "{{ item[0] }}"
+  with_nested:
+    - "{{ play_hosts }}"
+    - "{{ minio_instances_to_restart|default(minio_instances|map(attribute='name')|list)|unique }}"
+- name: reload_sysctl
+  command: "/sbin/sysctl -p"
+...
