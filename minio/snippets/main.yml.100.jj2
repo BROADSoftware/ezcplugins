@@ -1,0 +1,4 @@
+
+- name: Deploy Minio
+  tags: [ "minio", "minio-server" ]
+  import_playbook: minio-server.yml

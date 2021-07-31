@@ -1,0 +1,45 @@
+# Copyright (C) 2018 BROADSoftware
+#
+# This file is part of EzCluster
+#
+# EzCluster is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# EzCluster is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
+
+
+type: map
+mapping:
+  "minio":
+    type: map
+    required: true
+    mapping:
+      "disabled": { type: bool, required: false }    
+      "tenants":
+        type: seq
+        required: true
+        sequence:
+        - type: map
+          mapping:
+            "name": { type: str, required: true }    
+            "repo_id": { type: str, required: true }    
+            "bind_address":  { type: str, required: false }   # Default: 0.0.0.0
+            "bind_port": { type: int, required: false }       # Default: 9000
+            "minio_root_user":  { type: str, required: true }
+            "minio_root_password":  { type: str, required: true }
+            "user": { type: str, required: false }   # Default: name
+            "group": { type: str, required: false }   # Default: name
+            "pools":
+              type: seq
+              required: true
+              sequence: 
+              - type: str
+               

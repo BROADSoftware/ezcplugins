@@ -1,0 +1,59 @@
+
+
+
+{%% for tenant in m.cluster.minio.tenants %%}
+
+# Tenant {{{ tenant.name }}}: Create needed users/group based on pool(s) definition
+
+- hosts: {{{ tenant.ansibleNames | join(":") }}}
+  tasks:
+  - name: "Tenant {{{ tenant.name }}}: Create private group for minio user"
+    group:
+      name: "{{{ tenant.group }}}"
+      system: yes
+      state: present
+    
+  - name: "Tenant {{{ tenant.name }}}: Create minio user"
+    user:
+      name: "{{{ tenant.user }}}"
+      group: "{{{ tenant.group }}}"
+      shell: "/bin/nologin"
+      system: yes
+      comment: "Minio application user for tenant {{{ tenant.name }}}"
+      state: present
+
+# Tenant {{{ tenant.name }}}: Create pool(s) data folders
+
+{%% for pool in tenant.poolExts %%}
+- hosts: {{{ pool.parsed.ansibleNames | join(":") }}}
+  tasks:
+  - name: "Tenant {{{ tenant.name }}}: Create data folder for pool {{{ pool.definition }}}"
+    file:
+      state: directory
+      path: "{{ item }}"
+      owner: {{{ tenant.user }}}
+      group: {{{ tenant.group }}}
+      mode: 0755
+    with_items: {{{ pool.parsed.volumes }}}
+   
+{%% endfor %%}
+
+# Deploy minio process
+
+- name: "Tenant {{{ tenant.name }}}: Deploy minio process"
+  hosts: {{{ tenant.ansibleNames | join(":") }}}
+  vars:
+    minio_instance_name: minio-{{{ tenant.name }}}
+    minio_download_url: "{{{ tenant.repository.binary_url }}}"
+    minio_user:  {{{ tenant.user }}}
+    minio_group: {{{ tenant.group }}}
+    minio_bind_address: {{{ tenant.bind_address }}}
+    minio_bind_port: {{{ tenant.bind_port }}} 
+    minio_root_user: {{{ tenant.minio_root_user }}}
+    minio_root_password: {{{ tenant.minio_root_password }}}
+    minio_pools: {{{ tenant.pools }}}    
+  roles:
+  - minio-distributed
+
+
+{%% endfor %%}

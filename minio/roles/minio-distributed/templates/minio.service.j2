@@ -1,0 +1,20 @@
+[Unit]
+Description="{{ minio_service_name }}: S3 storage server instance"
+
+[Service]
+Type=simple
+User={{ minio_user }}
+Group={{ minio_group }}
+SyslogIdentifier={{ minio_syslog_identifier | default('minio') }}
+TimeoutSec=15
+Restart=always
+EnvironmentFile={{ minio_etc_dir }}/env
+ExecStart={{ minio_binary_dir }}/minio server --address {{ minio_bind_address }}:{{ minio_bind_port }} {{ minio_pools | join(' ') }}
+
+
+# Specifies the maximum file descriptor number that can be opened by this process
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+
