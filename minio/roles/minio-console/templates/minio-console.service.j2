@@ -1,0 +1,20 @@
+[Unit]
+Description="{{ minio_console_service_name }}: Monio console"
+
+[Service]
+Type=simple
+User={{ minio_console_user }}
+Group={{ minio_console_group }}
+SyslogIdentifier={{ minio_console_syslog_identifier | default('minio-console') }}
+TimeoutSec=15
+Restart=always
+EnvironmentFile={{ minio_console_etc_dir }}/console.sh
+ExecStart={{ minio_console_binary_dir }}/console server --host {{ minio_console_bind_address }} --port {{ minio_console_bind_port }}
+
+
+# Specifies the maximum file descriptor number that can be opened by this process
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
+

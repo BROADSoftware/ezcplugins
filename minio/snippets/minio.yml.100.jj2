@@ -6,6 +6,7 @@
 # Tenant {{{ tenant.name }}}: Create needed users/group based on pool(s) definition
 
 - hosts: {{{ tenant.ansibleNames | join(":") }}}
+  tags: [ "minio", "minio-server" ]
   tasks:
   - name: "Tenant {{{ tenant.name }}}: Create private group for minio user"
     group:
@@ -17,7 +18,7 @@
     user:
       name: "{{{ tenant.user }}}"
       group: "{{{ tenant.group }}}"
-      shell: "/bin/nologin"
+      shell: "/bin/bash"
       system: yes
       comment: "Minio application user for tenant {{{ tenant.name }}}"
       state: present
@@ -26,6 +27,7 @@
 
 {%% for pool in tenant.poolExts %%}
 - hosts: {{{ pool.parsed.ansibleNames | join(":") }}}
+  tags: [ "minio", "minio-server" ]
   tasks:
   - name: "Tenant {{{ tenant.name }}}: Create data folder for pool {{{ pool.definition }}}"
     file:
@@ -40,11 +42,12 @@
 
 # Deploy minio process
 
-- name: "Tenant {{{ tenant.name }}}: Deploy minio process"
+- name: "Tenant {{{ tenant.name }}}: Deploy minio server process"
   hosts: {{{ tenant.ansibleNames | join(":") }}}
+  tags: [ "minio", "minio-server" ]
   vars:
-    minio_instance_name: minio-{{{ tenant.name }}}
-    minio_download_url: "{{{ tenant.repository.binary_url }}}"
+    minio_instance_name: {{{ tenant.name }}}
+    minio_download_url: "{{{ tenant.repository.server_binary_url }}}"
     minio_user:  {{{ tenant.user }}}
     minio_group: {{{ tenant.group }}}
     minio_bind_address: {{{ tenant.bind_address }}}
@@ -53,7 +56,25 @@
     minio_root_password: {{{ tenant.minio_root_password }}}
     minio_pools: {{{ tenant.pools }}}    
   roles:
-  - minio-distributed
+  - minio-distributed-server
+
+# Deploy console, if required
+{%% if tenant.console_bind_port is defined %%}
+- name: "Tenant {{{ tenant.name }}}: Deploy minio console process"
+  hosts: {{{ tenant.ansibleNames | join(":") }}}
+  tags: [ "minio", "minio-console" ]
+  vars:
+    minio_instance_name: {{{ tenant.name }}}
+    minio_console_download_url: "{{{ tenant.repository.console_binary_url }}}"
+    minio_console_user:  {{{ tenant.user }}}
+    minio_console_group: {{{ tenant.group }}}
+    minio_console_bind_address: {{{ tenant.bind_address }}}
+    minio_console_bind_port: {{{ tenant.console_bind_port }}} 
+    minio_console_minio_server: "http://localhost:{{{ tenant.bind_port }}}"
+  roles:
+  - minio-console
+
+{%% endif %%}
 
 
 {%% endfor %%}

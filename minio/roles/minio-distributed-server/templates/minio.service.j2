@@ -8,7 +8,7 @@ Group={{ minio_group }}
 SyslogIdentifier={{ minio_syslog_identifier | default('minio') }}
 TimeoutSec=15
 Restart=always
-EnvironmentFile={{ minio_etc_dir }}/env
+EnvironmentFile={{ minio_etc_dir }}/server.sh
 ExecStart={{ minio_binary_dir }}/minio server --address {{ minio_bind_address }}:{{ minio_bind_port }} {{ minio_pools | join(' ') }}
 
 

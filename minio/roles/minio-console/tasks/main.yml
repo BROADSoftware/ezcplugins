@@ -1,0 +1,65 @@
+
+- name: Ensure minio console binary dir exists
+  file:
+    state: directory
+    path: "{{ minio_console_binary_dir }}" 
+    owner: "{{ minio_console_user }}"
+    group: "{{ minio_console_group }}"
+    mode: 0755
+
+- name: Check for existing binary
+  stat:
+    path: "{{ minio_console_binary_dir }}/console"
+  register: minio_console_binary_stat_result
+  
+  
+- name: Download minio console binary
+  get_url:
+    url: "{{ minio_console_download_url }}"
+    dest: "{{ minio_console_binary_dir }}/console"
+    owner: "{{ minio_console_user }}"
+    group: "{{ minio_console_group }}"
+    mode: 0700
+  when: minio_console_always_update_binary or not minio_console_binary_stat_result.stat.exists
+
+
+- name: Ensure minio etc dir exists
+  file:
+    state: directory
+    path: "{{ minio_console_etc_dir }}" 
+    owner: "{{ minio_console_user }}"
+    group: "{{ minio_console_group }}"
+    mode: 0700
+
+- name: Configure environment
+  template:
+    src: console.sh.j2
+    dest: "{{ minio_console_etc_dir }}/console.sh"
+    owner: "{{ minio_console_user }}"
+    group: "{{ minio_console_group }}"
+    mode: 0600
+  notify:
+  - restart_minio_console
+
+- name: "Setup systemd unit file for {{ minio_console_service_name }}"
+  template:
+    src: minio-console.service.j2
+    dest: "/usr/lib/systemd/system/{{ minio_console_service_name }}.service"
+    owner: "{{ minio_console_user }}"
+    group: "{{ minio_console_group }}"
+    mode: 0644
+  notify:
+  - reload_service_file      
+  - restart_minio_console
+    
+
+# ------------------------------------ Service activate and start   
+- meta: flush_handlers
+   
+- name: "Enable {{ minio_console_service_name }} service"
+  service:
+    name: "{{ minio_console_service_name }}"
+    enabled: yes
+    state: started        
+          
+    

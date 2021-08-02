@@ -33,11 +33,13 @@
 
 - name: Configure environment
   template:
-    src: env.j2
-    dest: "{{ minio_etc_dir }}/env"
+    src: server.sh.j2
+    dest: "{{ minio_etc_dir }}/server.sh"
     owner: "{{ minio_user }}"
     group: "{{ minio_group }}"
     mode: 0600
+  notify:
+  - restart_minio
 
 - name: "Setup systemd unit file for {{ minio_service_name }}"
   template:

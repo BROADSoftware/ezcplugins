@@ -99,8 +99,8 @@ def groom(_plugin, model):
         for tenant in model[CLUSTER][MINIO][TENANTS]:
             setDefaultInMap(tenant, BIND_ADDRESS, "0.0.0.0")
             setDefaultInMap(tenant, BIND_PORT, 9000)
-            setDefaultInMap(tenant, USER, tenant[NAME])
-            setDefaultInMap(tenant, GROUP, tenant[NAME])
+            setDefaultInMap(tenant, USER, "minio")
+            setDefaultInMap(tenant, GROUP, "minio")
             lookupMinioRepository(model, tenant)
             tenant[POOL_EXTS] = []
             for pool in tenant[POOLS]:

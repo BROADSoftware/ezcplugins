@@ -1,0 +1,14 @@
+
+
+#minio_download_url: https://dl.minio.io/server/minio/release/linux-amd64/minio
+
+minio_instance_name: minio1
+minio_binary_dir: "/opt//minio/{{ minio_instance_name }}/bin"
+minio_etc_dir: "/etc/minio/{{ minio_instance_name }}"
+minio_service_name: "minio-server-{{ minio_instance_name }}"
+minio_user: minio
+minio_group: minio
+minio_bind_address: "0.0.0.0"
+minio_bind_port: 9000 
+
+minio_always_update_binary: false

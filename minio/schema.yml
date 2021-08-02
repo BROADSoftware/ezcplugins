@@ -35,11 +35,12 @@ mapping:
             "bind_port": { type: int, required: false }       # Default: 9000
             "minio_root_user":  { type: str, required: true }
             "minio_root_password":  { type: str, required: true }
-            "user": { type: str, required: false }   # Default: name
-            "group": { type: str, required: false }   # Default: name
+            "user": { type: str, required: false }   # Default: minio
+            "group": { type: str, required: false }   # Default: minio
             "pools":
               type: seq
               required: true
               sequence: 
               - type: str
+            "console_bind_port": { type: int, required: false }       # Default: No console
                

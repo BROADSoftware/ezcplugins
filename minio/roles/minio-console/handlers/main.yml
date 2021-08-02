@@ -1,4 +1,5 @@
-# Copyright (C) 2018 BROADSoftware
+---
+# Copyright (C) 2021 BROADSoftware
 #
 # This file is part of EzCluster
 #
@@ -16,21 +17,15 @@
 # along with EzCluster.  If not, see <http://www.gnu.org/licenses/lgpl-3.0.html>.
 
 
+    
+- name: reload service file
+  command: "systemctl daemon-reload"
+  listen: reload_service_file
+  
 
-type: map
-mapping:
-  "repositories":
-    type: map
-    required: false
-    mapping:
-      "minio": 
-        type: seq
-        required: false
-        sequence:
-        - type: map
-          mapping:
-            "repo_id": { type: str, required: True }
-            "server_binary_url": { type: str, required: True }
-            "console_binary_url": { type: str, required: True }
-            
-            
+- name: "restart {{ minio_console_service_name }}"
+  service: 
+    name: "{{ minio_console_service_name }}"
+    state: restarted
+  listen: restart_minio_console
+    
