@@ -55,11 +55,15 @@
     minio_root_user: {{{ tenant.minio_root_user }}}
     minio_root_password: {{{ tenant.minio_root_password }}}
     minio_pools: {{{ tenant.pools }}}    
+{%% if tenant.tls_crt is defined %%}    
+    minio_tls_crt: {{{ tenant.tls_crt }}} 
+    minio_tls_key: {{{ tenant.tls_key }}}
+{%% endif %%}    
   roles:
   - minio-distributed-server
 
 # Deploy console, if required
-{%% if tenant.console_bind_port is defined %%}
+{%% if tenant.console is defined %%}
 - name: "Tenant {{{ tenant.name }}}: Deploy minio console process"
   hosts: {{{ tenant.ansibleNames | join(":") }}}
   tags: [ "minio", "minio-console" ]
@@ -68,9 +72,17 @@
     minio_console_download_url: "{{{ tenant.repository.console_binary_url }}}"
     minio_console_user:  {{{ tenant.user }}}
     minio_console_group: {{{ tenant.group }}}
-    minio_console_bind_address: {{{ tenant.bind_address }}}
-    minio_console_bind_port: {{{ tenant.console_bind_port }}} 
+    minio_console_bind_address: {{{ tenant.console.bind_address }}}
+    minio_console_bind_port: {{{ tenant.console.bind_port }}} 
+{%% if tenant.console.tls_crt is defined %%}    
+    minio_console_minio_server: "https://localhost:{{{ tenant.bind_port }}}"
+    minio_console_tls_bind_port: {{{ tenant.console.tls_bind_port }}} 
+    minio_console_tls_crt: {{{ tenant.console.tls_crt }}} 
+    minio_console_tls_key: {{{ tenant.console.tls_key }}}
+    minio_console_server_ca: {{{ tenant.console.server_ca }}}
+{%% else %%}
     minio_console_minio_server: "http://localhost:{{{ tenant.bind_port }}}"
+{%% endif %%}    
   roles:
   - minio-console
 

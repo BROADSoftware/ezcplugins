@@ -8,8 +8,8 @@ Group={{ minio_group }}
 SyslogIdentifier={{ minio_syslog_identifier | default('minio') }}
 TimeoutSec=15
 Restart=always
-EnvironmentFile={{ minio_etc_dir }}/server.sh
-ExecStart={{ minio_binary_dir }}/minio server --address {{ minio_bind_address }}:{{ minio_bind_port }} {{ minio_pools | join(' ') }}
+EnvironmentFile={{ minio_etc_dir }}/setenv.sh
+ExecStart={{ minio_binary_dir }}/minio server --address {{ minio_bind_address }}:{{ minio_bind_port }}{%if minio_tls_crt is defined%} --certs-dir {{ minio_certs_dir }}{%endif%} {{ minio_pools | join(' ') }}
 
 
 # Specifies the maximum file descriptor number that can be opened by this process

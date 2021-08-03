@@ -37,10 +37,21 @@ mapping:
             "minio_root_password":  { type: str, required: true }
             "user": { type: str, required: false }   # Default: minio
             "group": { type: str, required: false }   # Default: minio
+            "tls_crt": { type: str, required: false }    
+            "tls_key": { type: str, required: false }    
             "pools":
               type: seq
               required: true
               sequence: 
               - type: str
-            "console_bind_port": { type: int, required: false }       # Default: No console
+            "console":
+              type: map
+              required: false
+              mapping:
+                "bind_address": { type: str, required: false }   # Default: 0.0.0.0
+                "bind_port": { type: int, required: false }       # Default: 9090
+                "tls_crt": { type: str, required: false }    
+                "tls_key": { type: str, required: false }    
+                "tls_bind_port": { type: int, required: false }       # Default: 9443
+                "server_ca": { type: str, required: false }    
                

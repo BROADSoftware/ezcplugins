@@ -1,0 +1,22 @@
+CONSOLE_PBKDF_PASSPHRASE=SECRET
+
+CONSOLE_PBKDF_SALT=SECRET
+
+CONSOLE_MINIO_SERVER={{ minio_console_minio_server }}
+
+# Only in K8s minio operator context
+CONSOLE_OPERATOR_MODE="off"
+
+# This will prevent any http access (while redirection does not work at all)
+# But it prevent http to works if tls is not enabled
+# Keep it undefined will works in both case.
+#CONSOLE_SECURE_TLS_REDIRECT="off"
+
+
+# Set on commmand line (Seems ineffective as env variable)
+#CONSOLE_PORT="9091"
+#CONSOLE_CERTS_DIR="/etc/minio/minio1/console/certs/"
+#CONSOLE_HOSTNAME="0.0.0.0"
+#CONSOLE_TLS_PORT="9491"
+#CONSOLE_TLS_HOSTNAME="n0.minio1"
+

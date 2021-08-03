@@ -4,12 +4,18 @@
 
 minio_instance_name: minio1
 minio_console_binary_dir: "/opt//minio/{{ minio_instance_name }}/bin"
-minio_console_etc_dir: "/etc/minio/{{ minio_instance_name }}"
+minio_console_etc_dir: "/etc/minio/{{ minio_instance_name }}/console"
 minio_console_service_name: "minio-console-{{ minio_instance_name }}"
 minio_console_user: minio
 minio_console_group: minio
 minio_console_bind_address: "0.0.0.0"
 minio_console_bind_port: 9090
 minio_console_minio_server: http://localhost:9000
+minio_console_certs_dir: "{{ minio_console_etc_dir }}/certs"
+minio_console_tls_bind_port: 9443
+#minio_console_server_ca: 
+
+#minio_console_tls_crt: 
+#minio_console_tls_key: 
 
 minio_console_always_update_binary: false

@@ -33,8 +33,8 @@
 
 - name: Configure environment
   template:
-    src: server.sh.j2
-    dest: "{{ minio_etc_dir }}/server.sh"
+    src: setenv.sh.j2
+    dest: "{{ minio_etc_dir }}/setenv.sh"
     owner: "{{ minio_user }}"
     group: "{{ minio_group }}"
     mode: 0600
@@ -51,7 +51,46 @@
   notify:
   - reload_service_file      
   - restart_minio
-    
+  
+- name: "Setup TLS"
+  block:
+  - name: Ensure minio certs dir exists
+    file:
+      state: directory
+      path: "{{ minio_certs_dir }}" 
+      owner: "{{ minio_user }}"
+      group: "{{ minio_group }}"
+      mode: 0755
+  - name: Copy Certificate
+    copy:
+      src: "{{minio_tls_crt}}"
+      dest: "{{ minio_certs_dir }}/public.crt" 
+      owner: "{{ minio_user }}"
+      group: "{{ minio_group }}"
+      mode: 0600
+    notify:
+    - restart_minio
+  - name: Copy Private key
+    copy:
+      src: "{{minio_tls_key}}"
+      dest: "{{ minio_certs_dir }}/private.key" 
+      owner: "{{ minio_user }}"
+      group: "{{ minio_group }}"
+      mode: 0600
+    notify:
+    - restart_minio
+  when: minio_tls_crt is defined
+
+- name: "Remove TLS"
+  block:
+  - name: Ensure minio certs dir is deleted
+    file:
+      state: absent
+      path: "{{ minio_certs_dir }}" 
+    notify:
+    - restart_minio
+  when: minio_tls_crt is not defined
+  
 
 # ------------------------------------ Service activate and start   
 - meta: flush_handlers

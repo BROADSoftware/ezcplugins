@@ -8,9 +8,8 @@ Group={{ minio_console_group }}
 SyslogIdentifier={{ minio_console_syslog_identifier | default('minio-console') }}
 TimeoutSec=15
 Restart=always
-EnvironmentFile={{ minio_console_etc_dir }}/console.sh
-ExecStart={{ minio_console_binary_dir }}/console server --host {{ minio_console_bind_address }} --port {{ minio_console_bind_port }}
-
+EnvironmentFile={{ minio_console_etc_dir }}/setenv.sh
+ExecStart={{ minio_console_binary_dir }}/console server  --host {{ minio_console_bind_address }} --port {{ minio_console_bind_port }}{%if minio_console_tls_crt is defined%} --certs-dir {{ minio_console_certs_dir }} --tls-port {{ minio_console_tls_bind_port }} {%endif%}
 
 # Specifies the maximum file descriptor number that can be opened by this process
 LimitNOFILE=65536
